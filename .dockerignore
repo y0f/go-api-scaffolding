@@ -1,0 +1,16 @@
+.git
+.github
+.vscode
+.idea
+bin
+dist
+tmp
+docs
+deployments
+*.md
+.env
+.env.local
+coverage.out
+coverage.html
+.golangci.yml
+.pre-commit-config.yaml

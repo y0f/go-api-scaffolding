@@ -1,0 +1,11 @@
+/bin/
+/dist/
+/tmp/
+*.exe
+*.test
+coverage.out
+coverage.html
+.env
+.env.local
+__debug_bin*
+.DS_Store

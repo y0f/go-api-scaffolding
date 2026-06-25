@@ -1,0 +1,23 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: migrations
+    queries:
+      - internal/modules/widget/queries.sql
+      - internal/outbox/queries.sql
+      - internal/idempotency/queries.sql
+    gen:
+      go:
+        package: db
+        out: internal/gen/db
+        sql_package: pgx/v5
+        emit_interface: true
+        emit_pointers_for_null_types: true
+        emit_empty_slices: true
+        emit_exact_table_names: false
+        query_parameter_limit: 4
+        overrides:
+          - db_type: uuid
+            go_type: github.com/google/uuid.UUID
+          - db_type: timestamptz
+            go_type: time.Time

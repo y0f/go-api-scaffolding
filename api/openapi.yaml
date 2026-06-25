@@ -1,0 +1,255 @@
+openapi: 3.0.3
+info:
+  title: Forge API
+  version: 0.1.0
+  description: |
+    Reference API surface for the Forge scaffold. The spec is the source of
+    truth: server interfaces and models are generated from this file with
+    oapi-codegen, and CI fails if the generated code drifts from it.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: /
+tags:
+  - name: widgets
+    description: Example resource demonstrating a full vertical slice.
+paths:
+  /v1/widgets:
+    get:
+      tags: [widgets]
+      summary: List widgets
+      operationId: listWidgets
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: A page of widgets.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WidgetList"
+        default:
+          $ref: "#/components/responses/Problem"
+    post:
+      tags: [widgets]
+      summary: Create a widget
+      operationId: createWidget
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WidgetInput"
+      responses:
+        "201":
+          description: The created widget.
+          headers:
+            Location:
+              schema: { type: string }
+              description: URL of the created widget.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Widget"
+        default:
+          $ref: "#/components/responses/Problem"
+  /v1/widgets/{id}:
+    parameters:
+      - $ref: "#/components/parameters/WidgetID"
+    get:
+      tags: [widgets]
+      summary: Get a widget by ID
+      operationId: getWidget
+      responses:
+        "200":
+          description: The requested widget.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Widget"
+        default:
+          $ref: "#/components/responses/Problem"
+    put:
+      tags: [widgets]
+      summary: Replace a widget
+      operationId: updateWidget
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WidgetInput"
+      responses:
+        "200":
+          description: The updated widget.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Widget"
+        default:
+          $ref: "#/components/responses/Problem"
+    delete:
+      tags: [widgets]
+      summary: Delete a widget
+      operationId: deleteWidget
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: The widget was deleted.
+        default:
+          $ref: "#/components/responses/Problem"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+      description: Maximum number of items to return.
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+      description: Number of items to skip.
+    WidgetID:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Widget identifier.
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        maxLength: 255
+      description: Opaque key that makes a create request safe to retry.
+  responses:
+    Problem:
+      description: An RFC 9457 problem document.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+  schemas:
+    Widget:
+      type: object
+      required: [id, name, description, status, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: "#/components/schemas/WidgetStatus"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    WidgetInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 2000
+          default: ""
+        status:
+          $ref: "#/components/schemas/WidgetStatus"
+    WidgetStatus:
+      type: string
+      enum: [active, archived]
+      default: active
+    WidgetList:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Widget"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    Pagination:
+      type: object
+      required: [limit, offset, total]
+      properties:
+        limit:
+          type: integer
+          format: int32
+        offset:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+    Problem:
+      type: object
+      description: Problem details as defined by RFC 9457.
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+        traceId:
+          type: string
+          description: Correlates this response with a distributed trace.
+        errors:
+          type: array
+          description: Field-level validation failures.
+          items:
+            $ref: "#/components/schemas/FieldError"
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string

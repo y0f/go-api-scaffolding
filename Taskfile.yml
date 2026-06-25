@@ -1,0 +1,118 @@
+version: "3"
+
+vars:
+  BINARY: api
+  PKG: ./cmd/api
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo dev
+  LDFLAGS: -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{.VERSION}}
+
+env:
+  CGO_ENABLED: "0"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  setup:
+    desc: Install the pinned developer toolchain
+    cmds:
+      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
+      - go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1
+      - go install github.com/pressly/goose/v3/cmd/goose@v3.27.1
+      - go install golang.org/x/vuln/cmd/govulncheck@latest
+      - go install github.com/air-verse/air@latest
+      - go install mvdan.cc/gofumpt@latest
+
+  generate:
+    desc: Regenerate type-safe DB and API code from SQL and the OpenAPI spec
+    cmds:
+      - sqlc generate
+      - oapi-codegen --config api/oapi-codegen.yaml api/openapi.yaml
+
+  generate:check:
+    desc: Fail if generated code is out of date with its sources
+    cmds:
+      - task: generate
+      - git diff --exit-code -- internal/gen
+
+  fmt:
+    desc: Format code with gofumpt and goimports
+    cmds:
+      - golangci-lint fmt ./...
+
+  lint:
+    desc: Run the linter
+    cmds:
+      - golangci-lint run ./...
+
+  vuln:
+    desc: Scan for known vulnerabilities reachable from the code
+    cmds:
+      - govulncheck ./...
+
+  test:
+    desc: Run unit tests with the race detector and coverage
+    cmds:
+      - go test -race -shuffle=on -covermode=atomic -coverprofile=coverage.out ./...
+
+  test:integration:
+    desc: Run integration tests against a real Postgres (requires Docker)
+    cmds:
+      - go test -tags integration -race -count=1 ./...
+
+  build:
+    desc: Build the service and tools into ./bin
+    cmds:
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY}} {{.PKG}}
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/migrate ./cmd/migrate
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/forge ./cmd/forge
+
+  run:
+    desc: Run the service
+    cmds:
+      - go run {{.PKG}}
+
+  dev:
+    desc: Run the service with live reload
+    cmds:
+      - air
+
+  migrate:
+    desc: Apply database migrations
+    cmds:
+      - go run ./cmd/migrate up
+
+  up:
+    desc: Start the service and Postgres with docker compose
+    dir: deployments
+    cmds:
+      - docker compose up --build -d
+
+  down:
+    desc: Stop the docker compose stack
+    dir: deployments
+    cmds:
+      - docker compose --profile observability down -v
+
+  observe:
+    desc: Start the full stack including the OpenTelemetry and Grafana observability tools
+    dir: deployments
+    env:
+      FORGE_OTEL_OTLP_ENDPOINT: otel-collector:4317
+    cmds:
+      - docker compose --profile observability up --build -d
+
+  tidy:
+    cmds:
+      - go mod tidy
+
+  ci:
+    desc: Run the same gates as CI
+    cmds:
+      - task: lint
+      - task: vuln
+      - task: test
+      - task: build

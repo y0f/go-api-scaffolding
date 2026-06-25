@@ -1,0 +1,77 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: api
+    main: ./cmd/api
+    binary: api
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+  - id: migrate
+    main: ./cmd/migrate
+    binary: migrate
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+  - id: forge
+    main: ./cmd/forge
+    binary: forge
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: checksums.txt
+
+sboms:
+  - artifacts: archive
+
+signs:
+  - cmd: cosign
+    artifacts: checksum
+    output: true
+    signature: "${artifact}.bundle"
+    args:
+      - sign-blob
+      - --yes
+      - --bundle=${artifact}.bundle
+      - ${artifact}
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: "^feat"
+    - title: Fixes
+      regexp: "^fix"
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
