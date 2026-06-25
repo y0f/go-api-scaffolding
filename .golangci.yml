@@ -1,0 +1,41 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - revive
+    - sloglint
+    - unconvert
+  exclusions:
+    generated: lax
+    rules:
+      - path: internal/gen/
+        linters:
+          - all
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
+          - bodyclose
+      # Doc comments are present where they add value; do not require one on
+      # every exported identifier (avoids comment noise).
+      - linters:
+          - revive
+        text: "exported:"
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/y0f/go-api-scaffolding

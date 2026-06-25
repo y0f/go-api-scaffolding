@@ -1,0 +1,14 @@
+/bin/
+/dist/
+/tmp/
+*.exe
+*.test
+coverage.out
+coverage.html
+.env
+.env.local
+/forge
+/api
+/migrate
+__debug_bin*
+.DS_Store

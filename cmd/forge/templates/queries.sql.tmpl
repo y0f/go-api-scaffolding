@@ -1,0 +1,17 @@
+-- name: Create{{.Pascal}} :one
+INSERT INTO {{.Table}} (name)
+VALUES ($1)
+RETURNING *;
+
+-- name: Get{{.Pascal}} :one
+SELECT * FROM {{.Table}}
+WHERE id = $1;
+
+-- name: List{{.Pascal}}s :many
+SELECT * FROM {{.Table}}
+ORDER BY created_at DESC, id DESC
+LIMIT $1 OFFSET $2;
+
+-- name: Delete{{.Pascal}} :execrows
+DELETE FROM {{.Table}}
+WHERE id = $1;
