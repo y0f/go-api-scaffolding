@@ -95,11 +95,19 @@ func run() error {
 		idemStore,
 	)
 
+	// Background workers run under a context we can cancel independently of the
+	// signal context, so they are also stopped when server.Run returns early on a
+	// serve error (where the signal context is never cancelled). The deferred
+	// cancel also guards the early-return paths below (e.g. a NewRouter error)
+	// where the goroutines are already running; keep it.
+	workerCtx, cancelWorkers := context.WithCancel(ctx)
+	defer cancelWorkers()
+
 	relay := outbox.NewRelay(pool, outbox.LogPublisher{Logger: logger}, logger, 100, 2*time.Second)
 	relayDone := make(chan struct{})
 	go func() {
 		defer close(relayDone)
-		if err := relay.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+		if err := relay.Run(workerCtx); err != nil && !errors.Is(err, context.Canceled) {
 			logger.Error("outbox relay stopped", slog.Any("error", err))
 		}
 	}()
@@ -114,7 +122,7 @@ func run() error {
 	reaperDone := make(chan struct{})
 	go func() {
 		defer close(reaperDone)
-		if err := reaper.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+		if err := reaper.Run(workerCtx); err != nil && !errors.Is(err, context.Canceled) {
 			logger.Error("reaper stopped", slog.Any("error", err))
 		}
 	}()
@@ -151,18 +159,29 @@ func run() error {
 
 	err = server.Run(ctx, cfg.HTTP, router, health, logger)
 
-	// Wait for background workers to stop before the deferred pool.Close runs, so
-	// none can run a query against a closed pool. Bound the wait so a stuck worker
-	// cannot block shutdown indefinitely.
-	deadline := time.After(5 * time.Second)
+	// Stop background workers and wait for them before the deferred pool.Close
+	// runs, so in the normal case none runs a query against a closed pool.
+	// cancelWorkers also covers the serve-error path, where the signal context
+	// was never cancelled. The wait is bounded (waitCtx.Done stays closed once
+	// fired) so a stuck worker cannot block shutdown indefinitely; a worker that
+	// exceeds the grace period may still observe a closed pool and log an error.
+	cancelWorkers()
+	waitCtx, cancelWait := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancelWait()
 	for _, worker := range []struct {
 		name string
 		done <-chan struct{}
 	}{{"outbox relay", relayDone}, {"reaper", reaperDone}} {
 		select {
 		case <-worker.done:
-		case <-deadline:
-			logger.Warn("worker did not stop within the shutdown grace period", slog.String("worker", worker.name))
+		case <-waitCtx.Done():
+			// done and the deadline can be ready together; select picks randomly,
+			// so re-check done before warning to avoid a false "did not stop" log.
+			select {
+			case <-worker.done:
+			default:
+				logger.Warn("worker did not stop within the shutdown grace period", slog.String("worker", worker.name))
+			}
 		}
 	}
 	return err
