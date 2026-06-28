@@ -3,18 +3,22 @@ package {{.Snake}}
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/uuid"
 
+	"{{.Module}}/internal/auth"
 	dbgen "{{.Module}}/internal/gen/db"
 )
 
 type fakeRepo struct {
-	last dbgen.{{.Pascal}}
+	created bool
+	last    dbgen.{{.Pascal}}
 }
 
 func (f *fakeRepo) Create(_ context.Context, in Input) (dbgen.{{.Pascal}}, error) {
+	f.created = true
 	f.last = dbgen.{{.Pascal}}{ID: uuid.New(), Name: in.Name}
 	return f.last, nil
 }
@@ -26,9 +30,21 @@ func (f *fakeRepo) List(_ context.Context, _, _ int32) ([]dbgen.{{.Pascal}}, err
 }
 func (f *fakeRepo) Delete(_ context.Context, _ uuid.UUID) error { return nil }
 
-func TestServiceCreate(t *testing.T) {
+func TestServiceCreateRequiresPermission(t *testing.T) {
+	repo := &fakeRepo{}
+	svc := NewService(repo, nil)
+	if _, err := svc.Create(context.Background(), auth.Principal{}, Input{Name: "example"}); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("got %v, want ErrForbidden", err)
+	}
+	if repo.created {
+		t.Error("repository Create should not run without permission")
+	}
+}
+
+func TestServiceCreateAllowsAuthorized(t *testing.T) {
 	svc := NewService(&fakeRepo{}, nil)
-	got, err := svc.Create(context.Background(), Input{Name: "example"})
+	actor := auth.Principal{Scopes: []string{Permission{{.Pascal}}Write}}
+	got, err := svc.Create(context.Background(), actor, Input{Name: "example"})
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}

@@ -104,15 +104,19 @@ See [`.env.example`](.env.example) for every setting.
 ## Add a resource
 
 The generator stamps a new vertical slice (SQL, store, service, handler, test, and
-a migration) in the same shape as the example `widget` module:
+a migration) in the same layout as the example `widget` module:
 
 ```bash
 go run ./cmd/forge add resource Order
 ```
 
 It prints the next steps: register the queries file with sqlc, run `task generate`,
-mount the handler, and apply the migration with `task migrate`. The example slice in
-`internal/modules/widget` shows the full spec-first pattern with auth and idempotency.
+mount the handler (passing the auth verifier), grant the resource's write permission,
+and apply the migration with `task migrate`. Generated modules are secure by default:
+writes are authenticated and authorized and errors render as problem+json, but they
+are self-contained chi handlers rather than spec-first. The `internal/modules/widget`
+slice shows the full spec-first pattern with the generated OpenAPI server interface
+and idempotency.
 
 ## Common tasks
 

@@ -7,11 +7,18 @@ import (
 
 	"github.com/google/uuid"
 
+	"{{.Module}}/internal/auth"
 	dbgen "{{.Module}}/internal/gen/db"
 )
 
-// Service holds the business rules for {{.Snake}}. Add authorization and
-// validation here.
+// Permission{{.Pascal}}Write is required to create or delete a {{.Snake}}. Grant
+// it to roles in internal/auth/principal.go, or issue tokens carrying it as a
+// scope.
+const Permission{{.Pascal}}Write = "{{.Table}}:write"
+
+// Service holds the business rules for {{.Snake}}, including authorization. It
+// depends on the Repository interface, so it is unit-testable without a
+// database.
 type Service struct {
 	repo   Repository
 	logger *slog.Logger
@@ -21,7 +28,10 @@ func NewService(repo Repository, logger *slog.Logger) *Service {
 	return &Service{repo: repo, logger: logger}
 }
 
-func (s *Service) Create(ctx context.Context, in Input) (dbgen.{{.Pascal}}, error) {
+func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (dbgen.{{.Pascal}}, error) {
+	if !actor.HasPermission(Permission{{.Pascal}}Write) {
+		return dbgen.{{.Pascal}}{}, ErrForbidden
+	}
 	return s.repo.Create(ctx, in)
 }
 
@@ -33,6 +43,9 @@ func (s *Service) List(ctx context.Context, limit, offset int32) ([]dbgen.{{.Pas
 	return s.repo.List(ctx, limit, offset)
 }
 
-func (s *Service) Delete(ctx context.Context, id uuid.UUID) error {
+func (s *Service) Delete(ctx context.Context, actor auth.Principal, id uuid.UUID) error {
+	if !actor.HasPermission(Permission{{.Pascal}}Write) {
+		return ErrForbidden
+	}
 	return s.repo.Delete(ctx, id)
 }

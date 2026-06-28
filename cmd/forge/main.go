@@ -1,6 +1,14 @@
 // Command forge is the day-2 generator. It stamps a new resource module in the
-// same vertical-slice shape as internal/modules/widget, so a service keeps
-// evolving with one command instead of hand-copying boilerplate.
+// same vertical-slice layout as internal/modules/widget (SQL, store, service,
+// handler, test, migration), so a service keeps evolving with one command
+// instead of hand-copying boilerplate.
+//
+// The generated module is secure by default but self-contained rather than
+// spec-first: writes are authenticated with auth.Middleware and authorized
+// against a per-resource permission, reads are public, and errors render as
+// problem+json. Routing is plain chi instead of the generated OpenAPI server
+// interface; make it spec-first by adding the paths to api/openapi.yaml and
+// implementing that interface.
 //
 // Usage:
 //
@@ -103,11 +111,13 @@ Next steps:
        - internal/modules/%s/queries.sql
   2. Regenerate type-safe code:
        task generate
-  3. Mount the handler in your router setup:
-       %s.NewHandler(%s.NewService(%s.NewRepository(pool), logger)).Mount(r)
-  4. Apply the new migration:
+  3. Mount the handler in your router setup (pass the auth verifier):
+       %s.NewHandler(%s.NewService(%s.NewRepository(pool), logger), verifier).Mount(r)
+  4. Grant write access in internal/auth/principal.go (rolePermissions) by adding
+     %q to the roles that may write, or issue tokens carrying it as a scope.
+  5. Apply the new migration:
        task migrate
-`, res.Snake, res.Snake, res.Snake, res.Snake)
+`, res.Snake, res.Snake, res.Snake, res.Snake, res.Table+":write")
 }
 
 func newResource(name string) resource {

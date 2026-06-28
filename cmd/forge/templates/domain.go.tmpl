@@ -8,4 +8,7 @@ type Input struct {
 	Name string
 }
 
-var ErrNotFound = errors.New("{{.Snake}} not found")
+var (
+	ErrNotFound  = errors.New("{{.Snake}} not found")
+	ErrForbidden = errors.New("forbidden")
+)
