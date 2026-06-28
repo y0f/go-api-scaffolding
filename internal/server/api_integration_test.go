@@ -92,6 +92,27 @@ func TestCreateAndIdempotentReplay(t *testing.T) {
 	}
 }
 
+func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
+	t.Parallel()
+	srv, token := newTestServer(t)
+
+	first := do(t, srv, http.MethodPost, "/v1/widgets", token, "conflict-key", `{"name":"alpha"}`)
+	defer first.Body.Close()
+	if first.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(first.Body)
+		t.Fatalf("create status = %d, want 201, body=%s", first.StatusCode, body)
+	}
+
+	second := do(t, srv, http.MethodPost, "/v1/widgets", token, "conflict-key", `{"name":"beta"}`)
+	defer second.Body.Close()
+	if second.StatusCode != http.StatusConflict {
+		t.Fatalf("reuse status = %d, want 409", second.StatusCode)
+	}
+	if ct := second.Header.Get("Content-Type"); ct != "application/problem+json" {
+		t.Errorf("content-type = %q, want application/problem+json", ct)
+	}
+}
+
 func TestValidationRejectsBadBody(t *testing.T) {
 	t.Parallel()
 	srv, token := newTestServer(t)

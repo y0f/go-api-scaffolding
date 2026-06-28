@@ -13,6 +13,7 @@ import (
 
 type fakeRepo struct {
 	createCalled bool
+	updateCalled bool
 	deleteCalled bool
 }
 
@@ -30,6 +31,7 @@ func (f *fakeRepo) List(_ context.Context, _, _ int32) ([]db.Widget, int64, erro
 }
 
 func (f *fakeRepo) Update(_ context.Context, id uuid.UUID, in Input) (db.Widget, error) {
+	f.updateCalled = true
 	return db.Widget{ID: id, Name: in.Name}, nil
 }
 
@@ -62,6 +64,17 @@ func TestCreateAllowedForAdmin(t *testing.T) {
 	}
 	if !repo.createCalled {
 		t.Error("repository Create should run for admin")
+	}
+}
+
+func TestUpdateRequiresPermission(t *testing.T) {
+	repo := &fakeRepo{}
+	svc := NewService(repo, nil)
+	if _, err := svc.Update(context.Background(), auth.Principal{}, uuid.New(), Input{Name: "x"}); !errors.Is(err, ErrForbidden) {
+		t.Fatalf("got %v, want ErrForbidden", err)
+	}
+	if repo.updateCalled {
+		t.Error("repository Update should not run when forbidden")
 	}
 }
 

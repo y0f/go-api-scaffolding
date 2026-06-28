@@ -5,7 +5,12 @@ WHERE key = $1 AND expires_at > now();
 -- name: PutIdempotencyKey :execrows
 INSERT INTO idempotency_keys (key, request_hash, response_status, response_body, expires_at)
 VALUES ($1, $2, $3, $4, $5)
-ON CONFLICT (key) DO NOTHING;
+ON CONFLICT (key) DO UPDATE
+SET request_hash    = EXCLUDED.request_hash,
+    response_status = EXCLUDED.response_status,
+    response_body   = EXCLUDED.response_body,
+    expires_at      = EXCLUDED.expires_at
+WHERE idempotency_keys.expires_at <= now();
 
 -- name: PurgeExpiredIdempotencyKeys :execrows
 DELETE FROM idempotency_keys
