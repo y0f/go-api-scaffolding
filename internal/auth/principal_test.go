@@ -10,10 +10,10 @@ func TestPrincipalHasPermission(t *testing.T) {
 		want       bool
 	}{
 		{"admin has write", Principal{Roles: []string{"admin"}}, "widgets:write", true},
-		{"viewer lacks write", Principal{Roles: []string{"viewer"}}, "widgets:write", false},
-		{"viewer has read", Principal{Roles: []string{"viewer"}}, "widgets:read", true},
+		{"editor has write", Principal{Roles: []string{"editor"}}, "widgets:write", true},
+		{"unknown role lacks write", Principal{Roles: []string{"viewer"}}, "widgets:write", false},
 		{"explicit scope grants", Principal{Scopes: []string{"widgets:write"}}, "widgets:write", true},
-		{"empty principal denied", Principal{}, "widgets:read", false},
+		{"empty principal denied", Principal{}, "widgets:write", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

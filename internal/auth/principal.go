@@ -13,11 +13,12 @@ type Principal struct {
 }
 
 // rolePermissions is the built-in RBAC policy. Replace it with a policy engine
-// (OPA, Casbin) by swapping the implementation of HasPermission.
+// (OPA, Casbin) by swapping the implementation of HasPermission. Reads are
+// public in this scaffold (see api/openapi.yaml), so only write permissions are
+// granted here; add read permissions when you protect the read endpoints.
 var rolePermissions = map[string][]string{
-	"admin":  {"widgets:read", "widgets:write"},
-	"editor": {"widgets:read", "widgets:write"},
-	"viewer": {"widgets:read"},
+	"admin":  {"widgets:write"},
+	"editor": {"widgets:write"},
 }
 
 func (p Principal) HasRole(role string) bool {
@@ -60,6 +61,13 @@ type holder struct {
 // the request-validation middleware runs.
 func withHolder(ctx context.Context) context.Context {
 	return context.WithValue(ctx, contextKey{}, &holder{})
+}
+
+// withPrincipal returns a context carrying p as the authenticated principal, for
+// middleware that resolves the principal up front rather than through the
+// seed-then-fill OpenAPI validation flow.
+func withPrincipal(ctx context.Context, p Principal) context.Context {
+	return context.WithValue(ctx, contextKey{}, &holder{principal: &p})
 }
 
 func holderFrom(ctx context.Context) (*holder, bool) {

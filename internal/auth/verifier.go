@@ -47,7 +47,10 @@ type Settings struct {
 }
 
 func newParser(s Settings) *jwt.Parser {
-	opts := []jwt.ParserOption{jwt.WithValidMethods([]string{"RS256"})}
+	opts := []jwt.ParserOption{
+		jwt.WithValidMethods([]string{"RS256"}),
+		jwt.WithExpirationRequired(),
+	}
 	if s.Issuer != "" {
 		opts = append(opts, jwt.WithIssuer(s.Issuer))
 	}
