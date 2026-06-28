@@ -1,5 +1,5 @@
 # Thin wrapper over Taskfile.yml for those who reach for make. Install Task
-# (https://taskez.dev) and run `task --list` to see everything.
+# (https://taskfile.dev) and run `task --list` to see everything.
 
 .DEFAULT_GOAL := help
 TASK := $(shell command -v task 2>/dev/null)
