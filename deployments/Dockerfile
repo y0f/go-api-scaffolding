@@ -3,7 +3,7 @@
 # Multi-stage build producing a small, static, non-root image. Pin the base
 # images by digest in your fork for fully reproducible builds.
 
-FROM golang:1.26-bookworm AS build
+FROM golang:1.27-bookworm AS build
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.mod go.sum ./
