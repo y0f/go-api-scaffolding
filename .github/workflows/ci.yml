@@ -92,6 +92,9 @@ jobs:
       # broken build stage would otherwise reach main unnoticed. Build only, the
       # image is never pushed from CI.
       - run: docker build -f deployments/Dockerfile -t go-api-scaffolding:ci .
+      # docker-compose.yml is only ever run by hand through `task up`, so a
+      # broken service definition or interpolation would go unnoticed here.
+      - run: docker compose -f deployments/docker-compose.yml --profile observability config --quiet
 
   release-config:
     runs-on: ubuntu-latest

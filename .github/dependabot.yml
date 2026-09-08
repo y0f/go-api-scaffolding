@@ -31,3 +31,12 @@ updates:
     groups:
       docker:
         patterns: ["*"]
+  # The docker ecosystem only reads Dockerfiles, so the images in
+  # docker-compose.yml went unmaintained. They need their own ecosystem.
+  - package-ecosystem: docker-compose
+    directory: "/deployments"
+    schedule:
+      interval: weekly
+    groups:
+      docker-compose:
+        patterns: ["*"]
