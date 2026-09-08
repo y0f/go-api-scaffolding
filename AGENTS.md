@@ -6,7 +6,7 @@ repository. Human contributors should read `CONTRIBUTING.md`.
 ## Commands
 
 ```bash
-task setup             # install the pinned toolchain
+task setup             # build the pinned toolchain from tools/go.mod into ./bin
 task generate          # regenerate sqlc and OpenAPI code after editing SQL or api/openapi.yaml
 task lint              # golangci-lint v2 (must pass)
 task test              # unit tests, race detector, coverage

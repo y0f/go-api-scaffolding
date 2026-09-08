@@ -2,6 +2,11 @@ version: "3"
 
 vars:
   BINARY: api
+  # Developer tools are pinned in tools/go.mod and built into ./bin, so the
+  # versions here, in CI and on every machine are the same ones dependabot
+  # updates. Never call a tool off $PATH.
+  TOOLS: ./bin
+  EXT: '{{if eq OS "windows"}}.exe{{end}}'
   PKG: ./cmd/api
   VERSION:
     sh: git describe --tags --always --dirty 2>/dev/null || echo dev
@@ -17,20 +22,16 @@ tasks:
     silent: true
 
   setup:
-    desc: Install the pinned developer toolchain
+    desc: Build the pinned developer toolchain into ./bin
     cmds:
-      - go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
-      - go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1
-      - go install github.com/pressly/goose/v3/cmd/goose@v3.27.1
-      - go install golang.org/x/vuln/cmd/govulncheck@latest
-      - go install github.com/air-verse/air@latest
-      - go install mvdan.cc/gofumpt@latest
+      - go -C tools build -o ../bin/ tool
 
   generate:
     desc: Regenerate type-safe DB and API code from SQL and the OpenAPI spec
+    deps: [setup]
     cmds:
-      - sqlc generate
-      - oapi-codegen --config api/oapi-codegen.yaml api/openapi.yaml
+      - "{{.TOOLS}}/sqlc{{.EXT}} generate"
+      - "{{.TOOLS}}/oapi-codegen{{.EXT}} --config api/oapi-codegen.yaml api/openapi.yaml"
 
   generate:check:
     desc: Fail if generated code is out of date with its sources
@@ -40,18 +41,21 @@ tasks:
 
   fmt:
     desc: Format code with gofumpt and goimports
+    deps: [setup]
     cmds:
-      - golangci-lint fmt ./...
+      - "{{.TOOLS}}/golangci-lint{{.EXT}} fmt ./..."
 
   lint:
     desc: Run the linter
+    deps: [setup]
     cmds:
-      - golangci-lint run ./...
+      - "{{.TOOLS}}/golangci-lint{{.EXT}} run ./..."
 
   vuln:
     desc: Scan for known vulnerabilities reachable from the code
+    deps: [setup]
     cmds:
-      - govulncheck ./...
+      - "{{.TOOLS}}/govulncheck{{.EXT}} ./..."
 
   test:
     desc: Run unit tests with the race detector and coverage
@@ -77,8 +81,9 @@ tasks:
 
   dev:
     desc: Run the service with live reload
+    deps: [setup]
     cmds:
-      - air
+      - "{{.TOOLS}}/air{{.EXT}}"
 
   migrate:
     desc: Apply database migrations

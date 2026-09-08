@@ -3,7 +3,7 @@
 ## Getting started
 
 ```bash
-task setup     # install the pinned toolchain
+task setup     # build the pinned toolchain from tools/go.mod into ./bin
 task up        # start Postgres and the service via docker compose
 task test      # unit tests
 ```

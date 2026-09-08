@@ -23,10 +23,13 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: "1.26.x"
-          cache-dependency-path: go.sum
-      - uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
-        with:
-          version: v2.13.2
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+      # Built from tools/go.mod so the linter version is the one dependabot
+      # tracks, and is identical to what `task lint` runs locally.
+      - run: go -C tools build -o ../bin/ github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+      - run: ./bin/golangci-lint run ./...
 
   test:
     runs-on: ubuntu-latest
@@ -69,13 +72,11 @@ jobs:
         with:
           go-version: "1.26.x"
           cache-dependency-path: go.sum
-      - run: |
-          go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.31.1
-          go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1
+      - run: go -C tools build -o ../bin/ github.com/sqlc-dev/sqlc/cmd/sqlc github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
       - name: Regenerate and verify no drift
         run: |
-          sqlc generate
-          oapi-codegen --config api/oapi-codegen.yaml api/openapi.yaml
+          ./bin/sqlc generate
+          ./bin/oapi-codegen --config api/oapi-codegen.yaml api/openapi.yaml
           git diff --exit-code -- internal/gen
 
   image:
@@ -97,15 +98,16 @@ jobs:
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      # Run the scan on Go 1.25 until x/tools supports Go 1.26's type system;
-      # govulncheck's reachability over this code is identical, and 1.25 is a
-      # supported release. Bump to 1.26.x once x/tools ships the fix.
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.25.x"
-          cache-dependency-path: go.sum
-      - run: go install golang.org/x/vuln/cmd/govulncheck@latest
-      - run: govulncheck ./...
+          go-version: "1.26.x"
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+      # Pinned in tools/go.mod rather than @latest, so a scan is reproducible
+      # and a scanner release cannot turn CI red on its own.
+      - run: go -C tools build -o ../bin/ golang.org/x/vuln/cmd/govulncheck
+      - run: ./bin/govulncheck ./...
 
   build:
     runs-on: ubuntu-latest
