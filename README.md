@@ -89,7 +89,7 @@ curl -s -X POST localhost:8080/v1/widgets \
   -d '{"name":"first"}'
 ```
 
-Prefer running the binary directly? Install the toolchain and point it at any
+Prefer running the binary directly? Build the toolchain and point it at any
 Postgres:
 
 ```bash
@@ -97,6 +97,11 @@ task setup
 task migrate
 task run
 ```
+
+The linter, code generators, vulnerability scanner and live-reload binary are
+pinned in `tools/go.mod`, a module of its own so none of them reach the
+application's dependency graph. `task setup` builds them into `./bin`, CI builds
+the same versions from the same file, and dependabot keeps them current.
 
 See [`.env.example`](.env.example) for every setting.
 

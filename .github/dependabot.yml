@@ -7,6 +7,16 @@ updates:
     groups:
       go-dependencies:
         patterns: ["*"]
+  # Developer tooling (linter, generators, scanner, live reload) lives in its
+  # own module so it never enters the application's dependency graph, but it
+  # still needs bumping like everything else.
+  - package-ecosystem: gomod
+    directory: "/tools"
+    schedule:
+      interval: weekly
+    groups:
+      go-tools:
+        patterns: ["*"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
