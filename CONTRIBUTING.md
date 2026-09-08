@@ -8,6 +8,11 @@ task up        # start Postgres and the service via docker compose
 task test      # unit tests
 ```
 
+The OpenAPI spec is embedded in `internal/gen/api/api.gen.go` in compressed
+form, and the compressor lives in the Go release that built the generator, so
+regenerate with the Go version CI uses (see `.github/workflows/ci.yml`) or the
+drift gate will flag bytes that carry no real change.
+
 ## Before opening a pull request
 
 Run the same gates CI runs:
