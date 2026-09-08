@@ -2,7 +2,7 @@ name: forge
 
 services:
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_USER: forge
       POSTGRES_PASSWORD: forge
@@ -47,7 +47,7 @@ services:
         condition: service_completed_successfully
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.110.0
+    image: otel/opentelemetry-collector-contrib:0.160.0
     profiles: ["observability"]
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
@@ -57,14 +57,14 @@ services:
       - "8888:8888"
 
   tempo:
-    image: grafana/tempo:2.6.1
+    image: grafana/tempo:3.0.3
     profiles: ["observability"]
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./observability/tempo.yaml:/etc/tempo.yaml:ro
 
   prometheus:
-    image: prom/prometheus:v2.55.1
+    image: prom/prometheus:v3.14.0
     profiles: ["observability"]
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -72,7 +72,7 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana:11.3.0
+    image: grafana/grafana:13.2.1
     profiles: ["observability"]
     environment:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
