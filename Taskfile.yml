@@ -25,6 +25,13 @@ tasks:
     desc: Build the pinned developer toolchain into ./bin
     cmds:
       - go -C tools build -o ../bin/ tool
+    # Only rebuild when the pinned versions actually change, so the tasks that
+    # depend on this do not shell out to the compiler on every invocation.
+    sources:
+      - tools/go.mod
+      - tools/go.sum
+    generates:
+      - bin/*
 
   generate:
     desc: Regenerate type-safe DB and API code from SQL and the OpenAPI spec
