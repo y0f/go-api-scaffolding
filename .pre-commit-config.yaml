@@ -9,21 +9,24 @@ repos:
       - id: check-added-large-files
   - repo: local
     hooks:
-      - id: gofumpt
-        name: gofumpt
-        entry: golangci-lint fmt
+      # Through task, so these run the versions pinned in tools/go.mod rather
+      # than whatever happens to be on PATH.
+      - id: fmt
+        name: gofumpt and goimports
+        entry: task fmt
         language: system
         types: [go]
         pass_filenames: false
-      - id: golangci-lint
+      - id: lint
         name: golangci-lint
-        entry: golangci-lint run
+        entry: task lint
         language: system
         types: [go]
         pass_filenames: false
-      - id: govulncheck
+      - id: vuln
         name: govulncheck
-        entry: govulncheck ./...
+        entry: task vuln
         language: system
         types: [go]
         pass_filenames: false
+        stages: [pre-push]

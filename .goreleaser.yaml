@@ -75,3 +75,5 @@ changelog:
       - "^docs:"
       - "^test:"
       - "^chore:"
+      - "^ci:"
+      - '^build\(deps'
