@@ -81,7 +81,9 @@ jobs:
 
   # forge:begin init
   # Every way `forge init` can shape a project must lint, build and pass its
-  # tests, including on a real Postgres. Removed by init itself.
+  # tests, including on a real Postgres, and `forge add resource` must stamp a
+  # module that compiles and lints in each of those shapes. Removed by init
+  # itself.
   init:
     runs-on: ubuntu-latest
     strategy:
@@ -106,6 +108,9 @@ jobs:
             go.sum
             tools/go.sum
       - run: go run ./cmd/forge init -yes -module github.com/example/app -drop "${{ matrix.drop }}"
+      - run: go run ./cmd/forge add resource Order
+      - run: go -C tools build -o ../bin/ github.com/go-task/task/v3/cmd/task
+      - run: ./bin/task generate
       - run: go -C tools build -o ../bin/ github.com/golangci/golangci-lint/v2/cmd/golangci-lint
       - run: ./bin/golangci-lint run ./...
       - run: go test ./...

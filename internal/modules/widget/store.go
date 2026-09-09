@@ -58,18 +58,27 @@ func (r *pgRepository) insert(ctx context.Context, tx pgx.Tx, in Input) (db.Widg
 		return db.Widget{}, err
 	}
 	//forge:begin outbox
-	// The event carries the API shape of the widget, so subscribers see what
-	// API clients see.
-	event, err := json.Marshal(toAPIWidget(created))
-	if err != nil {
-		return db.Widget{}, err
-	}
-	if err := outbox.Enqueue(ctx, tx, created.ID, "widget.created", event); err != nil {
+	if err := enqueueWidgetEvent(ctx, tx, "widget.created", created); err != nil {
 		return db.Widget{}, err
 	}
 	//forge:end outbox
 	return created, nil
 }
+
+//forge:begin outbox
+
+// enqueueWidgetEvent records a lifecycle event in the same transaction as the
+// change. The event carries the API shape of the widget, so subscribers see
+// what API clients see.
+func enqueueWidgetEvent(ctx context.Context, tx pgx.Tx, eventType string, w db.Widget) error {
+	payload, err := json.Marshal(toAPIWidget(w))
+	if err != nil {
+		return err
+	}
+	return outbox.Enqueue(ctx, tx, w.ID, eventType, payload)
+}
+
+//forge:end outbox
 
 func (r *pgRepository) Get(ctx context.Context, id uuid.UUID) (db.Widget, error) {
 	found, err := db.New(r.pool).GetWidget(ctx, id)
@@ -95,8 +104,22 @@ func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]db.Widg
 	return items, total, nil
 }
 
+// Update replaces the widget, and records its update event, in one transaction.
 func (r *pgRepository) Update(ctx context.Context, id uuid.UUID, in Input) (db.Widget, error) {
-	updated, err := db.New(r.pool).UpdateWidget(ctx, id, in.Name, in.Description, in.Status)
+	var updated db.Widget
+	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
+		var txErr error
+		updated, txErr = db.New(tx).UpdateWidget(ctx, id, in.Name, in.Description, in.Status)
+		if txErr != nil {
+			return txErr
+		}
+		//forge:begin outbox
+		if txErr := enqueueWidgetEvent(ctx, tx, "widget.updated", updated); txErr != nil {
+			return txErr
+		}
+		//forge:end outbox
+		return nil
+	})
 	if errors.Is(err, pgx.ErrNoRows) {
 		return db.Widget{}, ErrNotFound
 	}
@@ -106,13 +129,31 @@ func (r *pgRepository) Update(ctx context.Context, id uuid.UUID, in Input) (db.W
 	return updated, nil
 }
 
+// Delete removes the widget, and records its deletion event, in one
+// transaction. A missing row rolls back so no event is left behind.
 func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	rows, err := db.New(r.pool).DeleteWidget(ctx, id)
+	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
+		rows, txErr := db.New(tx).DeleteWidget(ctx, id)
+		if txErr != nil {
+			return txErr
+		}
+		if rows == 0 {
+			return ErrNotFound
+		}
+		//forge:begin outbox
+		// Only the identity: the row is gone, and a subscriber that needs the
+		// last state has it from the preceding events.
+		if txErr := outbox.Enqueue(ctx, tx, id, "widget.deleted", []byte(`{"id":"`+id.String()+`"}`)); txErr != nil {
+			return txErr
+		}
+		//forge:end outbox
+		return nil
+	})
+	if errors.Is(err, ErrNotFound) {
+		return ErrNotFound
+	}
 	if err != nil {
 		return fmt.Errorf("delete widget: %w", err)
-	}
-	if rows == 0 {
-		return ErrNotFound
 	}
 	return nil
 }
