@@ -40,3 +40,8 @@ updates:
     groups:
       docker-compose:
         patterns: ["*"]
+        # Majors stay out of the group so each one arrives as its own PR. A
+        # bundled postgres major silently breaks `task up` for everyone holding
+        # an existing pgdata volume, and is easy to miss between grafana and
+        # tempo patch bumps.
+        update-types: ["minor", "patch"]
