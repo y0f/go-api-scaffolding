@@ -17,7 +17,7 @@ type fakeRepo struct {
 	deleteCalled bool
 }
 
-func (f *fakeRepo) Create(_ context.Context, in Input, _ *IdempotencyClaim) (db.Widget, error) {
+func (f *fakeRepo) Create(_ context.Context, in Input) (db.Widget, error) {
 	f.createCalled = true
 	return db.Widget{ID: uuid.New(), Name: in.Name, Status: in.Status}, nil
 }
@@ -43,7 +43,7 @@ func (f *fakeRepo) Delete(_ context.Context, _ uuid.UUID) error {
 func TestCreateRequiresWritePermission(t *testing.T) {
 	repo := &fakeRepo{}
 	svc := NewService(repo)
-	_, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"viewer"}}, Input{Name: "x"}, nil)
+	_, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"viewer"}}, Input{Name: "x"})
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("got %v, want ErrForbidden", err)
 	}
@@ -55,7 +55,7 @@ func TestCreateRequiresWritePermission(t *testing.T) {
 func TestCreateAllowedForAdmin(t *testing.T) {
 	repo := &fakeRepo{}
 	svc := NewService(repo)
-	got, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"admin"}}, Input{Name: "x", Status: "active"}, nil)
+	got, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"admin"}}, Input{Name: "x", Status: "active"})
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}

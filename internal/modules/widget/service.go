@@ -23,11 +23,11 @@ func NewService(repo Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input, claim *IdempotencyClaim) (db.Widget, error) {
+func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (db.Widget, error) {
 	if !actor.HasPermission(PermissionWrite) {
 		return db.Widget{}, ErrForbidden
 	}
-	return s.repo.Create(ctx, in, claim)
+	return s.repo.Create(ctx, in)
 }
 
 func (s *Service) Get(ctx context.Context, id uuid.UUID) (db.Widget, error) {

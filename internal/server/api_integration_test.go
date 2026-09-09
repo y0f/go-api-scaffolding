@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
-	"sync"
 	"testing"
 	"time"
 
@@ -40,16 +39,16 @@ func newTestServer(t *testing.T) (*httptest.Server, string, *auth.DevIssuer) {
 		t.Fatalf("mint: %v", err)
 	}
 
-	handler := widget.NewHandler(
-		widget.NewService(widget.NewRepository(pool)),
-		idempotency.NewStore(pool, time.Hour),
-	)
+	handler := widget.NewHandler(widget.NewService(widget.NewRepository(pool)))
+	//forge:begin idempotency
+	handler.EnableIdempotency(idempotency.NewStore(pool, time.Hour))
+	//forge:end idempotency
 	router, err := server.NewRouter(server.RouterDeps{
 		Logger:        logger,
 		Telemetry:     telemetry,
 		Health:        server.NewHealth(pool),
 		Authenticator: auth.NewAuthenticator(verifier),
-		WidgetHandler: handler,
+		API:           handler,
 		Config:        server.RouterConfig{RateLimitPerSecond: 1000, RateLimitBurst: 1000, MaxBodyBytes: 1 << 20},
 	})
 	if err != nil {
@@ -64,52 +63,10 @@ func TestCreateRequiresAuth(t *testing.T) {
 	t.Parallel()
 	srv, _, _ := newTestServer(t)
 
-	resp := do(t, srv, http.MethodPost, "/v1/widgets", "", "", `{"name":"x"}`)
+	resp := do(t, srv, http.MethodPost, "/v1/widgets", "", `{"name":"x"}`)
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Errorf("status = %d, want 401", resp.StatusCode)
-	}
-}
-
-func TestCreateAndIdempotentReplay(t *testing.T) {
-	t.Parallel()
-	srv, token, _ := newTestServer(t)
-
-	first := do(t, srv, http.MethodPost, "/v1/widgets", token, "key-1", `{"name":"alpha"}`)
-	defer first.Body.Close()
-	if first.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(first.Body)
-		t.Fatalf("create status = %d, want 201, body=%s", first.StatusCode, body)
-	}
-
-	second := do(t, srv, http.MethodPost, "/v1/widgets", token, "key-1", `{"name":"alpha"}`)
-	defer second.Body.Close()
-	if second.StatusCode != http.StatusCreated {
-		t.Fatalf("replay status = %d, want 201", second.StatusCode)
-	}
-	if second.Header.Get("Idempotency-Replayed") != "true" {
-		t.Error("expected Idempotency-Replayed header on the replayed response")
-	}
-}
-
-func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
-	t.Parallel()
-	srv, token, _ := newTestServer(t)
-
-	first := do(t, srv, http.MethodPost, "/v1/widgets", token, "conflict-key", `{"name":"alpha"}`)
-	defer first.Body.Close()
-	if first.StatusCode != http.StatusCreated {
-		body, _ := io.ReadAll(first.Body)
-		t.Fatalf("create status = %d, want 201, body=%s", first.StatusCode, body)
-	}
-
-	second := do(t, srv, http.MethodPost, "/v1/widgets", token, "conflict-key", `{"name":"beta"}`)
-	defer second.Body.Close()
-	if second.StatusCode != http.StatusConflict {
-		t.Fatalf("reuse status = %d, want 409", second.StatusCode)
-	}
-	if ct := second.Header.Get("Content-Type"); ct != "application/problem+json" {
-		t.Errorf("content-type = %q, want application/problem+json", ct)
 	}
 }
 
@@ -117,7 +74,7 @@ func TestValidationRejectsBadBody(t *testing.T) {
 	t.Parallel()
 	srv, token, _ := newTestServer(t)
 
-	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, "", `{"name":""}`)
+	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, `{"name":""}`)
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("status = %d, want 400", resp.StatusCode)
@@ -127,63 +84,23 @@ func TestValidationRejectsBadBody(t *testing.T) {
 	}
 }
 
-func TestConcurrentIdempotentCreateMakesOneWidget(t *testing.T) {
-	t.Parallel()
-	srv, token, _ := newTestServer(t)
-
-	const n = 6
-	var wg sync.WaitGroup
-	codes := make([]int, n)
-	for i := 0; i < n; i++ {
-		wg.Add(1)
-		go func(i int) {
-			defer wg.Done()
-			req, err := http.NewRequest(http.MethodPost, srv.URL+"/v1/widgets", strings.NewReader(`{"name":"race"}`))
-			if err != nil {
-				codes[i] = -1
-				return
-			}
-			req.Header.Set("Content-Type", "application/json")
-			req.Header.Set("Authorization", "Bearer "+token)
-			req.Header.Set("Idempotency-Key", "concurrent-key")
-			resp, err := srv.Client().Do(req)
-			if err != nil {
-				codes[i] = -1
-				return
-			}
-			codes[i] = resp.StatusCode
-			resp.Body.Close()
-		}(i)
-	}
-	wg.Wait()
-
-	for i, code := range codes {
-		if code != http.StatusCreated {
-			t.Errorf("request %d code = %d, want 201", i, code)
-		}
-	}
-
-	list := do(t, srv, http.MethodGet, "/v1/widgets", "", "", "")
-	defer list.Body.Close()
-	body, _ := io.ReadAll(list.Body)
-	if !strings.Contains(string(body), `"total":1`) {
-		t.Errorf("expected exactly one widget, got: %s", body)
-	}
-}
-
 func TestRejectsOversizeBody(t *testing.T) {
 	t.Parallel()
 	srv, token, _ := newTestServer(t)
 
 	oversize := `{"name":"` + strings.Repeat("x", 2<<20) + `"}`
-	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, "", oversize)
+	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, oversize)
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusRequestEntityTooLarge {
 		t.Errorf("status = %d, want 413", resp.StatusCode)
 	}
 }
 
-func do(t *testing.T, srv *httptest.Server, method, path, token, idemKey, body string) *http.Response {
+func do(t *testing.T, srv *httptest.Server, method, path, token, body string) *http.Response {
+	return doWithHeaders(t, srv, method, path, token, body, nil)
+}
+
+func doWithHeaders(t *testing.T, srv *httptest.Server, method, path, token, body string, headers map[string]string) *http.Response {
 	t.Helper()
 	req, err := http.NewRequest(method, srv.URL+path, bytes.NewBufferString(body))
 	if err != nil {
@@ -193,8 +110,8 @@ func do(t *testing.T, srv *httptest.Server, method, path, token, idemKey, body s
 	if token != "" {
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
-	if idemKey != "" {
-		req.Header.Set("Idempotency-Key", idemKey)
+	for k, v := range headers {
+		req.Header.Set(k, v)
 	}
 	resp, err := srv.Client().Do(req)
 	if err != nil {
@@ -203,32 +120,24 @@ func do(t *testing.T, srv *httptest.Server, method, path, token, idemKey, body s
 	return resp
 }
 
-func TestIdempotencyKeyIsScopedToPrincipal(t *testing.T) {
-	srv, tokenA, issuer := newTestServer(t)
-	tokenB, err := issuer.Mint("other", []string{"admin"}, time.Hour)
-	if err != nil {
-		t.Fatalf("mint: %v", err)
-	}
+func TestUnknownRouteAndMethodAreProblems(t *testing.T) {
+	t.Parallel()
+	srv, token, _ := newTestServer(t)
 
-	first := do(t, srv, http.MethodPost, "/v1/widgets", tokenA, "shared-key", `{"name":"from-a"}`)
-	defer first.Body.Close()
-	if first.StatusCode != http.StatusCreated {
-		t.Fatalf("first create status = %d, want 201", first.StatusCode)
-	}
-	firstBody, _ := io.ReadAll(first.Body)
-
-	// Same key, different caller, different body. Before the key was scoped
-	// this was a 409 (A's stored hash) or A's response replayed to B.
-	second := do(t, srv, http.MethodPost, "/v1/widgets", tokenB, "shared-key", `{"name":"from-b"}`)
-	defer second.Body.Close()
-	if second.StatusCode != http.StatusCreated {
-		t.Fatalf("second create status = %d, want 201", second.StatusCode)
-	}
-	secondBody, _ := io.ReadAll(second.Body)
-	if bytes.Equal(firstBody, secondBody) {
-		t.Fatalf("second caller received the first caller's stored response: %s", secondBody)
-	}
-	if !strings.Contains(string(secondBody), `"from-b"`) {
-		t.Fatalf("second response = %s, want the second caller's own widget", secondBody)
+	for _, tc := range []struct {
+		method, path string
+		want         int
+	}{
+		{http.MethodGet, "/v1/nope", http.StatusNotFound},
+		{http.MethodPatch, "/v1/widgets", http.StatusMethodNotAllowed},
+	} {
+		resp := do(t, srv, tc.method, tc.path, token, "")
+		if resp.StatusCode != tc.want {
+			t.Errorf("%s %s status = %d, want %d", tc.method, tc.path, resp.StatusCode, tc.want)
+		}
+		if ct := resp.Header.Get("Content-Type"); ct != "application/problem+json" {
+			t.Errorf("%s %s content-type = %q, want application/problem+json", tc.method, tc.path, ct)
+		}
+		resp.Body.Close()
 	}
 }

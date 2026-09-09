@@ -17,14 +17,17 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 )
 
-// TelemetryConfig configures tracing and metrics. When OTLPEndpoint is empty
-// tracing is disabled but metrics (scraped from the returned registry) stay on.
+// TelemetryConfig configures tracing and metrics.
 type TelemetryConfig struct {
 	ServiceName    string
 	ServiceVersion string
 	Environment    string
-	OTLPEndpoint   string
-	SampleRatio    float64
+	//forge:begin otlp
+	// OTLPEndpoint enables export of sampled spans; empty keeps tracing
+	// in-process only. Metrics are on regardless.
+	OTLPEndpoint string
+	SampleRatio  float64
+	//forge:end otlp
 }
 
 // Telemetry owns the metric registry and a single shutdown hook that flushes
@@ -69,7 +72,14 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 		propagation.TraceContext{}, propagation.Baggage{},
 	))
 
-	var tracerProvider *sdktrace.TracerProvider
+	// Spans are always created so every request carries a trace ID for logs,
+	// problem responses and propagation; without an exporter they are never
+	// recorded.
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithResource(res),
+		sdktrace.WithSampler(sdktrace.NeverSample()),
+	)
+	//forge:begin otlp
 	if cfg.OTLPEndpoint != "" {
 		exporter, err := otlptracegrpc.New(ctx,
 			otlptracegrpc.WithEndpoint(cfg.OTLPEndpoint),
@@ -86,12 +96,8 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 			sdktrace.WithSampler(sdktrace.ParentBased(sdktrace.TraceIDRatioBased(cfg.SampleRatio))),
 			sdktrace.WithBatcher(exporter),
 		)
-	} else {
-		tracerProvider = sdktrace.NewTracerProvider(
-			sdktrace.WithResource(res),
-			sdktrace.WithSampler(sdktrace.NeverSample()),
-		)
 	}
+	//forge:end otlp
 	otel.SetTracerProvider(tracerProvider)
 
 	return &Telemetry{

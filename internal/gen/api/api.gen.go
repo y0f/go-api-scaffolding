@@ -89,9 +89,6 @@ type WidgetList struct {
 // WidgetStatus defines model for WidgetStatus.
 type WidgetStatus string
 
-// IdempotencyKey defines model for IdempotencyKey.
-type IdempotencyKey = string
-
 // Limit defines model for Limit.
 type Limit = int32
 
@@ -113,12 +110,6 @@ type ListWidgetsParams struct {
 	Offset *Offset `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// CreateWidgetParams defines parameters for CreateWidget.
-type CreateWidgetParams struct {
-	// IdempotencyKey Opaque key that makes a create request safe to retry.
-	IdempotencyKey *IdempotencyKey `json:"Idempotency-Key,omitempty"`
-}
-
 // CreateWidgetJSONRequestBody defines body for CreateWidget for application/json ContentType.
 type CreateWidgetJSONRequestBody = WidgetInput
 
@@ -132,7 +123,7 @@ type ServerInterface interface {
 	ListWidgets(w http.ResponseWriter, r *http.Request, params ListWidgetsParams)
 	// Create a widget
 	// (POST /v1/widgets)
-	CreateWidget(w http.ResponseWriter, r *http.Request, params CreateWidgetParams)
+	CreateWidget(w http.ResponseWriter, r *http.Request)
 	// Delete a widget
 	// (DELETE /v1/widgets/{id})
 	DeleteWidget(w http.ResponseWriter, r *http.Request, id WidgetID)
@@ -156,7 +147,7 @@ func (_ Unimplemented) ListWidgets(w http.ResponseWriter, r *http.Request, param
 
 // Create a widget
 // (POST /v1/widgets)
-func (_ Unimplemented) CreateWidget(w http.ResponseWriter, r *http.Request, params CreateWidgetParams) {
+func (_ Unimplemented) CreateWidget(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -236,41 +227,14 @@ func (siw *ServerInterfaceWrapper) ListWidgets(w http.ResponseWriter, r *http.Re
 // CreateWidget operation middleware
 func (siw *ServerInterfaceWrapper) CreateWidget(w http.ResponseWriter, r *http.Request) {
 
-	var err error
-	_ = err
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	r = r.WithContext(ctx)
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params CreateWidgetParams
-
-	headers := r.Header
-
-	// ------------- Optional header parameter "Idempotency-Key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Idempotency-Key")]; found {
-		var IdempotencyKey IdempotencyKey
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "Idempotency-Key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Idempotency-Key", valueList[0], &IdempotencyKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "Idempotency-Key", Err: err})
-			return
-		}
-
-		params.IdempotencyKey = &IdempotencyKey
-
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateWidget(w, r, params)
+		siw.Handler.CreateWidget(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -507,29 +471,29 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 // const string: with thousands of chunks the chained `+` fold is several
 // times slower for the Go compiler than parsing a slice literal.
 var swaggerSpec = []string{
-	"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",
+	"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",
+	"85xdA5JKRc6c32tm3f8kzdnVuvp7AA==",
 }
 
 // decodeSpec returns the embedded OpenAPI spec as raw JSON bytes,

@@ -1,6 +1,5 @@
-// Package maintenance runs periodic background cleanup tasks, such as deleting
-// expired idempotency keys and published outbox messages, so tables that grow
-// over time stay bounded.
+// Package maintenance runs periodic background cleanup tasks, so tables that
+// grow over time stay bounded.
 package maintenance
 
 import (
