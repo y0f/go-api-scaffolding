@@ -2,7 +2,8 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  cmd = "go build -o ./tmp/api ./cmd/api"
+  # Output to the directory, so Go names the binary api or api.exe per OS.
+  cmd = "go build -o ./tmp/ ./cmd/api"
   bin = "./tmp/api"
   delay = 200
   include_ext = ["go"]

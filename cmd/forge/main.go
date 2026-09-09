@@ -11,7 +11,8 @@
 //
 // Usage:
 //
-//	forge init                  # once, on a fresh clone: pick a module path and the slices to keep
+//	forge new <dir>             # clone the scaffold into dir and set it up there
+//	forge init                  # set up this clone: pick a module path and the slices to keep
 //	forge add resource <Name>
 //
 // After generating, run `task generate` and mount the resource's handler.
@@ -59,8 +60,13 @@ func main() {
 
 func run(args []string) error {
 	//forge:begin init
-	if len(args) > 0 && args[0] == "init" {
-		return runInit(args[1:])
+	if len(args) > 0 {
+		switch args[0] {
+		case "init":
+			return runInit(args[1:])
+		case "new":
+			return runNew(args[1:])
+		}
 	}
 	//forge:end init
 	if len(args) < 3 || args[0] != "add" || args[1] != "resource" {

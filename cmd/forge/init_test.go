@@ -7,16 +7,22 @@ import (
 	"testing"
 )
 
+// mark builds a marker line without spelling one out: this file is itself
+// tracked, so TestScaffoldMarkers would otherwise read these as real markers.
+func mark(prefix, kind, name string) string {
+	return prefix + " forge:" + kind + " " + name
+}
+
 func TestStripRemovesDroppedBlocksAndMarkers(t *testing.T) {
 	src := strings.Join([]string{
 		"keep 1",
-		"// forge:begin outbox",
+		mark("//", "begin", "outbox"),
 		"outbox only",
-		"// forge:end outbox",
+		mark("//", "end", "outbox"),
 		"",
-		"# forge:begin admin",
+		mark("#", "begin", "admin"),
 		"admin stays, marker goes",
-		"# forge:end admin",
+		mark("#", "end", "admin"),
 		"keep 2",
 		"",
 	}, "\n")
@@ -32,10 +38,10 @@ func TestStripRemovesDroppedBlocksAndMarkers(t *testing.T) {
 
 func TestStripRejectsBrokenMarkers(t *testing.T) {
 	for _, src := range []string{
-		"// forge:begin outbox\nx\n",
-		"x\n// forge:end outbox\n",
-		"// forge:begin outbox\n// forge:end admin\n",
-		"// forge:begin nosuch\n// forge:end nosuch\n",
+		mark("//", "begin", "outbox") + "\nx\n",
+		"x\n" + mark("//", "end", "outbox") + "\n",
+		mark("//", "begin", "outbox") + "\n" + mark("//", "end", "admin") + "\n",
+		mark("//", "begin", "nosuch") + "\n" + mark("//", "end", "nosuch") + "\n",
 	} {
 		if _, err := strip(src, nil); err == nil {
 			t.Errorf("strip(%q) accepted a broken marker", src)

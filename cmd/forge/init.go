@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path"
@@ -13,7 +14,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
+	"golang.org/x/term"
 )
 
 // A slice is an optional part of the scaffold. Its code is either a whole
@@ -80,7 +83,63 @@ var derived = []struct {
 var initPaths = []string{"cmd/forge/init.go", "cmd/forge/init_test.go", "docs/assets/logo.webp"}
 
 func init() {
-	usage = "usage: forge init | forge add resource <Name>"
+	usage = "usage: forge new <dir> | forge init | forge add resource <Name>"
+}
+
+// runNew clones the scaffold into dir and runs init there, so a project
+// starts from one command: go run <scaffold module>/cmd/forge@latest new dir.
+// Flags after dir are init's.
+func runNew(args []string) error {
+	if len(args) == 0 || strings.HasPrefix(args[0], "-") {
+		return errors.New("usage: forge new <dir> [-source git-url-or-path] [init flags]")
+	}
+	dir, rest := args[0], args[1:]
+	source := "https://" + moduleName
+	if len(rest) >= 2 && rest[0] == "-source" {
+		source, rest = rest[1], rest[2:]
+	}
+	if _, err := os.Stat(dir); err == nil { //#nosec G703 -- dir is the directory the user asked for
+		return fmt.Errorf("%s already exists", dir)
+	}
+	for _, step := range [][]string{
+		{"git", "clone", "--quiet", source, dir},
+	} {
+		if err := execStep(step...); err != nil {
+			return err
+		}
+	}
+	// The clone's history is the scaffold's, not the project's.
+	if err := os.RemoveAll(filepath.Join(dir, ".git")); err != nil { //#nosec G703 -- inside the clone just made
+		return err
+	}
+	if err := os.Chdir(dir); err != nil {
+		return err
+	}
+	// init works from git's file list, so the fresh repository stages
+	// everything first; the first commit is the user's.
+	for _, step := range [][]string{
+		{"git", "init", "--quiet"},
+		{"git", "add", "--all"},
+	} {
+		if err := execStep(step...); err != nil {
+			return err
+		}
+	}
+	viaNew = true
+	if err := runInit(rest); err != nil {
+		return err
+	}
+	fmt.Printf("\nNext: cd %s && git commit -m 'Initial commit' && task up\n", dir)
+	return nil
+}
+
+func execStep(argv ...string) error {
+	cmd := exec.Command(argv[0], argv[1:]...) //#nosec G204 G702 -- fixed argv apart from the clone source and directory the user typed
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%s: %w", strings.Join(argv, " "), err)
+	}
+	return nil
 }
 
 var markerRe = regexp.MustCompile(`\bforge:(begin|end) ([a-z]+)\b`)
@@ -110,14 +169,29 @@ func runInit(args []string) error {
 		if *module == "" {
 			return errors.New("-yes requires -module")
 		}
-	} else if err := prompt(module, dropped); err != nil {
-		return err
+	} else {
+		if !term.IsTerminal(int(os.Stdin.Fd())) && os.Getenv("ACCESSIBLE") == "" {
+			return errors.New("no terminal: pass -yes with -module and -drop, or set ACCESSIBLE=1 for line-based prompts")
+		}
+		if err := prompt(module, dropped); err != nil {
+			return err
+		}
 	}
 	if err := validateModule(*module); err != nil {
 		return err
 	}
-	return apply(*module, dropped)
+	if err := apply(*module, dropped); err != nil {
+		return err
+	}
+	if !viaNew {
+		fmt.Println("\nReview with git diff, commit, then `task up`.")
+	}
+	return nil
 }
+
+// viaNew is set when init runs as the last step of `forge new`, which prints
+// its own next step.
+var viaNew bool
 
 func prompt(module *string, dropped map[string]bool) error {
 	options := make([]huh.Option[string], 0, len(slices))
@@ -139,8 +213,22 @@ func prompt(module *string, dropped map[string]bool) error {
 			Title("Keep").
 			Description("Everything else is deleted, along with this installer. Space toggles, enter confirms.").
 			Options(options...).
+			Filterable(false).
 			Value(&keep),
 	))
+	// Space is what people reach for on a checklist; the default binding is x.
+	keys := huh.NewDefaultKeyMap()
+	keys.MultiSelect.Toggle = key.NewBinding(key.WithKeys(" ", "x"), key.WithHelp("space", "toggle"))
+	form = form.WithKeyMap(keys)
+	// ACCESSIBLE switches to plain line-based prompts, for screen readers and
+	// for terminals that cannot render the interactive form. Each of its fields
+	// buffers its own reads, so input is handed over one line at a time or the
+	// first prompt would swallow the answers meant for the ones after it. The
+	// interactive form must keep reading the console itself, so the reader is
+	// only substituted in that mode.
+	if os.Getenv("ACCESSIBLE") != "" {
+		form = form.WithAccessible(true).WithInput(lineReader{os.Stdin})
+	}
 	if err := form.Run(); err != nil {
 		return err
 	}
@@ -152,6 +240,25 @@ func prompt(module *string, dropped map[string]bool) error {
 		dropped[s.Name] = !kept[s.Name]
 	}
 	return nil
+}
+
+// lineReader returns at most one line per Read.
+type lineReader struct{ r io.Reader }
+
+func (l lineReader) Read(p []byte) (int, error) {
+	n := 0
+	for n < len(p) {
+		var b [1]byte
+		if _, err := l.r.Read(b[:]); err != nil {
+			return n, err
+		}
+		p[n] = b[0]
+		n++
+		if b[0] == '\n' {
+			break
+		}
+	}
+	return n, nil
 }
 
 var modulePathRe = regexp.MustCompile(`^[a-z0-9][a-z0-9.\-]*\.[a-z]+(/[A-Za-z0-9._\-]+)+$`)
@@ -243,10 +350,8 @@ func apply(module string, dropped map[string]bool) error {
 	)
 	for _, step := range steps {
 		fmt.Println("$", strings.Join(step, " "))
-		cmd := exec.Command(step[0], step[1:]...) //#nosec G204 -- fixed argv, no user input
-		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%s: %w", strings.Join(step, " "), err)
+		if err := execStep(step...); err != nil {
+			return err
 		}
 	}
 
@@ -259,8 +364,7 @@ func apply(module string, dropped map[string]bool) error {
 			kept = append(kept, s.Name)
 		}
 	}
-	fmt.Printf("\n%s is ready.\n  kept:    %s\n  removed: %s\n\nReview with git diff, commit, then `task up`.\n",
-		module, orNone(kept), orNone(gone))
+	fmt.Printf("\n%s is ready.\n  kept:    %s\n  removed: %s\n", module, orNone(kept), orNone(gone))
 	return nil
 }
 

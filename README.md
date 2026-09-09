@@ -47,14 +47,20 @@
 <!-- forge:begin init -->
 ## Start a project
 
+Needs Go, git, Docker and [Task](https://taskfile.dev).
+
 ```bash
-go run ./cmd/forge init
+go run github.com/y0f/go-api-scaffolding/cmd/forge@latest new myapp
+cd myapp
+task up
 ```
 
-It asks for your module path and which optional slices to keep: the example
-resource, outbox, idempotency keys, OTLP export with the Grafana stack, and
-the admin listener. Everything you do not keep is deleted, the installer
-removes itself, and the result is regenerated and built. Non-interactive:
+`new` clones the scaffold into `myapp` and asks for your module path and
+which optional slices to keep: the example resource, outbox, idempotency
+keys, OTLP export with the Grafana stack, and the admin listener. Everything
+you do not keep is deleted, the installer removes itself, and the result is
+regenerated and built. In a clone you already have, run `go run ./cmd/forge
+init` instead. Non-interactive:
 
 ```bash
 go run ./cmd/forge init -yes -module github.com/you/app -drop outbox,admin
