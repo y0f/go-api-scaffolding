@@ -11,7 +11,9 @@ func validConfig() Config {
 	c.Database.URL = "postgres://forge:forge@localhost:5432/forge"
 	c.Database.MaxConns = 10
 	c.Database.MinConns = 2
+	//forge:begin otlp
 	c.Telemetry.SampleRatio = 1
+	//forge:end otlp
 	return c
 }
 
@@ -28,7 +30,9 @@ func TestValidate(t *testing.T) {
 		{"missing database url", func(c *Config) { c.Database.URL = "" }},
 		{"min exceeds max conns", func(c *Config) { c.Database.MinConns = 99 }},
 		{"production needs verifier", func(c *Config) { c.Env = EnvProduction }},
+		//forge:begin otlp
 		{"sample ratio out of range", func(c *Config) { c.Telemetry.SampleRatio = 2 }},
+		//forge:end otlp
 		{"port out of range", func(c *Config) { c.HTTP.Port = 0 }},
 		{"zero rate limit", func(c *Config) { c.HTTP.RateLimitPerSecond = 0 }},
 		{"zero burst", func(c *Config) { c.HTTP.RateLimitBurst = 0 }},

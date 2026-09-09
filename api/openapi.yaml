@@ -3,14 +3,15 @@ info:
   title: Forge API
   version: 0.1.0
   description: |
-    Reference API surface for the Forge scaffold. The spec is the source of
-    truth: server interfaces and models are generated from this file with
-    oapi-codegen, and CI fails if the generated code drifts from it.
+    The spec is the source of truth: server interfaces and models are generated
+    from this file with oapi-codegen, and CI fails if the generated code drifts
+    from it.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
   - url: /
+# forge:begin example
 tags:
   - name: widgets
     description: Example resource demonstrating a full vertical slice.
@@ -38,8 +39,9 @@ paths:
       operationId: createWidget
       security:
         - bearerAuth: []
-      parameters:
-        - $ref: "#/components/parameters/IdempotencyKey"
+      # forge:begin idempotency
+      description: Send an Idempotency-Key header (up to 255 characters) to make the request safe to retry; the stored response is replayed for the same key and body.
+      # forge:end idempotency
       requestBody:
         required: true
         content:
@@ -107,6 +109,7 @@ paths:
           description: The widget was deleted.
         default:
           $ref: "#/components/responses/Problem"
+# forge:end example
 components:
   securitySchemes:
     bearerAuth:
@@ -114,6 +117,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
+    # forge:begin example
     Limit:
       name: limit
       in: query
@@ -143,14 +147,7 @@ components:
         type: string
         format: uuid
       description: Widget identifier.
-    IdempotencyKey:
-      name: Idempotency-Key
-      in: header
-      required: false
-      schema:
-        type: string
-        maxLength: 255
-      description: Opaque key that makes a create request safe to retry.
+    # forge:end example
   responses:
     Problem:
       description: An RFC 9457 problem document.
@@ -159,6 +156,7 @@ components:
           schema:
             $ref: "#/components/schemas/Problem"
   schemas:
+    # forge:begin example
     Widget:
       type: object
       required: [id, name, description, status, createdAt, updatedAt]
@@ -219,6 +217,7 @@ components:
         total:
           type: integer
           format: int64
+    # forge:end example
     Problem:
       type: object
       description: Problem details as defined by RFC 9457.

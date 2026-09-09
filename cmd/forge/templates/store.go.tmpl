@@ -3,7 +3,9 @@ package {{.Snake}}
 
 import (
 	"context"
+{{- if .Outbox}}
 	"encoding/json"
+{{- end}}
 	"errors"
 	"fmt"
 
@@ -12,13 +14,20 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	db "{{.Module}}/internal/gen/db"
+{{- if .Outbox}}
 	"{{.Module}}/internal/outbox"
+{{- end}}
+{{- if or .Outbox .Idempotency}}
 	"{{.Module}}/internal/platform/database"
+{{- end}}
 )
 
 // Repository is the persistence seam for {{.Snake}}.
 type Repository interface {
 	Create(ctx context.Context, in Input) (db.{{.Pascal}}, error)
+{{- if .Idempotency}}
+	CreateIdempotent(ctx context.Context, in Input, claim IdempotencyClaim) (db.{{.Pascal}}, error)
+{{- end}}
 	Get(ctx context.Context, id uuid.UUID) (db.{{.Pascal}}, error)
 	List(ctx context.Context, limit, offset int32) ([]db.{{.Pascal}}, error)
 	Delete(ctx context.Context, id uuid.UUID) error
@@ -32,27 +41,50 @@ func NewRepository(pool *pgxpool.Pool) Repository {
 	return &pgRepository{pool: pool}
 }
 
-// Create persists the {{.Snake}} and its creation event in one transaction, so
-// an event is never published for a write that rolled back.
+{{if or .Outbox .Idempotency -}}
+// Create persists the {{.Snake}}{{if .Outbox}} and its creation event{{end}} in one transaction.
 func (r *pgRepository) Create(ctx context.Context, in Input) (db.{{.Pascal}}, error) {
 	var created db.{{.Pascal}}
 	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
 		var txErr error
-		created, txErr = db.New(tx).Create{{.Pascal}}(ctx, in.Name)
-		if txErr != nil {
-			return txErr
-		}
-		event, txErr := json.Marshal(toResponse(created))
-		if txErr != nil {
-			return txErr
-		}
-		return outbox.Enqueue(ctx, tx, created.ID, "{{.Snake}}.created", event)
+		created, txErr = r.insert(ctx, tx, in)
+		return txErr
 	})
 	if err != nil {
 		return db.{{.Pascal}}{}, fmt.Errorf("create {{.Snake}}: %w", err)
 	}
 	return created, nil
 }
+
+// insert writes the row within tx, so a caller can add more to the same
+// transaction.
+func (r *pgRepository) insert(ctx context.Context, tx pgx.Tx, in Input) (db.{{.Pascal}}, error) {
+	created, err := db.New(tx).Create{{.Pascal}}(ctx, in.Name)
+	if err != nil {
+		return db.{{.Pascal}}{}, err
+	}
+{{- if .Outbox}}
+	// The event carries the API shape of the {{.Snake}}, so subscribers see
+	// what API clients see.
+	event, err := json.Marshal(toResponse(created))
+	if err != nil {
+		return db.{{.Pascal}}{}, err
+	}
+	if err := outbox.Enqueue(ctx, tx, created.ID, "{{.Snake}}.created", event); err != nil {
+		return db.{{.Pascal}}{}, err
+	}
+{{- end}}
+	return created, nil
+}
+{{- else}}
+func (r *pgRepository) Create(ctx context.Context, in Input) (db.{{.Pascal}}, error) {
+	created, err := db.New(r.pool).Create{{.Pascal}}(ctx, in.Name)
+	if err != nil {
+		return db.{{.Pascal}}{}, fmt.Errorf("create {{.Snake}}: %w", err)
+	}
+	return created, nil
+}
+{{- end}}
 
 func (r *pgRepository) Get(ctx context.Context, id uuid.UUID) (db.{{.Pascal}}, error) {
 	found, err := db.New(r.pool).Get{{.Pascal}}(ctx, id)

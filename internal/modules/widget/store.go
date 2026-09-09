@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -20,7 +18,10 @@ import (
 // Repository is the persistence seam. Swap the implementation to change the
 // datastore without touching the service or handler.
 type Repository interface {
-	Create(ctx context.Context, in Input, claim *IdempotencyClaim) (db.Widget, error)
+	Create(ctx context.Context, in Input) (db.Widget, error)
+	//forge:begin idempotency
+	CreateIdempotent(ctx context.Context, in Input, claim IdempotencyClaim) (db.Widget, error)
+	//forge:end idempotency
 	Get(ctx context.Context, id uuid.UUID) (db.Widget, error)
 	List(ctx context.Context, limit, offset int32) ([]db.Widget, int64, error)
 	Update(ctx context.Context, id uuid.UUID, in Input) (db.Widget, error)
@@ -35,55 +36,38 @@ func NewRepository(pool *pgxpool.Pool) Repository {
 	return &pgRepository{pool: pool}
 }
 
-// Create persists the widget and its creation event in one transaction. When a
-// claim is present, the idempotency key is inserted in the same transaction; if
-// a concurrent request already holds the key, the whole create is rolled back
-// and ErrIdempotencyReserved is returned so the caller replays the stored
-// response instead of creating a duplicate.
-func (r *pgRepository) Create(ctx context.Context, in Input, claim *IdempotencyClaim) (db.Widget, error) {
+// Create persists the widget, and its creation event, in one transaction.
+func (r *pgRepository) Create(ctx context.Context, in Input) (db.Widget, error) {
 	var created db.Widget
 	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
-		queries := db.New(tx)
 		var txErr error
-		created, txErr = queries.CreateWidget(ctx, in.Name, in.Description, in.Status)
-		if txErr != nil {
-			return txErr
-		}
-		// One serialization for both the event and the replayed response, so
-		// subscribers and API clients see the same shape for the same widget.
-		body, txErr := json.Marshal(toAPIWidget(created))
-		if txErr != nil {
-			return txErr
-		}
-		if txErr = outbox.Enqueue(ctx, tx, created.ID, "widget.created", body); txErr != nil {
-			return txErr
-		}
-		if claim == nil {
-			return nil
-		}
-		rows, txErr := queries.PutIdempotencyKey(ctx, db.PutIdempotencyKeyParams{
-			Key:            claim.Key,
-			RequestHash:    claim.Hash,
-			ResponseStatus: http.StatusCreated,
-			ResponseBody:   body,
-			ExpiresAt:      time.Now().Add(claim.TTL),
-		})
-		if txErr != nil {
-			return txErr
-		}
-		if rows == 0 {
-			// Another transaction holds the key. Roll the create back so the
-			// caller replays the stored response instead of duplicating.
-			return ErrIdempotencyReserved
-		}
-		return nil
+		created, txErr = r.insert(ctx, tx, in)
+		return txErr
 	})
-	switch {
-	case errors.Is(err, ErrIdempotencyReserved):
-		return db.Widget{}, ErrIdempotencyReserved
-	case err != nil:
+	if err != nil {
 		return db.Widget{}, fmt.Errorf("create widget: %w", err)
 	}
+	return created, nil
+}
+
+// insert writes the row within tx, so a caller can add more to the same
+// transaction.
+func (r *pgRepository) insert(ctx context.Context, tx pgx.Tx, in Input) (db.Widget, error) {
+	created, err := db.New(tx).CreateWidget(ctx, in.Name, in.Description, in.Status)
+	if err != nil {
+		return db.Widget{}, err
+	}
+	//forge:begin outbox
+	// The event carries the API shape of the widget, so subscribers see what
+	// API clients see.
+	event, err := json.Marshal(toAPIWidget(created))
+	if err != nil {
+		return db.Widget{}, err
+	}
+	if err := outbox.Enqueue(ctx, tx, created.ID, "widget.created", event); err != nil {
+		return db.Widget{}, err
+	}
+	//forge:end outbox
 	return created, nil
 }
 

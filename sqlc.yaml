@@ -3,9 +3,15 @@ sql:
   - engine: postgresql
     schema: migrations
     queries:
+      # forge:begin example
       - internal/modules/widget/queries.sql
+      # forge:end example
+      # forge:begin outbox
       - internal/outbox/queries.sql
+      # forge:end outbox
+      # forge:begin idempotency
       - internal/idempotency/queries.sql
+      # forge:end idempotency
     gen:
       go:
         package: db

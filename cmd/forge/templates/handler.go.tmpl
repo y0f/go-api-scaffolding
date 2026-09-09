@@ -2,15 +2,16 @@
 //
 // This handler is self-contained so the module compiles after `task generate`.
 // Mutating routes are wrapped with auth.Middleware and the service enforces
-// PermissionWrite, so they are not publicly writable; reads are
-// public, mirroring the widget example. Errors render as RFC 9457 problem+json
-// and never leak internal error text. To make it spec-first instead, add the
-// paths to api/openapi.yaml and implement the generated server interface.
+// PermissionWrite, so they are not publicly writable; reads are public. Errors
+// render as RFC 9457 problem+json and never leak internal error text. To make
+// it spec-first instead, add the paths to api/openapi.yaml and implement the
+// generated server interface.
 package {{.Snake}}
 
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -20,12 +21,18 @@ import (
 
 	"{{.Module}}/internal/auth"
 	db "{{.Module}}/internal/gen/db"
+{{- if .Idempotency}}
+	"{{.Module}}/internal/idempotency"
+{{- end}}
 	"{{.Module}}/internal/platform/problem"
 )
 
 type Handler struct {
 	service  *Service
 	verifier auth.Verifier
+{{- if .Idempotency}}
+	idempotency *idempotency.Store
+{{- end}}
 }
 
 func NewHandler(service *Service, verifier auth.Verifier) *Handler {
@@ -80,13 +87,26 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		writeBodyError(w, r, err, "cannot read request body")
+		return
+	}
 	var req createRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeBodyError(w, r, err, "invalid JSON body")
+	if err := json.Unmarshal(body, &req); err != nil {
+		problem.Status(w, r, http.StatusBadRequest, "invalid JSON body")
 		return
 	}
 	actor, _ := auth.PrincipalFrom(r.Context())
-	created, err := h.service.Create(r.Context(), actor, Input{Name: req.Name})
+	in := Input{Name: req.Name}
+{{- if .Idempotency}}
+
+	if key := r.Header.Get("Idempotency-Key"); h.idempotency != nil && key != "" {
+		h.createIdempotent(w, r, actor, in, body, key)
+		return
+	}
+{{- end}}
+	created, err := h.service.Create(r.Context(), actor, in)
 	if err != nil {
 		h.writeError(w, r, err)
 		return

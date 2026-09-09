@@ -18,8 +18,8 @@ adds ceremony that the median service does not need.
 
 Each resource is a package under `internal/modules` containing its SQL, store,
 service, and handler. Cross-cutting infrastructure is its own package under
-`internal/` (`platform/`, `server/`, `auth/`, `observability/`, `outbox/`,
-`idempotency/`). We keep light seams for swappable concerns and avoid
+`internal/` (`platform/`, `server/`, `auth/`, `observability/`, and the
+optional slices). We keep light seams for swappable concerns and avoid
 interfaces that exist only to satisfy a pattern.
 
 ## Consequences

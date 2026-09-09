@@ -10,7 +10,7 @@ import (
 )
 
 // TraceHandler injects the active span's trace and span IDs into every record,
-// so a log line links straight to its trace in Tempo. The IDs are read at emit
+// so a log line links straight to its trace. The IDs are read at emit
 // time from the context, so they always reflect the current span.
 type TraceHandler struct {
 	next slog.Handler

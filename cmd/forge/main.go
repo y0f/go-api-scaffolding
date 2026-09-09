@@ -1,7 +1,6 @@
-// Command forge is the day-2 generator. It stamps a new resource module in the
-// same vertical-slice layout as internal/modules/widget (SQL, store, service,
-// handler, test, migration), so a service keeps evolving with one command
-// instead of hand-copying boilerplate.
+// Command forge is the project's generator. It stamps a new resource module as
+// a vertical slice (SQL, store, service, handler, test, migration), so a service
+// keeps evolving with one command instead of hand-copying boilerplate.
 //
 // The generated module is secure by default but self-contained rather than
 // spec-first: writes are authenticated with auth.Middleware and authorized
@@ -12,16 +11,19 @@
 //
 // Usage:
 //
+//	forge new <dir>             # clone the scaffold into dir and set it up there
+//	forge init                  # set up this clone: pick a module path and the slices to keep
 //	forge add resource <Name>
 //
-// After generating, add the queries file to sqlc.yaml, run `task generate`, and
-// mount the resource's handler in your router.
+// After generating, run `task generate` and mount the resource's handler.
 package main
 
 import (
 	"bytes"
 	"embed"
+	"errors"
 	"fmt"
+	"go/format"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -35,11 +37,18 @@ var templateFS embed.FS
 
 const moduleName = "github.com/y0f/go-api-scaffolding"
 
+var usage = "usage: forge add resource <Name>"
+
 type resource struct {
 	Pascal string
+	Camel  string
 	Snake  string
 	Table  string
 	Module string
+	// Outbox and Idempotency are whether those packages exist in this project,
+	// so the templates only use what is there.
+	Outbox      bool
+	Idempotency bool
 }
 
 func main() {
@@ -50,8 +59,18 @@ func main() {
 }
 
 func run(args []string) error {
+	//forge:begin init
+	if len(args) > 0 {
+		switch args[0] {
+		case "init":
+			return runInit(args[1:])
+		case "new":
+			return runNew(args[1:])
+		}
+	}
+	//forge:end init
 	if len(args) < 3 || args[0] != "add" || args[1] != "resource" {
-		return fmt.Errorf("usage: forge add resource <Name>")
+		return errors.New(usage)
 	}
 	res := newResource(args[2])
 	if res.Snake == "" {
@@ -76,6 +95,12 @@ func run(args []string) error {
 		{"queries.sql.tmpl", filepath.Join(moduleDir, "queries.sql")},
 		{"migration.sql.tmpl", filepath.Join("migrations", version+"_create_"+res.Table+".sql")},
 	}
+	if res.Idempotency {
+		targets = append(targets,
+			struct{ tmpl, path string }{"idempotent.go.tmpl", filepath.Join(moduleDir, "idempotent.go")},
+			struct{ tmpl, path string }{"idempotent_test.go.tmpl", filepath.Join(moduleDir, "idempotent_test.go")},
+		)
+	}
 
 	for _, t := range targets {
 		if err := renderFile(t.tmpl, t.path, res); err != nil {
@@ -83,9 +108,35 @@ func run(args []string) error {
 		}
 		fmt.Println("created", t.path)
 	}
+	if err := registerQueries(filepath.ToSlash(filepath.Join(moduleDir, "queries.sql"))); err != nil {
+		return err
+	}
+	fmt.Println("registered the queries file in sqlc.yaml")
 
 	printNextSteps(res)
 	return nil
+}
+
+const sqlcConfig = "sqlc.yaml"
+
+// registerQueries appends path to the queries list in sqlc.yaml, so a new module
+// is picked up by `task generate` without a manual edit.
+func registerQueries(path string) error {
+	src, err := os.ReadFile(sqlcConfig)
+	if err != nil {
+		return err
+	}
+	if strings.Contains(string(src), "- "+path) {
+		return nil
+	}
+	const key = "    queries:\n"
+	i := strings.Index(string(src), key)
+	if i < 0 {
+		return fmt.Errorf("%s: no queries list found", sqlcConfig)
+	}
+	at := i + len(key)
+	out := string(src[:at]) + "      - " + path + "\n" + string(src[at:])
+	return os.WriteFile(sqlcConfig, []byte(out), 0o600) //#nosec G703 -- constant path; the inserted line comes from the validated resource name
 }
 
 // nextMigrationVersion returns the next sequential prefix for dir, matching the
@@ -129,37 +180,63 @@ func renderFile(tmplName, outPath string, res resource) error {
 	if err := tmpl.Execute(&buf, res); err != nil {
 		return fmt.Errorf("render %s: %w", tmplName, err)
 	}
+	out := buf.Bytes()
+	if strings.HasSuffix(outPath, ".go") {
+		// Canonical formatting regardless of template whitespace, so a forged
+		// module passes gofumpt untouched.
+		if out, err = format.Source(out); err != nil {
+			return fmt.Errorf("format %s: %w", outPath, err)
+		}
+	}
 	if err := os.MkdirAll(filepath.Dir(outPath), 0o750); err != nil {
 		return err
 	}
-	return os.WriteFile(outPath, buf.Bytes(), 0o600)
+	return os.WriteFile(outPath, out, 0o600)
 }
 
 func printNextSteps(res resource) {
+	mount := fmt.Sprintf("Mounts: []func(chi.Router){%s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier).Mount},",
+		res.Snake, res.Snake, res.Snake)
+	if res.Idempotency {
+		mount = fmt.Sprintf(`%sHandler := %s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier)
+       %sHandler.EnableIdempotency(idemStore)
+       Mounts: []func(chi.Router){%sHandler.Mount},`, res.Camel, res.Snake, res.Snake, res.Snake, res.Camel, res.Camel)
+	}
 	fmt.Printf(`
 Next steps:
-  1. Add the queries file to sqlc.yaml under sql[0].queries:
-       - internal/modules/%s/queries.sql
-  2. Regenerate type-safe code:
+  1. Regenerate type-safe code:
        task generate
-  3. Mount the handler from cmd/api/main.go, by appending to RouterDeps.Mounts:
-       Mounts: []func(chi.Router){%s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier).Mount},
-  4. Grant write access in internal/auth/principal.go (rolePermissions) by adding
+  2. Mount the handler in cmd/api/main.go, in server.RouterDeps:
+       %s
+     with imports "github.com/go-chi/chi/v5" and "%s/internal/modules/%s".
+  3. Grant write access in internal/auth/principal.go (rolePermissions) by adding
      %q to the roles that may write, or issue tokens carrying it as a scope.
-  5. Apply the new migration:
+  4. Apply the new migration (task up does this too):
        task migrate
-`, res.Snake, res.Snake, res.Snake, res.Snake, res.Table+":write")
+`, mount, res.Module, res.Snake, res.Table+":write")
+}
+
+func exists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 func newResource(name string) resource {
 	words := splitWords(name)
 	snake := strings.Join(words, "_")
 	pascal := toPascal(words)
+	camel := ""
+	if pascal != "" {
+		camel = strings.ToLower(pascal[:1]) + pascal[1:]
+	}
 	return resource{
-		Pascal: pascal,
-		Snake:  snake,
-		Table:  pluralize(snake),
-		Module: moduleName,
+		Pascal:      pascal,
+		Camel:       camel,
+		Snake:       snake,
+		Table:       pluralize(snake),
+		Module:      moduleName,
+		Outbox:      exists(filepath.Join("internal", "outbox")),
+		Idempotency: exists(filepath.Join("internal", "idempotency")),
 	}
 }
 
@@ -174,20 +251,29 @@ func splitWords(s string) []string {
 			cur = nil
 		}
 	}
-	for i, r := range s {
+	runes := []rune(s)
+	for i, r := range runes {
 		switch {
-		case r == '_' || r == '-' || r == ' ':
-			flush()
 		case unicode.IsUpper(r):
-			if i > 0 {
+			// A new word starts at an upper-case rune, except inside an
+			// acronym: HTTPRoute splits as http, route.
+			prevUpper := i > 0 && unicode.IsUpper(runes[i-1])
+			nextLower := i+1 < len(runes) && unicode.IsLower(runes[i+1])
+			if !prevUpper || nextLower {
 				flush()
 			}
 			cur = append(cur, r)
-		default:
+		case unicode.IsLetter(r) || unicode.IsDigit(r):
 			cur = append(cur, r)
+		default:
+			// Separators and anything that cannot be part of an identifier.
+			flush()
 		}
 	}
 	flush()
+	if len(words) == 0 || !unicode.IsLetter([]rune(words[0])[0]) {
+		return nil
+	}
 	return words
 }
 
@@ -206,9 +292,18 @@ func toPascal(words []string) string {
 
 // pluralize appends "s". It is intentionally naive; rename the table in the
 // generated migration if a different plural is needed.
+// pluralize covers the regular English forms; rename the table by hand for an
+// irregular noun.
 func pluralize(snake string) string {
-	if snake == "" {
+	switch {
+	case snake == "":
 		return ""
+	case strings.HasSuffix(snake, "s"), strings.HasSuffix(snake, "x"), strings.HasSuffix(snake, "z"),
+		strings.HasSuffix(snake, "ch"), strings.HasSuffix(snake, "sh"):
+		return snake + "es"
+	case strings.HasSuffix(snake, "y") && len(snake) > 1 && !strings.ContainsRune("aeiou", rune(snake[len(snake)-2])):
+		return snake[:len(snake)-1] + "ies"
+	default:
+		return snake + "s"
 	}
-	return snake + "s"
 }

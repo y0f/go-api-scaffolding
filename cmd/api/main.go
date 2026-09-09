@@ -1,6 +1,6 @@
 // Command api is the service entrypoint. It loads configuration, wires
-// dependencies, starts the HTTP server and the outbox relay, and shuts down
-// gracefully on SIGINT or SIGTERM.
+// dependencies, starts the HTTP server and the background workers, and shuts
+// down gracefully on SIGINT or SIGTERM.
 package main
 
 import (
@@ -47,8 +47,10 @@ func run() error {
 		ServiceName:    cfg.Telemetry.ServiceName,
 		ServiceVersion: config.Version(),
 		Environment:    cfg.Env,
-		OTLPEndpoint:   cfg.Telemetry.OTLPEndpoint,
-		SampleRatio:    cfg.Telemetry.SampleRatio,
+		//forge:begin otlp
+		OTLPEndpoint: cfg.Telemetry.OTLPEndpoint,
+		SampleRatio:  cfg.Telemetry.SampleRatio,
+		//forge:end otlp
 	})
 	if err != nil {
 		return err
@@ -89,15 +91,22 @@ func run() error {
 	}
 	authenticator := auth.NewAuthenticator(verifier)
 
-	// The worker tunables below (key TTL, relay batch and poll interval, reaper
+	//forge:begin workers
+	// The worker tunables (key TTL, relay batch and poll interval, reaper
 	// cadence, outbox retention) are fixed on purpose. Promote one to
 	// internal/config when you actually need to vary it per environment.
+	//forge:end workers
+	//forge:begin idempotency
 	idemStore := idempotency.NewStore(pool, 24*time.Hour)
-	widgetHandler := widget.NewHandler(
-		widget.NewService(widget.NewRepository(pool)),
-		idemStore,
-	)
+	//forge:end idempotency
+	//forge:begin example
+	widgetHandler := widget.NewHandler(widget.NewService(widget.NewRepository(pool)))
+	//forge:begin idempotency
+	widgetHandler.EnableIdempotency(idemStore)
+	//forge:end idempotency
+	//forge:end example
 
+	//forge:begin workers
 	// Background workers run under a context we can cancel independently of the
 	// signal context, so they are also stopped when server.Run returns early on a
 	// serve error (where the signal context is never cancelled). The deferred
@@ -106,6 +115,7 @@ func run() error {
 	workerCtx, cancelWorkers := context.WithCancel(ctx)
 	defer cancelWorkers()
 
+	//forge:begin outbox
 	relay := outbox.NewRelay(pool, outbox.LogPublisher{Logger: logger}, logger, 100, 2*time.Second)
 	relayDone := make(chan struct{})
 	go func() {
@@ -114,13 +124,17 @@ func run() error {
 			logger.Error("outbox relay stopped", slog.Any("error", err))
 		}
 	}()
+	//forge:end outbox
 
-	const outboxRetention = 7 * 24 * time.Hour
 	reaper := maintenance.NewReaper(logger, 15*time.Minute,
+		//forge:begin idempotency
 		maintenance.Task{Name: "idempotency-keys", Run: idemStore.PurgeExpired},
+		//forge:end idempotency
+		//forge:begin outbox
 		maintenance.Task{Name: "outbox-messages", Run: func(c context.Context) (int64, error) {
-			return relay.PurgePublished(c, outboxRetention)
+			return relay.PurgePublished(c, 7*24*time.Hour)
 		}},
+		//forge:end outbox
 	)
 	reaperDone := make(chan struct{})
 	go func() {
@@ -129,7 +143,9 @@ func run() error {
 			logger.Error("reaper stopped", slog.Any("error", err))
 		}
 	}()
+	//forge:end workers
 
+	//forge:begin admin
 	if cfg.Admin.Enabled {
 		admin := server.NewAdminServer(cfg.Admin)
 		go func() {
@@ -140,6 +156,7 @@ func run() error {
 		}()
 		defer shutdown(logger, "admin server", admin.Shutdown)
 	}
+	//forge:end admin
 
 	health := server.NewHealth(pool)
 	router, err := server.NewRouter(server.RouterDeps{
@@ -147,7 +164,9 @@ func run() error {
 		Telemetry:     telemetry,
 		Health:        health,
 		Authenticator: authenticator,
-		WidgetHandler: widgetHandler,
+		//forge:begin example
+		API: widgetHandler,
+		//forge:end example
 		Config: server.RouterConfig{
 			CORSAllowedOrigins: cfg.HTTP.CORSAllowedOrigins,
 			RateLimitPerSecond: cfg.HTTP.RateLimitPerSecond,
@@ -162,6 +181,7 @@ func run() error {
 
 	err = server.Run(ctx, cfg.HTTP, router, health, logger)
 
+	//forge:begin workers
 	// Stop background workers and wait for them before the deferred pool.Close
 	// runs, so in the normal case none runs a query against a closed pool.
 	// cancelWorkers also covers the serve-error path, where the signal context
@@ -171,10 +191,16 @@ func run() error {
 	cancelWorkers()
 	waitCtx, cancelWait := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelWait()
-	for _, worker := range []struct {
+	workers := []struct {
 		name string
 		done <-chan struct{}
-	}{{"outbox relay", relayDone}, {"reaper", reaperDone}} {
+	}{
+		//forge:begin outbox
+		{"outbox relay", relayDone},
+		//forge:end outbox
+		{"reaper", reaperDone},
+	}
+	for _, worker := range workers {
 		select {
 		case <-worker.done:
 		case <-waitCtx.Done():
@@ -187,6 +213,7 @@ func run() error {
 			}
 		}
 	}
+	//forge:end workers
 	return err
 }
 

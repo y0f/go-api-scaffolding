@@ -17,12 +17,14 @@ import (
 // Handler adapts HTTP to the widget service. It implements the generated
 // api.ServerInterface for the widget operations.
 type Handler struct {
-	service     *Service
+	service *Service
+	//forge:begin idempotency
 	idempotency *idempotency.Store
+	//forge:end idempotency
 }
 
-func NewHandler(service *Service, idem *idempotency.Store) *Handler {
-	return &Handler{service: service, idempotency: idem}
+func NewHandler(service *Service) *Handler {
+	return &Handler{service: service}
 }
 
 func (h *Handler) ListWidgets(w http.ResponseWriter, r *http.Request, params api.ListWidgetsParams) {
@@ -48,7 +50,7 @@ func (h *Handler) ListWidgets(w http.ResponseWriter, r *http.Request, params api
 	writeJSON(w, http.StatusOK, out)
 }
 
-func (h *Handler) CreateWidget(w http.ResponseWriter, r *http.Request, params api.CreateWidgetParams) {
+func (h *Handler) CreateWidget(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		writeBodyError(w, r, err, "cannot read request body")
@@ -60,62 +62,25 @@ func (h *Handler) CreateWidget(w http.ResponseWriter, r *http.Request, params ap
 		return
 	}
 	actor, _ := auth.PrincipalFrom(r.Context())
+	in := inputFromAPI(input)
 
-	var claim *IdempotencyClaim
-	if params.IdempotencyKey != nil && *params.IdempotencyKey != "" {
-		// Scoped to the caller: the stored key is a global primary key, so two
-		// principals picking the same Idempotency-Key value would otherwise
-		// collide, and one would be served the other's stored response.
-		key := actor.Subject + ":" + *params.IdempotencyKey
-		hash := idempotency.Hash([]byte(actor.Subject), []byte(r.URL.Path), body)
-		if h.maybeReplay(w, r, key, hash) {
-			return
-		}
-		claim = &IdempotencyClaim{Key: key, Hash: hash, TTL: h.idempotency.TTL()}
-	}
-
-	created, err := h.service.Create(r.Context(), actor, inputFromAPI(input), claim)
-	if errors.Is(err, ErrIdempotencyReserved) {
-		// A concurrent request claimed the key first; replay its stored response.
-		if h.maybeReplay(w, r, claim.Key, claim.Hash) {
-			return
-		}
-		h.writeError(w, r, err)
+	//forge:begin idempotency
+	if key := r.Header.Get("Idempotency-Key"); h.idempotency != nil && key != "" {
+		h.createIdempotent(w, r, actor, in, body, key)
 		return
 	}
+	//forge:end idempotency
+	created, err := h.service.Create(r.Context(), actor, in)
 	if err != nil {
 		h.writeError(w, r, err)
 		return
 	}
-
-	payload, err := json.Marshal(toAPIWidget(created))
-	if err != nil {
-		h.writeError(w, r, err)
-		return
-	}
-	w.Header().Set("Location", "/v1/widgets/"+created.ID.String())
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	_, _ = w.Write(payload)
+	writeCreated(w, created)
 }
 
-// maybeReplay writes a stored idempotent response when one exists for key and
-// hash. It returns true when it has written a response (a replay or a 409).
-func (h *Handler) maybeReplay(w http.ResponseWriter, r *http.Request, key, hash string) bool {
-	record, err := h.idempotency.Lookup(r.Context(), key, hash)
-	switch {
-	case errors.Is(err, idempotency.ErrConflict):
-		problem.Status(w, r, http.StatusConflict, "idempotency key already used for a different request")
-		return true
-	case err != nil:
-		h.writeError(w, r, err)
-		return true
-	case record != nil:
-		replay(w, record)
-		return true
-	default:
-		return false
-	}
+func writeCreated(w http.ResponseWriter, created db.Widget) {
+	w.Header().Set("Location", "/v1/widgets/"+created.ID.String())
+	writeJSON(w, http.StatusCreated, toAPIWidget(created))
 }
 
 func (h *Handler) GetWidget(w http.ResponseWriter, r *http.Request, id api.WidgetID) {
@@ -201,23 +166,4 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(v)
-}
-
-func replay(w http.ResponseWriter, record *idempotency.Record) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Idempotency-Replayed", "true")
-	if id := widgetIDFromBody(record.Body); id != "" {
-		w.Header().Set("Location", "/v1/widgets/"+id)
-	}
-	w.WriteHeader(record.Status)
-	// body is a previously stored JSON response, served as application/json.
-	_, _ = w.Write(record.Body) //#nosec G705
-}
-
-func widgetIDFromBody(body []byte) string {
-	var probe struct {
-		ID string `json:"id"`
-	}
-	_ = json.Unmarshal(body, &probe)
-	return probe.ID
 }

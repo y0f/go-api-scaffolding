@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,6 +74,15 @@ func SecureHeaders(next http.Handler) http.Handler {
 	})
 }
 
+// corsAllowedHeaders are the request headers a browser may send cross-origin.
+var corsAllowedHeaders = []string{
+	"Authorization",
+	"Content-Type",
+	//forge:begin idempotency
+	"Idempotency-Key",
+	//forge:end idempotency
+}
+
 // CORS reflects allowed origins. With an empty allow-list it echoes any origin
 // only when reflectAnyWhenEmpty is set (development); in production an empty list
 // means no CORS headers are sent, so the policy fails closed.
@@ -95,7 +105,7 @@ func CORS(allowed []string, reflectAnyWhenEmpty bool) func(http.Handler) http.Ha
 					h.Set("Access-Control-Allow-Origin", origin)
 					if preflight {
 						h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-						h.Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key")
+						h.Set("Access-Control-Allow-Headers", strings.Join(corsAllowedHeaders, ", "))
 						h.Set("Access-Control-Max-Age", "600")
 					}
 				}

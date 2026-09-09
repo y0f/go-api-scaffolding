@@ -17,8 +17,10 @@ type Principal struct {
 // public in this scaffold (see api/openapi.yaml), so only write permissions are
 // granted here; add read permissions when you protect the read endpoints.
 var rolePermissions = map[string][]string{
+	//forge:begin example
 	"admin":  {"widgets:write"},
 	"editor": {"widgets:write"},
+	//forge:end example
 }
 
 // HasPermission is true when any of the principal's roles grants the permission

@@ -1,13 +1,17 @@
+<!-- forge:begin init -->
 <p align="center">
   <img src="docs/assets/logo.webp" alt="Go" width="160">
 </p>
+<!-- forge:end init -->
 
 <h1 align="center">go-api-scaffolding</h1>
 
+<!-- forge:begin init -->
 <p align="center">
   A Go API service to clone, rename and build on. The production concerns are
   wired and tested; none of it is a framework.
 </p>
+<!-- forge:end init -->
 
 <p align="center">
   <a href="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml"><img src="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
@@ -20,14 +24,52 @@
 
 | | |
 |---|---|
-| HTTP | `net/http` and chi. Requests are validated against `api/openapi.yaml`, the typed server interface is generated from it, and CI fails on drift. Errors are RFC 9457 `problem+json` with the trace ID. |
+| HTTP | `net/http` and chi. Requests are validated against `api/openapi.yaml`, the typed server interface is generated from it, and CI fails on drift. Errors are RFC 9457 `problem+json` with the trace ID. Readiness-first graceful drain. |
 | Data | pgx/v5, sqlc-generated queries checked against the real schema, goose migrations embedded in the binary and run as a deploy step. |
-| Reliability | Transactional outbox with a relay, idempotency keys on unsafe requests, readiness-first graceful drain. |
 | Auth | Bearer tokens verified against JWKS (OIDC) or an RSA key. RBAC in the service layer. In development a token is minted and logged at startup. |
-| Observability | OpenTelemetry traces over OTLP, Prometheus `/metrics`, slog with `trace_id` and `span_id` on every line and secret redaction, pprof and expvar on a token-gated admin port. |
+| Observability | Prometheus `/metrics`, slog with `trace_id` and `span_id` on every line and secret redaction. |
+<!-- forge:begin otlp -->
+| Tracing | OpenTelemetry spans exported over OTLP, with a Collector, Tempo, Prometheus and Grafana compose profile. |
+<!-- forge:end otlp -->
+<!-- forge:begin outbox -->
+| Outbox | Events written in the same transaction as the state change, relayed at-least-once by a poller. |
+<!-- forge:end outbox -->
+<!-- forge:begin idempotency -->
+| Idempotency | `Idempotency-Key` on unsafe requests: the response is stored with the write and replayed on retry, scoped to the caller. |
+<!-- forge:end idempotency -->
+<!-- forge:begin admin -->
+| Admin | pprof and expvar on a separate token-gated port. |
+<!-- forge:end admin -->
 | Testing | Unit tests without a database. Integration tests on a real Postgres via testcontainers, each test on its own clone of a migrated template database. |
 | Supply chain | SHA-pinned Actions, govulncheck and CodeQL, distroless non-root image, cosign-signed releases with an SBOM. |
-| Growth | `forge add resource <Name>` stamps a new vertical slice in the same shape as the example. |
+| Growth | `forge add resource <Name>` stamps a new vertical slice. |
+
+<!-- forge:begin init -->
+## Start a project
+
+Needs Go, git, Docker and [Task](https://taskfile.dev).
+
+```bash
+go run github.com/y0f/go-api-scaffolding/cmd/forge@latest new myapp
+cd myapp
+task up
+```
+
+`new` clones the scaffold into `myapp` and asks for your module path and
+which optional slices to keep: the example resource, outbox, idempotency
+keys, OTLP export with the Grafana stack, and the admin listener. Everything
+you do not keep is deleted, the installer removes itself, and the result is
+regenerated and built. In a clone you already have, run `go run ./cmd/forge
+init` instead. Non-interactive:
+
+```bash
+go run ./cmd/forge init -yes -module github.com/you/app -drop outbox,admin
+```
+
+The `FORGE_` environment prefix and the `forge` command name stay; both are
+independent of the module path. The rest of this file describes the scaffold
+with everything kept.
+<!-- forge:end init -->
 
 ## Quickstart
 
@@ -40,6 +82,7 @@ task up          # Postgres, migrations, API on :8080
 ```
 
 The API log prints a development bearer token at startup.
+<!-- forge:begin example -->
 
 ```bash
 export TOKEN="<token from the api log>"
@@ -49,9 +92,12 @@ curl -s localhost:8080/v1/widgets
 curl -s -X POST localhost:8080/v1/widgets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
+<!-- forge:begin idempotency -->
   -H "Idempotency-Key: $(uuidgen)" \
+<!-- forge:end idempotency -->
   -d '{"name":"first"}'
 ```
+<!-- forge:end example -->
 
 `task down` stops the stack and deletes the database volume.
 
@@ -71,14 +117,16 @@ go run ./cmd/forge add resource Order
 ```
 
 This writes `internal/modules/order` (domain, store, service, handler, test,
-queries) and a migration, then prints the remaining steps: register the queries
-with sqlc, `task generate`, add the handler to `RouterDeps.Mounts`, grant the
-write permission, `task migrate`.
+queries) and a migration, registers the queries with sqlc, and prints the
+remaining steps: `task generate`, add the handler to `RouterDeps.Mounts`, grant
+the write permission, `task migrate`.
 
 Generated modules are plain chi handlers with authentication, authorization,
-validation, outbox events and `problem+json` errors. The `widget` module is the
-spec-first version of the same slice, driven by `api/openapi.yaml` with
-idempotency; move a generated module there by adding its paths to the spec.
+validation and `problem+json` errors. Make one spec-first by adding its paths
+to `api/openapi.yaml` and implementing the generated interface.
+<!-- forge:begin example -->
+The `widget` module is that spec-first form of the same slice.
+<!-- forge:end example -->
 
 ## Tasks
 
@@ -90,12 +138,16 @@ task test:race         # unit tests under the race detector (needs a C toolchain
 task test:integration  # integration tests on real Postgres (needs Docker)
 task vuln              # govulncheck
 task ci                # every gate CI runs
+<!-- forge:begin otlp -->
 task observe           # full stack with OpenTelemetry Collector, Tempo, Prometheus, Grafana
+<!-- forge:end otlp -->
 task build             # api, migrate and forge into ./bin
 ```
+<!-- forge:begin otlp -->
 
 With `task observe`, Grafana is at `http://localhost:3000` with Prometheus and
 Tempo provisioned; traces flow from the API through the Collector into Tempo.
+<!-- forge:end otlp -->
 
 The toolchain (linter, generators, scanner, live reload) is pinned in
 `tools/go.mod`, a module of its own so none of it enters the application's
@@ -114,31 +166,25 @@ internal/
   auth/          token verification, RBAC, OpenAPI authenticator
   observability/ slog handlers, OpenTelemetry, Prometheus
   platform/      pgx pool and tx helper, problem+json
+<!-- forge:begin idempotency -->
   idempotency/   store and replay for unsafe requests
+<!-- forge:end idempotency -->
+<!-- forge:begin outbox -->
   outbox/        transactional outbox and relay
+<!-- forge:end outbox -->
+<!-- forge:begin workers -->
   maintenance/   periodic reaper
-  modules/       one package per resource; widget is the example
+<!-- forge:end workers -->
+  modules/       one package per resource
   gen/           generated code, committed
   testutil/      Postgres testcontainer for integration tests
 migrations/      versioned SQL, embedded into the binaries
-deployments/     Dockerfile, docker compose, observability configs
+deployments/     Dockerfile and docker compose
 docs/            architecture and ADRs
 ```
 
 Design and reasoning: [`docs/architecture.md`](docs/architecture.md) and
 [`docs/adr`](docs/adr). Conventions for coding agents: [`AGENTS.md`](AGENTS.md).
-
-## Make it yours
-
-```bash
-grep -rl github.com/y0f/go-api-scaffolding . \
-  | xargs sed -i 's#github.com/y0f/go-api-scaffolding#github.com/you/yourapp#g'
-go mod edit -module github.com/you/yourapp
-go mod tidy
-```
-
-The `FORGE_` environment prefix and the `forge` command name are independent
-of the module path.
 
 ## Verify a release
 

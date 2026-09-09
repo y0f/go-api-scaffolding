@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -21,7 +20,7 @@ func TestRepositoryCRUD(t *testing.T) {
 	admin := auth.Principal{Subject: "tester", Roles: []string{"admin"}}
 	ctx := context.Background()
 
-	created, err := svc.Create(ctx, admin, Input{Name: "alpha", Description: "first", Status: "active"}, nil)
+	created, err := svc.Create(ctx, admin, Input{Name: "alpha", Description: "first", Status: "active"})
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
@@ -57,7 +56,7 @@ func TestRepositoryUpdate(t *testing.T) {
 	admin := auth.Principal{Subject: "tester", Roles: []string{"admin"}}
 	ctx := context.Background()
 
-	created, err := svc.Create(ctx, admin, Input{Name: "before", Description: "d", Status: "active"}, nil)
+	created, err := svc.Create(ctx, admin, Input{Name: "before", Description: "d", Status: "active"})
 	if err != nil {
 		t.Fatalf("create: %v", err)
 	}
@@ -80,30 +79,5 @@ func TestRepositoryUpdate(t *testing.T) {
 
 	if _, err := svc.Update(ctx, admin, uuid.New(), Input{Name: "missing"}); !errors.Is(err, ErrNotFound) {
 		t.Errorf("update missing = %v, want ErrNotFound", err)
-	}
-}
-
-// TestCreateReclaimsExpiredIdempotencyKey is a regression test: a key reused
-// after its TTL expired but before the reaper purges it must reclaim the stale
-// row and create the widget, not return ErrIdempotencyReserved with a lost
-// create.
-func TestCreateReclaimsExpiredIdempotencyKey(t *testing.T) {
-	t.Parallel()
-	pool := testutil.NewDB(t)
-	repo := NewRepository(pool)
-	ctx := context.Background()
-
-	expired := &IdempotencyClaim{Key: "reused", Hash: "hash-a", TTL: -time.Minute}
-	if _, err := repo.Create(ctx, Input{Name: "first", Status: "active"}, expired); err != nil {
-		t.Fatalf("first create: %v", err)
-	}
-
-	fresh := &IdempotencyClaim{Key: "reused", Hash: "hash-b", TTL: time.Hour}
-	second, err := repo.Create(ctx, Input{Name: "second", Status: "active"}, fresh)
-	if err != nil {
-		t.Fatalf("reuse after expiry: %v", err)
-	}
-	if second.Name != "second" {
-		t.Errorf("name = %q, want second", second.Name)
 	}
 }

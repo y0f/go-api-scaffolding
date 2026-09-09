@@ -25,9 +25,17 @@ task ci                # every gate CI runs
 - Handlers are plain `http.Handler`. Authorization lives in the service layer.
 - Commit messages follow Conventional Commits. Format with `task fmt`.
 - Add a test with every change.
+<!-- forge:begin init -->
+- Optional slices (example, outbox, idempotency, otlp, admin) are fenced with
+  `forge:begin <slice>` / `forge:end <slice>` markers where they touch shared
+  files; keep every block balanced and whole. `go test ./cmd/forge` checks the
+  markers, the `init` CI job builds every preset.
+<!-- forge:end init -->
 
 ## Where things live
 
 - Entry point and wiring: `cmd/api/main.go`.
 - The contract: `api/openapi.yaml`. Architecture and decisions: `docs/`.
+<!-- forge:begin example -->
 - The example slice to copy: `internal/modules/widget`.
+<!-- forge:end example -->

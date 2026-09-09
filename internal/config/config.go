@@ -17,9 +17,11 @@ const (
 )
 
 type Config struct {
-	Env       string          `env:"FORGE_ENV" envDefault:"development"`
-	HTTP      HTTPConfig      `envPrefix:"FORGE_HTTP_"`
-	Admin     AdminConfig     `envPrefix:"FORGE_ADMIN_"`
+	Env  string     `env:"FORGE_ENV" envDefault:"development"`
+	HTTP HTTPConfig `envPrefix:"FORGE_HTTP_"`
+	//forge:begin admin
+	Admin AdminConfig `envPrefix:"FORGE_ADMIN_"`
+	//forge:end admin
 	Database  DatabaseConfig  `envPrefix:"FORGE_DB_"`
 	Telemetry TelemetryConfig `envPrefix:"FORGE_OTEL_"`
 	Auth      AuthConfig      `envPrefix:"FORGE_AUTH_"`
@@ -41,6 +43,8 @@ type HTTPConfig struct {
 	MaxBodyBytes       int64         `env:"MAX_BODY_BYTES" envDefault:"1048576"`
 }
 
+//forge:begin admin
+
 // AdminConfig controls the separate introspection listener that exposes
 // pprof and expvar. It is never mounted on the public server.
 type AdminConfig struct {
@@ -49,6 +53,8 @@ type AdminConfig struct {
 	Port    int    `env:"PORT" envDefault:"6060"`
 	Token   string `env:"TOKEN"`
 }
+
+//forge:end admin
 
 type DatabaseConfig struct {
 	URL               string        `env:"URL" envDefault:"postgres://forge:forge@localhost:5432/forge?sslmode=disable"`
@@ -61,9 +67,11 @@ type DatabaseConfig struct {
 }
 
 type TelemetryConfig struct {
-	ServiceName  string  `env:"SERVICE_NAME" envDefault:"forge"`
+	ServiceName string `env:"SERVICE_NAME" envDefault:"forge"`
+	//forge:begin otlp
 	OTLPEndpoint string  `env:"OTLP_ENDPOINT"`
 	SampleRatio  float64 `env:"SAMPLE_RATIO" envDefault:"1.0"`
+	//forge:end otlp
 }
 
 // AuthConfig selects how bearer tokens are verified. Exactly one of JWKSURL or
@@ -119,12 +127,16 @@ func (c Config) Validate() error {
 	if c.IsProduction() && c.Auth.JWKSURL == "" && c.Auth.PublicKeyPath == "" {
 		errs = append(errs, errors.New("production requires FORGE_AUTH_JWKS_URL or FORGE_AUTH_PUBLIC_KEY_PATH"))
 	}
+	//forge:begin admin
 	if c.Admin.Enabled && c.Admin.Token == "" {
 		errs = append(errs, errors.New("FORGE_ADMIN_TOKEN is required when FORGE_ADMIN_ENABLED is true"))
 	}
+	//forge:end admin
+	//forge:begin otlp
 	if c.Telemetry.SampleRatio < 0 || c.Telemetry.SampleRatio > 1 {
 		errs = append(errs, fmt.Errorf("FORGE_OTEL_SAMPLE_RATIO must be in [0,1], got %v", c.Telemetry.SampleRatio))
 	}
+	//forge:end otlp
 	if c.HTTP.RateLimitPerSecond <= 0 {
 		errs = append(errs, fmt.Errorf("FORGE_HTTP_RATE_LIMIT_PER_SECOND must be > 0, got %v", c.HTTP.RateLimitPerSecond))
 	}
