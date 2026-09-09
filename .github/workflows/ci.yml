@@ -92,9 +92,26 @@ jobs:
       # broken build stage would otherwise reach main unnoticed. Build only, the
       # image is never pushed from CI.
       - run: docker build -f deployments/Dockerfile -t go-api-scaffolding:ci .
+
+  # Its own job so a broken deployments/Dockerfile does not mask the compose
+  # signal: the two are most likely to be touched in the same PR.
+  compose:
+    runs-on: ubuntu-latest
+    env:
+      # Every profile, so a service added behind a future profile keeps being
+      # validated without anyone remembering to extend this job.
+      COMPOSE_PROFILES: "*"
+    steps:
+      - uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # docker-compose.yml is only ever run by hand through `task up`, so a
       # broken service definition or interpolation would go unnoticed here.
-      - run: docker compose -f deployments/docker-compose.yml --profile observability config --quiet
+      - run: docker compose -f deployments/docker-compose.yml config --quiet
+      # config never resolves image references, so an image bump to a tag that
+      # does not exist would still reach main and only fail at `task up`.
+      - run: docker compose -f deployments/docker-compose.yml pull --quiet
 
   release-config:
     runs-on: ubuntu-latest
