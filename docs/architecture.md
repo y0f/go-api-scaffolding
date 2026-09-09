@@ -27,6 +27,9 @@ migrations/       versioned SQL, embedded into the binaries
 deployments/      Dockerfile, docker compose, observability configs
 ```
 
+Not every project keeps every package: `forge init` removes the slices you do
+not select.
+
 ## Request flow
 
 ```mermaid
@@ -35,20 +38,24 @@ flowchart LR
     request id, otel, log, recover, CORS, rate limit]
     mw --> val[OpenAPI validator
     + authentication]
-    val --> h[Widget handler]
+    val --> h[Handler]
     h --> svc[Service: RBAC + rules]
     svc --> repo[Repository]
     repo --> pg[(Postgres via pgx/sqlc)]
+    %% forge:begin outbox
     repo -. same tx .-> ob[(outbox_messages)]
     ob --> relay[Outbox relay] --> pub[Publisher]
+    %% forge:end outbox
 ```
 
 A request passes global middleware, then the OpenAPI validator checks it against
 `api/openapi.yaml` and runs the bearer authentication function for protected
 operations. The handler maps transport types to the service, which enforces
-authorization before calling the repository. Writes that emit events persist the
-event to `outbox_messages` in the same transaction; a relay publishes them
-at-least-once.
+authorization before calling the repository.
+<!-- forge:begin outbox -->
+Writes that emit events persist the event to `outbox_messages` in the same
+transaction; a relay publishes them at-least-once.
+<!-- forge:end outbox -->
 
 ## Boundaries
 
@@ -62,11 +69,18 @@ at-least-once.
 
 ## Observability
 
-Every log line carries `trace_id` and `span_id` from the active span, so any log
-backend can link a line to its trace in Tempo. Metrics are exposed at `/metrics`
-for Prometheus. Tracing is enabled by setting `FORGE_OTEL_OTLP_ENDPOINT`.
+Every log line and problem response carries the trace ID of the active span, so
+a log backend can link a line to its trace. Metrics are exposed at `/metrics`
+for Prometheus.
+<!-- forge:begin otlp -->
+Spans are exported when `FORGE_OTEL_OTLP_ENDPOINT` is set; `task observe` runs
+a Collector, Tempo, Prometheus and Grafana to receive them.
+<!-- forge:end otlp -->
 
 `/metrics`, `/livez`, and `/readyz` are unauthenticated on the public listener,
 which is the usual Prometheus and Kubernetes-probe convention; restrict them at
-the network layer in production. pprof and expvar are kept off the public
-listener entirely, on a separate token-gated admin server.
+the network layer in production.
+<!-- forge:begin admin -->
+pprof and expvar are kept off the public listener entirely, on a separate
+token-gated admin server.
+<!-- forge:end admin -->

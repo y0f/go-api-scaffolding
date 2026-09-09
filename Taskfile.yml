@@ -38,7 +38,12 @@ tasks:
     desc: Regenerate type-safe DB and API code from SQL and the OpenAPI spec
     deps: [setup]
     cmds:
-      - "{{.TOOLS}}/sqlc{{.EXT}} generate"
+      # sqlc refuses to run with no query files, which is the state of a
+      # project until its first `forge add resource`.
+      - cmd: |
+          set -- internal/*/queries.sql internal/modules/*/queries.sql
+          if [ -e "$1" ] || [ -e "$2" ]; then {{.TOOLS}}/sqlc{{.EXT}} generate; fi
+        silent: true
       - "{{.TOOLS}}/oapi-codegen{{.EXT}} --config api/oapi-codegen.yaml api/openapi.yaml"
 
   generate:check:
@@ -89,9 +94,9 @@ tasks:
     env:
       CGO_ENABLED: "0"
     cmds:
-      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY}} {{.PKG}}
-      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/migrate ./cmd/migrate
-      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/forge ./cmd/forge
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY}}{{.EXT}} {{.PKG}}
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/migrate{{.EXT}} ./cmd/migrate
+      - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/forge{{.EXT}} ./cmd/forge
 
   run:
     desc: Run the service
@@ -119,8 +124,9 @@ tasks:
     desc: Stop the docker compose stack and delete the database volume
     dir: deployments
     cmds:
-      - docker compose --profile observability down -v
+      - docker compose --profile "*" down -v
 
+  # forge:begin otlp
   observe:
     desc: Start the full stack including the OpenTelemetry and Grafana observability tools
     dir: deployments
@@ -128,6 +134,7 @@ tasks:
       FORGE_OTEL_OTLP_ENDPOINT: otel-collector:4317
     cmds:
       - docker compose --profile observability up --build -d
+  # forge:end otlp
 
   tidy:
     desc: Tidy both modules

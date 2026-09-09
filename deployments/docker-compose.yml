@@ -40,7 +40,9 @@ services:
     environment:
       FORGE_ENV: development
       FORGE_DB_URL: postgres://forge:forge@postgres:5432/forge?sslmode=disable
+      # forge:begin otlp
       FORGE_OTEL_OTLP_ENDPOINT: ${FORGE_OTEL_OTLP_ENDPOINT:-}
+      # forge:end otlp
     ports:
       - "8080:8080"
     depends_on:
@@ -49,6 +51,7 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  # forge:begin otlp
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.160.0
     profiles: ["observability"]
@@ -90,6 +93,7 @@ services:
     depends_on:
       - prometheus
       - tempo
+  # forge:end otlp
 
 volumes:
   pgdata:
