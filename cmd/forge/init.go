@@ -41,7 +41,10 @@ var slices = []slice{
 	{
 		Name:  "outbox",
 		Title: "Transactional outbox: events written with the state change, relayed by a poller",
-		Paths: []string{"internal/outbox"},
+		Paths: []string{
+			"internal/outbox",
+			"internal/modules/widget/outbox_integration_test.go",
+		},
 	},
 	{
 		Name:  "idempotency",
