@@ -42,7 +42,7 @@ func (f *fakeRepo) Delete(_ context.Context, _ uuid.UUID) error {
 
 func TestCreateRequiresWritePermission(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewService(repo, nil)
+	svc := NewService(repo)
 	_, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"viewer"}}, Input{Name: "x"}, nil)
 	if !errors.Is(err, ErrForbidden) {
 		t.Fatalf("got %v, want ErrForbidden", err)
@@ -54,7 +54,7 @@ func TestCreateRequiresWritePermission(t *testing.T) {
 
 func TestCreateAllowedForAdmin(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewService(repo, nil)
+	svc := NewService(repo)
 	got, err := svc.Create(context.Background(), auth.Principal{Roles: []string{"admin"}}, Input{Name: "x", Status: "active"}, nil)
 	if err != nil {
 		t.Fatalf("create: %v", err)
@@ -69,7 +69,7 @@ func TestCreateAllowedForAdmin(t *testing.T) {
 
 func TestUpdateRequiresPermission(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewService(repo, nil)
+	svc := NewService(repo)
 	if _, err := svc.Update(context.Background(), auth.Principal{}, uuid.New(), Input{Name: "x"}); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("got %v, want ErrForbidden", err)
 	}
@@ -80,7 +80,7 @@ func TestUpdateRequiresPermission(t *testing.T) {
 
 func TestDeleteRequiresPermission(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewService(repo, nil)
+	svc := NewService(repo)
 	if err := svc.Delete(context.Background(), auth.Principal{}, uuid.New()); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("got %v, want ErrForbidden", err)
 	}

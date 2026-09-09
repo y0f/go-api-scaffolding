@@ -2,7 +2,6 @@ package widget
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -17,12 +16,11 @@ const PermissionWrite = "widgets:write"
 // depends on the Repository interface, so it is unit-testable without a
 // database.
 type Service struct {
-	repo   Repository
-	logger *slog.Logger
+	repo Repository
 }
 
-func NewService(repo Repository, logger *slog.Logger) *Service {
-	return &Service{repo: repo, logger: logger}
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
 }
 
 func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input, claim *IdempotencyClaim) (db.Widget, error) {

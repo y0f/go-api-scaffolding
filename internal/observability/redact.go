@@ -10,7 +10,7 @@ import (
 // and "X-Auth-Token" are both caught. Extend this list for your domain.
 var sensitiveKeys = []string{
 	"password", "passwd", "secret", "token", "authorization",
-	"api_key", "apikey", "access_key", "set-cookie", "cookie",
+	"api_key", "apikey", "access_key", "cookie",
 	"ssn", "credit_card", "card_number", "cvv",
 }
 

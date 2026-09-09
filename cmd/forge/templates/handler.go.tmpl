@@ -2,7 +2,7 @@
 //
 // This handler is self-contained so the module compiles after `task generate`.
 // Mutating routes are wrapped with auth.Middleware and the service enforces
-// Permission{{.Pascal}}Write, so they are not publicly writable; reads are
+// PermissionWrite, so they are not publicly writable; reads are
 // public, mirroring the widget example. Errors render as RFC 9457 problem+json
 // and never leak internal error text. To make it spec-first instead, add the
 // paths to api/openapi.yaml and implement the generated server interface.
@@ -13,12 +13,13 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 
 	"{{.Module}}/internal/auth"
-	dbgen "{{.Module}}/internal/gen/db"
+	db "{{.Module}}/internal/gen/db"
 	"{{.Module}}/internal/platform/problem"
 )
 
@@ -32,7 +33,7 @@ func NewHandler(service *Service, verifier auth.Verifier) *Handler {
 }
 
 // Mount registers the {{.Snake}} routes on r. Reads are public; writes require a
-// valid bearer token and Permission{{.Pascal}}Write.
+// valid bearer token and PermissionWrite.
 func (h *Handler) Mount(r chi.Router) {
 	r.Route("/v1/{{.Table}}", func(r chi.Router) {
 		r.Get("/", h.list)
@@ -54,12 +55,19 @@ type response struct {
 	Name string    `json:"name"`
 }
 
-func toResponse(m dbgen.{{.Pascal}}) response {
+func toResponse(m db.{{.Pascal}}) response {
 	return response{ID: m.ID, Name: m.Name}
 }
 
 func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
-	items, err := h.service.List(r.Context(), 20, 0)
+	limit, offset := int32(20), int32(0)
+	if v, err := strconv.Atoi(r.URL.Query().Get("limit")); err == nil && v > 0 && v <= 100 {
+		limit = int32(v)
+	}
+	if v, err := strconv.Atoi(r.URL.Query().Get("offset")); err == nil && v > 0 {
+		offset = int32(v)
+	}
+	items, err := h.service.List(r.Context(), limit, offset)
 	if err != nil {
 		h.writeError(w, r, err)
 		return
@@ -74,7 +82,7 @@ func (h *Handler) list(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) create(w http.ResponseWriter, r *http.Request) {
 	var req createRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		problem.Status(w, r, http.StatusBadRequest, "invalid JSON body")
+		writeBodyError(w, r, err, "invalid JSON body")
 		return
 	}
 	actor, _ := auth.PrincipalFrom(r.Context())
@@ -116,6 +124,8 @@ func (h *Handler) delete(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) writeError(w http.ResponseWriter, r *http.Request, err error) {
 	switch {
+	case errors.Is(err, ErrInvalidInput):
+		problem.Status(w, r, http.StatusBadRequest, err.Error())
 	case errors.Is(err, ErrNotFound):
 		problem.Status(w, r, http.StatusNotFound, "{{.Snake}} not found")
 	case errors.Is(err, ErrForbidden):
@@ -124,6 +134,17 @@ func (h *Handler) writeError(w http.ResponseWriter, r *http.Request, err error) 
 		slog.ErrorContext(r.Context(), "{{.Snake}} handler error", slog.Any("error", err))
 		problem.Status(w, r, http.StatusInternalServerError, "internal server error")
 	}
+}
+
+// writeBodyError reports a body that exceeded the MaxBytes middleware limit as
+// 413 rather than a generic 400.
+func writeBodyError(w http.ResponseWriter, r *http.Request, err error, detail string) {
+	var maxBytes *http.MaxBytesError
+	if errors.As(err, &maxBytes) {
+		problem.Status(w, r, http.StatusRequestEntityTooLarge, "request body too large")
+		return
+	}
+	problem.Status(w, r, http.StatusBadRequest, detail)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

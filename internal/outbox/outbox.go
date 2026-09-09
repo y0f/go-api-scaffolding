@@ -49,8 +49,7 @@ func (p LogPublisher) Publish(ctx context.Context, msg Message) error {
 // Enqueue writes an event inside an existing transaction. Call it from the same
 // tx that persists the aggregate change.
 func Enqueue(ctx context.Context, tx pgx.Tx, aggregateID uuid.UUID, eventType string, payload []byte) error {
-	_, err := db.New(tx).EnqueueOutboxMessage(ctx, aggregateID, eventType, payload)
-	return err
+	return db.New(tx).EnqueueOutboxMessage(ctx, aggregateID, eventType, payload)
 }
 
 // Relay polls for unpublished messages and publishes them.

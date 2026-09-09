@@ -22,7 +22,7 @@ import (
 	"github.com/y0f/go-api-scaffolding/internal/testutil"
 )
 
-func newTestServer(t *testing.T) (*httptest.Server, string) {
+func newTestServer(t *testing.T) (*httptest.Server, string, *auth.DevIssuer) {
 	t.Helper()
 	pool := testutil.NewDB(t)
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
@@ -41,7 +41,7 @@ func newTestServer(t *testing.T) (*httptest.Server, string) {
 	}
 
 	handler := widget.NewHandler(
-		widget.NewService(widget.NewRepository(pool), logger),
+		widget.NewService(widget.NewRepository(pool)),
 		idempotency.NewStore(pool, time.Hour),
 	)
 	router, err := server.NewRouter(server.RouterDeps{
@@ -57,12 +57,12 @@ func newTestServer(t *testing.T) (*httptest.Server, string) {
 	}
 	srv := httptest.NewServer(router)
 	t.Cleanup(srv.Close)
-	return srv, token
+	return srv, token, issuer
 }
 
 func TestCreateRequiresAuth(t *testing.T) {
 	t.Parallel()
-	srv, _ := newTestServer(t)
+	srv, _, _ := newTestServer(t)
 
 	resp := do(t, srv, http.MethodPost, "/v1/widgets", "", "", `{"name":"x"}`)
 	defer resp.Body.Close()
@@ -73,7 +73,7 @@ func TestCreateRequiresAuth(t *testing.T) {
 
 func TestCreateAndIdempotentReplay(t *testing.T) {
 	t.Parallel()
-	srv, token := newTestServer(t)
+	srv, token, _ := newTestServer(t)
 
 	first := do(t, srv, http.MethodPost, "/v1/widgets", token, "key-1", `{"name":"alpha"}`)
 	defer first.Body.Close()
@@ -94,7 +94,7 @@ func TestCreateAndIdempotentReplay(t *testing.T) {
 
 func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
 	t.Parallel()
-	srv, token := newTestServer(t)
+	srv, token, _ := newTestServer(t)
 
 	first := do(t, srv, http.MethodPost, "/v1/widgets", token, "conflict-key", `{"name":"alpha"}`)
 	defer first.Body.Close()
@@ -115,7 +115,7 @@ func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
 
 func TestValidationRejectsBadBody(t *testing.T) {
 	t.Parallel()
-	srv, token := newTestServer(t)
+	srv, token, _ := newTestServer(t)
 
 	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, "", `{"name":""}`)
 	defer resp.Body.Close()
@@ -129,7 +129,7 @@ func TestValidationRejectsBadBody(t *testing.T) {
 
 func TestConcurrentIdempotentCreateMakesOneWidget(t *testing.T) {
 	t.Parallel()
-	srv, token := newTestServer(t)
+	srv, token, _ := newTestServer(t)
 
 	const n = 6
 	var wg sync.WaitGroup
@@ -173,7 +173,7 @@ func TestConcurrentIdempotentCreateMakesOneWidget(t *testing.T) {
 
 func TestRejectsOversizeBody(t *testing.T) {
 	t.Parallel()
-	srv, token := newTestServer(t)
+	srv, token, _ := newTestServer(t)
 
 	oversize := `{"name":"` + strings.Repeat("x", 2<<20) + `"}`
 	resp := do(t, srv, http.MethodPost, "/v1/widgets", token, "", oversize)
@@ -201,4 +201,34 @@ func do(t *testing.T, srv *httptest.Server, method, path, token, idemKey, body s
 		t.Fatalf("do request: %v", err)
 	}
 	return resp
+}
+
+func TestIdempotencyKeyIsScopedToPrincipal(t *testing.T) {
+	srv, tokenA, issuer := newTestServer(t)
+	tokenB, err := issuer.Mint("other", []string{"admin"}, time.Hour)
+	if err != nil {
+		t.Fatalf("mint: %v", err)
+	}
+
+	first := do(t, srv, http.MethodPost, "/v1/widgets", tokenA, "shared-key", `{"name":"from-a"}`)
+	defer first.Body.Close()
+	if first.StatusCode != http.StatusCreated {
+		t.Fatalf("first create status = %d, want 201", first.StatusCode)
+	}
+	firstBody, _ := io.ReadAll(first.Body)
+
+	// Same key, different caller, different body. Before the key was scoped
+	// this was a 409 (A's stored hash) or A's response replayed to B.
+	second := do(t, srv, http.MethodPost, "/v1/widgets", tokenB, "shared-key", `{"name":"from-b"}`)
+	defer second.Body.Close()
+	if second.StatusCode != http.StatusCreated {
+		t.Fatalf("second create status = %d, want 201", second.StatusCode)
+	}
+	secondBody, _ := io.ReadAll(second.Body)
+	if bytes.Equal(firstBody, secondBody) {
+		t.Fatalf("second caller received the first caller's stored response: %s", secondBody)
+	}
+	if !strings.Contains(string(secondBody), `"from-b"`) {
+		t.Fatalf("second response = %s, want the second caller's own widget", secondBody)
+	}
 }

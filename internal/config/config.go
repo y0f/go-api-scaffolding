@@ -96,7 +96,8 @@ func Load() (Config, error) {
 
 func (c Config) IsProduction() bool { return c.Env == EnvProduction }
 
-func (c Config) ServiceVersion() string { return version }
+// Version is the build version, set at link time.
+func Version() string { return version }
 
 // version is overridden at build time via -ldflags -X.
 var version = "dev"

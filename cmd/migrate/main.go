@@ -34,6 +34,11 @@ func run() error {
 	if len(os.Args) > 1 {
 		command = os.Args[1]
 	}
+	switch command {
+	case "up", "down", "status", "version":
+	default:
+		return fmt.Errorf("unknown command %q (want up, down, status or version)", command)
+	}
 
 	cfg, err := config.Load()
 	if err != nil {

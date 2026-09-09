@@ -41,7 +41,7 @@ func (a *Authenticator) Authenticate(_ context.Context, input *openapi3filter.Au
 		slog.WarnContext(req.Context(), "unexpected security scheme", slog.String("scheme", input.SecuritySchemeName))
 		return errUnauthorized
 	}
-	token := bearerToken(req.Header.Get("Authorization"))
+	token := BearerToken(req.Header.Get("Authorization"))
 	if token == "" {
 		return errUnauthorized
 	}
@@ -60,7 +60,9 @@ func (a *Authenticator) Authenticate(_ context.Context, input *openapi3filter.Au
 	return nil
 }
 
-func bearerToken(header string) string {
+// BearerToken extracts the credential from an Authorization header, returning
+// "" when the header is absent or is not a Bearer scheme.
+func BearerToken(header string) string {
 	const prefix = "Bearer "
 	if len(header) > len(prefix) && strings.EqualFold(header[:len(prefix)], prefix) {
 		return strings.TrimSpace(header[len(prefix):])

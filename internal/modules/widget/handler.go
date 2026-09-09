@@ -63,8 +63,11 @@ func (h *Handler) CreateWidget(w http.ResponseWriter, r *http.Request, params ap
 
 	var claim *IdempotencyClaim
 	if params.IdempotencyKey != nil && *params.IdempotencyKey != "" {
-		key := *params.IdempotencyKey
-		hash := idempotency.Hash([]byte(r.URL.Path), body)
+		// Scoped to the caller: the stored key is a global primary key, so two
+		// principals picking the same Idempotency-Key value would otherwise
+		// collide, and one would be served the other's stored response.
+		key := actor.Subject + ":" + *params.IdempotencyKey
+		hash := idempotency.Hash([]byte(actor.Subject), []byte(r.URL.Path), body)
 		if h.maybeReplay(w, r, key, hash) {
 			return
 		}

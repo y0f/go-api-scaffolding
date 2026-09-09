@@ -35,10 +35,6 @@ func NewRepository(pool *pgxpool.Pool) Repository {
 	return &pgRepository{pool: pool}
 }
 
-// errReserved is used only to trigger a rollback when the idempotency key was
-// already claimed by a concurrent transaction.
-var errReserved = errors.New("idempotency key reserved by another transaction")
-
 // Create persists the widget and its creation event in one transaction. When a
 // claim is present, the idempotency key is inserted in the same transaction; if
 // a concurrent request already holds the key, the whole create is rolled back
@@ -53,19 +49,17 @@ func (r *pgRepository) Create(ctx context.Context, in Input, claim *IdempotencyC
 		if txErr != nil {
 			return txErr
 		}
-		event, txErr := json.Marshal(created)
+		// One serialization for both the event and the replayed response, so
+		// subscribers and API clients see the same shape for the same widget.
+		body, txErr := json.Marshal(toAPIWidget(created))
 		if txErr != nil {
 			return txErr
 		}
-		if txErr = outbox.Enqueue(ctx, tx, created.ID, "widget.created", event); txErr != nil {
+		if txErr = outbox.Enqueue(ctx, tx, created.ID, "widget.created", body); txErr != nil {
 			return txErr
 		}
 		if claim == nil {
 			return nil
-		}
-		body, txErr := json.Marshal(toAPIWidget(created))
-		if txErr != nil {
-			return txErr
 		}
 		rows, txErr := queries.PutIdempotencyKey(ctx, db.PutIdempotencyKeyParams{
 			Key:            claim.Key,
@@ -78,12 +72,14 @@ func (r *pgRepository) Create(ctx context.Context, in Input, claim *IdempotencyC
 			return txErr
 		}
 		if rows == 0 {
-			return errReserved
+			// Another transaction holds the key. Roll the create back so the
+			// caller replays the stored response instead of duplicating.
+			return ErrIdempotencyReserved
 		}
 		return nil
 	})
 	switch {
-	case errors.Is(err, errReserved):
+	case errors.Is(err, ErrIdempotencyReserved):
 		return db.Widget{}, ErrIdempotencyReserved
 	case err != nil:
 		return db.Widget{}, fmt.Errorf("create widget: %w", err)

@@ -47,6 +47,8 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 	res, err := resource.New(ctx, resource.WithAttributes(
 		semconv.ServiceName(cfg.ServiceName),
 		semconv.ServiceVersion(cfg.ServiceVersion),
+		// Spelled out because semconv v1.26.0 still exports the older
+		// deployment.environment; this is the current name.
 		attribute.String("deployment.environment.name", cfg.Environment),
 	))
 	if err != nil {
@@ -67,12 +69,13 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 		propagation.TraceContext{}, propagation.Baggage{},
 	))
 
-	shutdowns := []func(context.Context) error{meterProvider.Shutdown}
-
 	var tracerProvider *sdktrace.TracerProvider
 	if cfg.OTLPEndpoint != "" {
 		exporter, err := otlptracegrpc.New(ctx,
 			otlptracegrpc.WithEndpoint(cfg.OTLPEndpoint),
+			// Plaintext: the endpoint is expected to be a collector on a trusted
+			// network (sidecar, or in-cluster). Supply credentials instead before
+			// pointing this across the internet.
 			otlptracegrpc.WithInsecure(),
 		)
 		if err != nil {
@@ -90,16 +93,12 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 		)
 	}
 	otel.SetTracerProvider(tracerProvider)
-	shutdowns = append(shutdowns, tracerProvider.Shutdown)
 
 	return &Telemetry{
 		Registry: registry,
+		// Traces flush before metrics: reverse order of construction.
 		shutdown: func(ctx context.Context) error {
-			var errs []error
-			for i := len(shutdowns) - 1; i >= 0; i-- {
-				errs = append(errs, shutdowns[i](ctx))
-			}
-			return errors.Join(errs...)
+			return errors.Join(tracerProvider.Shutdown(ctx), meterProvider.Shutdown(ctx))
 		},
 	}, nil
 }

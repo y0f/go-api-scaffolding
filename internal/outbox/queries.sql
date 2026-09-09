@@ -1,7 +1,6 @@
--- name: EnqueueOutboxMessage :one
+-- name: EnqueueOutboxMessage :exec
 INSERT INTO outbox_messages (aggregate_id, event_type, payload)
-VALUES ($1, $2, $3)
-RETURNING *;
+VALUES ($1, $2, $3);
 
 -- name: FetchUnpublishedOutbox :many
 SELECT * FROM outbox_messages
