@@ -8,17 +8,24 @@ processors:
   batch: {}
 
 exporters:
-  otlp/tempo:
+  otlp_grpc/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
 
 service:
   telemetry:
+    # Collector 0.123+ replaced service.telemetry.metrics.address with a
+    # readers list; prometheus.yml scrapes this endpoint.
     metrics:
-      address: 0.0.0.0:8888
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [otlp/tempo]
+      exporters: [otlp_grpc/tempo]

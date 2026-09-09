@@ -15,7 +15,10 @@ services:
       timeout: 3s
       retries: 10
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      # Postgres 18 stores data in a major-version subdirectory and refuses to
+      # start against a mount at the old /var/lib/postgresql/data path, so the
+      # volume goes one level up.
+      - pgdata:/var/lib/postgresql
 
   migrate:
     build:
@@ -78,7 +81,10 @@ services:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
       GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
     volumes:
-      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      # Only the datasources directory: mounting all of provisioning hides the
+      # image's own empty dashboards/plugins/alerting dirs and Grafana logs an
+      # error for each at startup.
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
     ports:
       - "3000:3000"
     depends_on:
