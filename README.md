@@ -24,7 +24,7 @@
 
 | | |
 |---|---|
-| HTTP | `net/http` and chi. Requests are validated against `api/openapi.yaml`, the typed server interface is generated from it, and CI fails on drift. Errors are RFC 9457 `problem+json` with the trace ID. Readiness-first graceful drain. |
+| HTTP | `net/http` and chi. Requests are validated against `api/openapi.yaml`, the typed server interface is generated from it, and CI fails on drift. Errors are RFC 9457 `problem+json` with the trace ID. Per-client rate limit that keys on the forwarded client behind proxies listed in `FORGE_HTTP_TRUSTED_PROXIES`. Readiness-first graceful drain. |
 | Data | pgx/v5, sqlc-generated queries checked against the real schema, goose migrations embedded in the binary and run as a deploy step. |
 | Auth | Bearer tokens verified against JWKS (OIDC) or an RSA key. RBAC in the service layer. In development a token is minted and logged at startup. |
 | Observability | Prometheus `/metrics`, slog with `trace_id` and `span_id` on every line and secret redaction. |

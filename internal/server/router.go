@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/netip"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
@@ -20,6 +21,7 @@ import (
 )
 
 type RouterConfig struct {
+	TrustedProxies     []netip.Prefix
 	CORSAllowedOrigins []string
 	RateLimitPerSecond float64
 	RateLimitBurst     int
@@ -54,6 +56,8 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	swagger.Servers = nil
 
 	r := chi.NewRouter()
+	// First, so the access log and the rate limiter see the client, not the proxy.
+	r.Use(RealIP(deps.Config.TrustedProxies))
 	r.Use(middleware.RequestID)
 	r.Use(otelhttp.NewMiddleware("forge"))
 	r.Use(SecureHeaders)

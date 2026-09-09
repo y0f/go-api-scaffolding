@@ -168,6 +168,7 @@ func run() error {
 		API: widgetHandler,
 		//forge:end example
 		Config: server.RouterConfig{
+			TrustedProxies:     cfg.HTTP.TrustedProxies,
 			CORSAllowedOrigins: cfg.HTTP.CORSAllowedOrigins,
 			RateLimitPerSecond: cfg.HTTP.RateLimitPerSecond,
 			RateLimitBurst:     cfg.HTTP.RateLimitBurst,

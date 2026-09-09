@@ -48,3 +48,38 @@ func TestValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadParsesTrustedProxies(t *testing.T) {
+	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "10.0.0.0/8,fd00::/8")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if len(cfg.HTTP.TrustedProxies) != 2 {
+		t.Fatalf("trusted proxies = %v, want two prefixes", cfg.HTTP.TrustedProxies)
+	}
+	if got := cfg.HTTP.TrustedProxies[0].String(); got != "10.0.0.0/8" {
+		t.Errorf("first prefix = %s, want 10.0.0.0/8", got)
+	}
+	if got := cfg.HTTP.TrustedProxies[1].String(); got != "fd00::/8" {
+		t.Errorf("second prefix = %s, want fd00::/8", got)
+	}
+}
+
+func TestLoadRejectsTrustedProxyWithoutPrefixLength(t *testing.T) {
+	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "10.0.0.1")
+	if _, err := Load(); err == nil {
+		t.Fatal("expected a parse error for a bare address without a prefix length")
+	}
+}
+
+func TestLoadDefaultsToNoTrustedProxies(t *testing.T) {
+	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if len(cfg.HTTP.TrustedProxies) != 0 {
+		t.Errorf("trusted proxies = %v, want none", cfg.HTTP.TrustedProxies)
+	}
+}

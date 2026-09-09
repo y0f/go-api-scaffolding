@@ -1,8 +1,11 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -64,5 +67,27 @@ func TestMaxBytesCapsUndeclaredBody(t *testing.T) {
 	var tooLarge *http.MaxBytesError
 	if !errors.As(readErr, &tooLarge) {
 		t.Fatalf("expected *http.MaxBytesError, got %v", readErr)
+	}
+}
+
+func TestAccessLogRecordsClientIPWithoutPort(t *testing.T) {
+	var buf bytes.Buffer
+	logger := slog.New(slog.NewJSONHandler(&buf, nil))
+	handler := AccessLog(logger)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	r := httptest.NewRequest(http.MethodGet, "/v1/widgets", nil)
+	r.RemoteAddr = "203.0.113.5:54321"
+	handler.ServeHTTP(httptest.NewRecorder(), r)
+
+	var line struct {
+		RemoteIP string `json:"remote_ip"`
+		Status   int    `json:"status"`
+	}
+	if err := json.Unmarshal(buf.Bytes(), &line); err != nil {
+		t.Fatalf("decode log line %q: %v", buf.String(), err)
+	}
+	if line.RemoteIP != "203.0.113.5" || line.Status != http.StatusOK {
+		t.Errorf("logged remote_ip=%q status=%d, want 203.0.113.5/200", line.RemoteIP, line.Status)
 	}
 }

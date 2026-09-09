@@ -31,7 +31,7 @@ func AccessLog(logger *slog.Logger) func(http.Handler) http.Handler {
 					slog.Int("bytes", wrapped.BytesWritten()),
 					slog.Duration("duration", time.Since(start)),
 					slog.String("request_id", middleware.GetReqID(r.Context())),
-					slog.String("remote_ip", r.RemoteAddr),
+					slog.String("remote_ip", clientIP(r)),
 				)
 			}()
 			next.ServeHTTP(wrapped, r)
@@ -139,8 +139,8 @@ func MaxBytes(limit int64) func(http.Handler) http.Handler {
 }
 
 // RateLimit applies a per-client-IP token bucket. Idle limiters are evicted so
-// the map does not grow without bound. Behind a trusted proxy, add an
-// X-Forwarded-For parser with an explicit trusted-proxy allow-list.
+// the map does not grow without bound. The client address is RemoteAddr, which
+// RealIP has already resolved through any trusted proxies.
 func RateLimit(perSecond float64, burst int) func(http.Handler) http.Handler {
 	limiters := newIPLimiters(rate.Limit(perSecond), burst)
 	return func(next http.Handler) http.Handler {
