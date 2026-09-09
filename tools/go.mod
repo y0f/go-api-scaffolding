@@ -2,6 +2,11 @@ module github.com/y0f/go-api-scaffolding/tools
 
 go 1.26.0
 
+// The generators embed the OpenAPI spec compressed by this release, so the
+// output only matches CI (and every other machine) when they are built with
+// the same one.
+toolchain go1.27.1
+
 tool (
 	github.com/air-verse/air
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
