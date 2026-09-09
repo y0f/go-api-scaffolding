@@ -13,50 +13,48 @@ import (
 // chain for that reason.
 //
 // Only X-Forwarded-For is consulted, and only when the connecting peer is
-// inside one of the trusted prefixes; otherwise the header is ignored, so a
-// client cannot spoof its address by sending the header directly. Walking the
-// header from the right, the first hop that is not a trusted proxy is the
+// inside one of the trusted prefixes; otherwise the request is left untouched,
+// so a client cannot spoof its address by sending the header directly. Walking
+// the header from the right, the first hop that is not a trusted proxy is the
 // client: entries left of it were supplied by the client or by proxies we do
 // not control. An empty trusted list makes the middleware a pass-through.
+//
+// The rewritten value keeps the "host:port" shape of RemoteAddr, with port 0
+// because the client's own port is unknown. Readers that split the address,
+// including otelhttp's network.peer.address attribute, would otherwise fail on
+// a bare IPv6 literal.
 func RealIP(trusted []netip.Prefix) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		if len(trusted) == 0 {
 			return next
 		}
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			peer, ok := parseAddr(r.RemoteAddr)
-			if ok && isTrusted(peer, trusted) {
-				r.RemoteAddr = resolveClientIP(r, trusted)
+			if peer, ok := parseAddr(r.RemoteAddr); ok && isTrusted(peer, trusted) {
+				client := forwardedClient(peer, r.Header, trusted)
+				r.RemoteAddr = net.JoinHostPort(client.String(), "0")
 			}
 			next.ServeHTTP(w, r)
 		})
 	}
 }
 
-// resolveClientIP returns the client address for r as a bare IP string. When
-// the peer is not a trusted proxy, or the forwarded chain yields nothing
-// usable, it falls back to the peer's own address.
-func resolveClientIP(r *http.Request, trusted []netip.Prefix) string {
-	peer, ok := parseAddr(r.RemoteAddr)
-	if !ok {
-		return r.RemoteAddr
-	}
-	if !isTrusted(peer, trusted) {
-		return peer.String()
-	}
-	hops := forwardedFor(r.Header)
+// forwardedClient returns the client behind a trusted peer by walking the
+// forwarded chain from the right. When the chain yields nothing usable, it
+// falls back to the peer itself.
+func forwardedClient(peer netip.Addr, h http.Header, trusted []netip.Prefix) netip.Addr {
+	hops := forwardedFor(h)
 	for i := len(hops) - 1; i >= 0; i-- {
 		hop, ok := parseAddr(hops[i])
 		if !ok {
 			// A trusted proxy wrote something that is not an address; do not
 			// guess, attribute the request to the proxy itself.
-			return peer.String()
+			return peer
 		}
 		if !isTrusted(hop, trusted) {
-			return hop.String()
+			return hop
 		}
 	}
-	return peer.String()
+	return peer
 }
 
 // forwardedFor flattens every X-Forwarded-For header value, in order, into

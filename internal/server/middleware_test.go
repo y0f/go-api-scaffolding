@@ -21,7 +21,8 @@ func TestClientIPStripsPort(t *testing.T) {
 }
 
 func TestRateLimitIsPerIPNotPerConnection(t *testing.T) {
-	handler := RateLimit(1, 1)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+	// A near-zero refill rate keeps the assertion independent of test timing.
+	handler := RateLimit(0.001, 1)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 
