@@ -6,6 +6,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"net/netip"
 	"time"
 
 	"github.com/caarlos0/env/v11"
@@ -41,6 +42,10 @@ type HTTPConfig struct {
 	RateLimitPerSecond float64       `env:"RATE_LIMIT_PER_SECOND" envDefault:"50"`
 	RateLimitBurst     int           `env:"RATE_LIMIT_BURST" envDefault:"100"`
 	MaxBodyBytes       int64         `env:"MAX_BODY_BYTES" envDefault:"1048576"`
+	// TrustedProxies are the CIDR ranges of reverse proxies whose
+	// X-Forwarded-For header is believed. Empty (the default) trusts nobody:
+	// the header is ignored and the TCP peer is the client.
+	TrustedProxies []netip.Prefix `env:"TRUSTED_PROXIES" envSeparator:","`
 }
 
 //forge:begin admin

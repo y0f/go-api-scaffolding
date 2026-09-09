@@ -35,7 +35,7 @@ not select.
 ```mermaid
 flowchart LR
     client[Client] --> mw[Middleware:
-    request id, otel, log, recover, CORS, rate limit]
+    real ip, request id, otel, log, recover, CORS, rate limit]
     mw --> val[OpenAPI validator
     + authentication]
     val --> h[Handler]

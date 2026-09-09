@@ -15,6 +15,11 @@ version. You can expect an acknowledgement within a few days.
 - Bearer tokens are verified against JWKS (OIDC) or a configured public key;
   the development fallback key is never used outside the development environment.
 - Logs pass through a redaction handler that scrubs known sensitive keys.
+- `X-Forwarded-For` is ignored unless the connecting peer is in
+  `FORGE_HTTP_TRUSTED_PROXIES`, so a client cannot spoof its address to the
+  rate limiter or the access log. The `client.address` attribute on traces is
+  set by otelhttp from the raw header and is not trust-filtered; rely on
+  `network.peer.address` or the access log instead.
 
 These reduce risk but do not replace your own review. Audit the auth, CORS, and
 rate-limit settings before deploying.

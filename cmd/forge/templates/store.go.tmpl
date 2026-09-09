@@ -105,6 +105,31 @@ func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]db.{{.P
 	return items, nil
 }
 
+{{if .Outbox -}}
+// Delete removes the {{.Snake}} and records its deletion event in one
+// transaction. A missing row rolls back so no event is left behind.
+func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
+		rows, txErr := db.New(tx).Delete{{.Pascal}}(ctx, id)
+		if txErr != nil {
+			return txErr
+		}
+		if rows == 0 {
+			return ErrNotFound
+		}
+		// Only the identity: the row is gone, and a subscriber that needs the
+		// last state has it from the preceding events.
+		return outbox.Enqueue(ctx, tx, id, "{{.Snake}}.deleted", []byte(`{"id":"`+id.String()+`"}`))
+	})
+	if errors.Is(err, ErrNotFound) {
+		return ErrNotFound
+	}
+	if err != nil {
+		return fmt.Errorf("delete {{.Snake}}: %w", err)
+	}
+	return nil
+}
+{{- else}}
 func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	rows, err := db.New(r.pool).Delete{{.Pascal}}(ctx, id)
 	if err != nil {
@@ -115,3 +140,4 @@ func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	}
 	return nil
 }
+{{- end}}
