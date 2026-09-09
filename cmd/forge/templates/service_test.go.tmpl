@@ -9,41 +9,41 @@ import (
 	"github.com/google/uuid"
 
 	"{{.Module}}/internal/auth"
-	dbgen "{{.Module}}/internal/gen/db"
+	db "{{.Module}}/internal/gen/db"
 )
 
 type fakeRepo struct {
-	created bool
-	last    dbgen.{{.Pascal}}
+	createCalled bool
+	last    db.{{.Pascal}}
 }
 
-func (f *fakeRepo) Create(_ context.Context, in Input) (dbgen.{{.Pascal}}, error) {
-	f.created = true
-	f.last = dbgen.{{.Pascal}}{ID: uuid.New(), Name: in.Name}
+func (f *fakeRepo) Create(_ context.Context, in Input) (db.{{.Pascal}}, error) {
+	f.createCalled = true
+	f.last = db.{{.Pascal}}{ID: uuid.New(), Name: in.Name}
 	return f.last, nil
 }
-func (f *fakeRepo) Get(_ context.Context, _ uuid.UUID) (dbgen.{{.Pascal}}, error) {
+func (f *fakeRepo) Get(_ context.Context, _ uuid.UUID) (db.{{.Pascal}}, error) {
 	return f.last, nil
 }
-func (f *fakeRepo) List(_ context.Context, _, _ int32) ([]dbgen.{{.Pascal}}, error) {
-	return []dbgen.{{.Pascal}}{f.last}, nil
+func (f *fakeRepo) List(_ context.Context, _, _ int32) ([]db.{{.Pascal}}, error) {
+	return []db.{{.Pascal}}{f.last}, nil
 }
 func (f *fakeRepo) Delete(_ context.Context, _ uuid.UUID) error { return nil }
 
 func TestServiceCreateRequiresPermission(t *testing.T) {
 	repo := &fakeRepo{}
-	svc := NewService(repo, nil)
+	svc := NewService(repo)
 	if _, err := svc.Create(context.Background(), auth.Principal{}, Input{Name: "example"}); !errors.Is(err, ErrForbidden) {
 		t.Fatalf("got %v, want ErrForbidden", err)
 	}
-	if repo.created {
+	if repo.createCalled {
 		t.Error("repository Create should not run without permission")
 	}
 }
 
 func TestServiceCreateAllowsAuthorized(t *testing.T) {
-	svc := NewService(&fakeRepo{}, nil)
-	actor := auth.Principal{Scopes: []string{Permission{{.Pascal}}Write}}
+	svc := NewService(&fakeRepo{})
+	actor := auth.Principal{Scopes: []string{PermissionWrite}}
 	got, err := svc.Create(context.Background(), actor, Input{Name: "example"})
 	if err != nil {
 		t.Fatalf("create: %v", err)

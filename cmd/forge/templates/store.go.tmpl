@@ -3,6 +3,7 @@ package {{.Snake}}
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -10,14 +11,16 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	dbgen "{{.Module}}/internal/gen/db"
+	db "{{.Module}}/internal/gen/db"
+	"{{.Module}}/internal/outbox"
+	"{{.Module}}/internal/platform/database"
 )
 
 // Repository is the persistence seam for {{.Snake}}.
 type Repository interface {
-	Create(ctx context.Context, in Input) (dbgen.{{.Pascal}}, error)
-	Get(ctx context.Context, id uuid.UUID) (dbgen.{{.Pascal}}, error)
-	List(ctx context.Context, limit, offset int32) ([]dbgen.{{.Pascal}}, error)
+	Create(ctx context.Context, in Input) (db.{{.Pascal}}, error)
+	Get(ctx context.Context, id uuid.UUID) (db.{{.Pascal}}, error)
+	List(ctx context.Context, limit, offset int32) ([]db.{{.Pascal}}, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
 
@@ -29,27 +32,41 @@ func NewRepository(pool *pgxpool.Pool) Repository {
 	return &pgRepository{pool: pool}
 }
 
-func (r *pgRepository) Create(ctx context.Context, in Input) (dbgen.{{.Pascal}}, error) {
-	created, err := dbgen.New(r.pool).Create{{.Pascal}}(ctx, in.Name)
+// Create persists the {{.Snake}} and its creation event in one transaction, so
+// an event is never published for a write that rolled back.
+func (r *pgRepository) Create(ctx context.Context, in Input) (db.{{.Pascal}}, error) {
+	var created db.{{.Pascal}}
+	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
+		var txErr error
+		created, txErr = db.New(tx).Create{{.Pascal}}(ctx, in.Name)
+		if txErr != nil {
+			return txErr
+		}
+		event, txErr := json.Marshal(toResponse(created))
+		if txErr != nil {
+			return txErr
+		}
+		return outbox.Enqueue(ctx, tx, created.ID, "{{.Snake}}.created", event)
+	})
 	if err != nil {
-		return dbgen.{{.Pascal}}{}, fmt.Errorf("create {{.Snake}}: %w", err)
+		return db.{{.Pascal}}{}, fmt.Errorf("create {{.Snake}}: %w", err)
 	}
 	return created, nil
 }
 
-func (r *pgRepository) Get(ctx context.Context, id uuid.UUID) (dbgen.{{.Pascal}}, error) {
-	found, err := dbgen.New(r.pool).Get{{.Pascal}}(ctx, id)
+func (r *pgRepository) Get(ctx context.Context, id uuid.UUID) (db.{{.Pascal}}, error) {
+	found, err := db.New(r.pool).Get{{.Pascal}}(ctx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return dbgen.{{.Pascal}}{}, ErrNotFound
+		return db.{{.Pascal}}{}, ErrNotFound
 	}
 	if err != nil {
-		return dbgen.{{.Pascal}}{}, fmt.Errorf("get {{.Snake}}: %w", err)
+		return db.{{.Pascal}}{}, fmt.Errorf("get {{.Snake}}: %w", err)
 	}
 	return found, nil
 }
 
-func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]dbgen.{{.Pascal}}, error) {
-	items, err := dbgen.New(r.pool).List{{.Pascal}}s(ctx, limit, offset)
+func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]db.{{.Pascal}}, error) {
+	items, err := db.New(r.pool).List{{.Pascal}}s(ctx, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("list {{.Snake}}: %w", err)
 	}
@@ -57,7 +74,7 @@ func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]dbgen.{
 }
 
 func (r *pgRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	rows, err := dbgen.New(r.pool).Delete{{.Pascal}}(ctx, id)
+	rows, err := db.New(r.pool).Delete{{.Pascal}}(ctx, id)
 	if err != nil {
 		return fmt.Errorf("delete {{.Snake}}: %w", err)
 	}

@@ -6,7 +6,7 @@
 cmd/
   api/        composition root: load config, wire dependencies, serve
   migrate/    apply migrations as an explicit deploy step
-  forge/      day-2 generator: forge add resource <Name>
+  forge/      day-2 generator: go run ./cmd/forge add resource <Name>
 internal/
   config/         typed, validated environment configuration
   observability/  slog (trace correlation + redaction), OpenTelemetry, Prometheus
@@ -17,9 +17,11 @@ internal/
   auth/           JWKS/RSA verification, RBAC, OpenAPI authenticator
   idempotency/    store and replay for unsafe requests
   outbox/         transactional outbox and relay
+  maintenance/    periodic reaper for expired keys and published events
   modules/
     widget/     example vertical slice (sql, store, service, handler)
   gen/            generated code (sqlc + oapi-codegen), committed
+  testutil/       Postgres testcontainer with per-test template cloning
 api/openapi.yaml  the API contract, source of truth
 migrations/       versioned SQL, embedded into the binaries
 deployments/      Dockerfile, docker compose, observability configs
@@ -50,8 +52,9 @@ at-least-once.
 
 ## Boundaries
 
-- The router, logger, and repository sit behind interfaces, so they can be
-  swapped without touching business logic.
+- The repository sits behind an interface, so business logic is unit-tested
+  with a fake. The router and logger are the standard `http.Handler` and
+  `*slog.Logger` types; there is no seam that exists only to satisfy a pattern.
 - `internal/gen` is generated and never edited by hand. CI fails if it drifts
   from `migrations/`, the query files, or `api/openapi.yaml`.
 - Each resource is one package (a vertical slice), which keeps blast radius small

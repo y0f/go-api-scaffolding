@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"strconv"
-	"strings"
 	"time"
 
+	"github.com/y0f/go-api-scaffolding/internal/auth"
 	"github.com/y0f/go-api-scaffolding/internal/config"
 )
 
@@ -36,19 +36,11 @@ func NewAdminServer(cfg config.AdminConfig) *http.Server {
 // An empty token fails closed: every request is rejected.
 func tokenGuard(token string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		provided := bearerToken(r.Header.Get("Authorization"))
+		provided := auth.BearerToken(r.Header.Get("Authorization"))
 		if token == "" || subtle.ConstantTimeCompare([]byte(provided), []byte(token)) != 1 {
 			http.Error(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func bearerToken(header string) string {
-	const prefix = "Bearer "
-	if len(header) > len(prefix) && strings.EqualFold(header[:len(prefix)], prefix) {
-		return strings.TrimSpace(header[len(prefix):])
-	}
-	return ""
 }

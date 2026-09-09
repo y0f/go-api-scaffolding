@@ -45,7 +45,7 @@ func run() error {
 
 	telemetry, err := observability.Setup(ctx, observability.TelemetryConfig{
 		ServiceName:    cfg.Telemetry.ServiceName,
-		ServiceVersion: cfg.ServiceVersion(),
+		ServiceVersion: config.Version(),
 		Environment:    cfg.Env,
 		OTLPEndpoint:   cfg.Telemetry.OTLPEndpoint,
 		SampleRatio:    cfg.Telemetry.SampleRatio,
@@ -89,9 +89,12 @@ func run() error {
 	}
 	authenticator := auth.NewAuthenticator(verifier)
 
+	// The worker tunables below (key TTL, relay batch and poll interval, reaper
+	// cadence, outbox retention) are fixed on purpose. Promote one to
+	// internal/config when you actually need to vary it per environment.
 	idemStore := idempotency.NewStore(pool, 24*time.Hour)
 	widgetHandler := widget.NewHandler(
-		widget.NewService(widget.NewRepository(pool), logger),
+		widget.NewService(widget.NewRepository(pool)),
 		idemStore,
 	)
 

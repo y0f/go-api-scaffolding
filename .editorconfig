@@ -11,8 +11,5 @@ indent_size = 2
 [*.go]
 indent_style = tab
 
-[Makefile]
-indent_style = tab
-
 [*.{md,sql}]
 trim_trailing_whitespace = false

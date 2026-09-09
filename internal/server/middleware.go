@@ -87,10 +87,12 @@ func CORS(allowed []string, reflectAnyWhenEmpty bool) func(http.Handler) http.Ha
 			origin := r.Header.Get("Origin")
 			preflight := r.Method == http.MethodOptions && r.Header.Get("Access-Control-Request-Method") != ""
 			if origin != "" {
+				// Vary goes on every origin-bearing response, allowed or not, so
+				// a shared cache never serves one origin's response to another.
+				w.Header().Add("Vary", "Origin")
 				if _, ok := set[origin]; ok || allowAny {
 					h := w.Header()
 					h.Set("Access-Control-Allow-Origin", origin)
-					h.Add("Vary", "Origin")
 					if preflight {
 						h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						h.Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Idempotency-Key")
@@ -153,11 +155,11 @@ func clientIP(r *http.Request) string {
 }
 
 type ipLimiters struct {
-	mu       sync.Mutex
-	clients  map[string]*clientLimiter
-	rate     rate.Limit
-	burst    int
-	lastSwep time.Time
+	mu        sync.Mutex
+	clients   map[string]*clientLimiter
+	rate      rate.Limit
+	burst     int
+	lastSweep time.Time
 }
 
 type clientLimiter struct {
@@ -166,20 +168,20 @@ type clientLimiter struct {
 }
 
 func newIPLimiters(r rate.Limit, burst int) *ipLimiters {
-	return &ipLimiters{clients: make(map[string]*clientLimiter), rate: r, burst: burst, lastSwep: time.Now()}
+	return &ipLimiters{clients: make(map[string]*clientLimiter), rate: r, burst: burst, lastSweep: time.Now()}
 }
 
 func (l *ipLimiters) get(key string) *rate.Limiter {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := time.Now()
-	if now.Sub(l.lastSwep) > time.Minute {
+	if now.Sub(l.lastSweep) > time.Minute {
 		for k, c := range l.clients {
 			if now.Sub(c.seen) > 3*time.Minute {
 				delete(l.clients, k)
 			}
 		}
-		l.lastSwep = now
+		l.lastSweep = now
 	}
 	c, ok := l.clients[key]
 	if !ok {

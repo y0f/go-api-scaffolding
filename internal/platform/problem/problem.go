@@ -15,18 +15,12 @@ const ContentType = "application/problem+json"
 
 // Problem is an RFC 9457 problem details object.
 type Problem struct {
-	Type     string       `json:"type"`
-	Title    string       `json:"title"`
-	Status   int          `json:"status"`
-	Detail   string       `json:"detail,omitempty"`
-	Instance string       `json:"instance,omitempty"`
-	TraceID  string       `json:"traceId,omitempty"`
-	Errors   []FieldError `json:"errors,omitempty"`
-}
-
-type FieldError struct {
-	Field   string `json:"field"`
-	Message string `json:"message"`
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Status   int    `json:"status"`
+	Detail   string `json:"detail,omitempty"`
+	Instance string `json:"instance,omitempty"`
+	TraceID  string `json:"traceId,omitempty"`
 }
 
 // New builds a problem with type "about:blank" and the standard title for the
@@ -38,17 +32,6 @@ func New(status int, detail string) *Problem {
 		Status: status,
 		Detail: detail,
 	}
-}
-
-func (p *Problem) WithType(uri, title string) *Problem {
-	p.Type = uri
-	p.Title = title
-	return p
-}
-
-func (p *Problem) WithField(field, message string) *Problem {
-	p.Errors = append(p.Errors, FieldError{Field: field, Message: message})
-	return p
 }
 
 // Write renders the problem, setting the trace ID from the request context and

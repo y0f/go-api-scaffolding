@@ -69,24 +69,14 @@ func (q *Queries) DeleteWidget(ctx context.Context, id uuid.UUID) (int64, error)
 	return result.RowsAffected(), nil
 }
 
-const enqueueOutboxMessage = `-- name: EnqueueOutboxMessage :one
+const enqueueOutboxMessage = `-- name: EnqueueOutboxMessage :exec
 INSERT INTO outbox_messages (aggregate_id, event_type, payload)
 VALUES ($1, $2, $3)
-RETURNING id, aggregate_id, event_type, payload, created_at, published_at
 `
 
-func (q *Queries) EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUID, eventType string, payload []byte) (OutboxMessage, error) {
-	row := q.db.QueryRow(ctx, enqueueOutboxMessage, aggregateID, eventType, payload)
-	var i OutboxMessage
-	err := row.Scan(
-		&i.ID,
-		&i.AggregateID,
-		&i.EventType,
-		&i.Payload,
-		&i.CreatedAt,
-		&i.PublishedAt,
-	)
-	return i, err
+func (q *Queries) EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUID, eventType string, payload []byte) error {
+	_, err := q.db.Exec(ctx, enqueueOutboxMessage, aggregateID, eventType, payload)
+	return err
 }
 
 const fetchUnpublishedOutbox = `-- name: FetchUnpublishedOutbox :many

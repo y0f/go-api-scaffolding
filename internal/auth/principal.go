@@ -21,15 +21,6 @@ var rolePermissions = map[string][]string{
 	"editor": {"widgets:write"},
 }
 
-func (p Principal) HasRole(role string) bool {
-	for _, r := range p.Roles {
-		if r == role {
-			return true
-		}
-	}
-	return false
-}
-
 // HasPermission is true when any of the principal's roles grants the permission
 // or the permission is present as an explicit token scope.
 func (p Principal) HasPermission(permission string) bool {

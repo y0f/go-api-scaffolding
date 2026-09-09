@@ -24,9 +24,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"text/template"
-	"time"
 	"unicode"
 )
 
@@ -37,7 +37,6 @@ const moduleName = "github.com/y0f/go-api-scaffolding"
 
 type resource struct {
 	Pascal string
-	Camel  string
 	Snake  string
 	Table  string
 	Module string
@@ -59,7 +58,10 @@ func run(args []string) error {
 		return fmt.Errorf("invalid resource name %q", args[2])
 	}
 
-	version := time.Now().UTC().Format("20060102150405")
+	version, err := nextMigrationVersion("migrations")
+	if err != nil {
+		return err
+	}
 	moduleDir := filepath.Join("internal", "modules", res.Snake)
 
 	targets := []struct {
@@ -84,6 +86,35 @@ func run(args []string) error {
 
 	printNextSteps(res)
 	return nil
+}
+
+// nextMigrationVersion returns the next sequential prefix for dir, matching the
+// %05d scheme goose applies in order. Timestamped versions would sort after any
+// later hand-written file and goose would then refuse to run it.
+func nextMigrationVersion(dir string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", fmt.Errorf("read %s: %w", dir, err)
+	}
+	highest := 0
+	for _, e := range entries {
+		name := e.Name()
+		if !strings.HasSuffix(name, ".sql") {
+			continue
+		}
+		prefix, _, ok := strings.Cut(name, "_")
+		if !ok {
+			continue
+		}
+		n, err := strconv.Atoi(prefix)
+		if err != nil {
+			continue
+		}
+		if n > highest {
+			highest = n
+		}
+	}
+	return fmt.Sprintf("%05d", highest+1), nil
 }
 
 func renderFile(tmplName, outPath string, res resource) error {
@@ -111,8 +142,8 @@ Next steps:
        - internal/modules/%s/queries.sql
   2. Regenerate type-safe code:
        task generate
-  3. Mount the handler in your router setup (pass the auth verifier):
-       %s.NewHandler(%s.NewService(%s.NewRepository(pool), logger), verifier).Mount(r)
+  3. Mount the handler from cmd/api/main.go, by appending to RouterDeps.Mounts:
+       Mounts: []func(chi.Router){%s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier).Mount},
   4. Grant write access in internal/auth/principal.go (rolePermissions) by adding
      %q to the roles that may write, or issue tokens carrying it as a scope.
   5. Apply the new migration:
@@ -126,7 +157,6 @@ func newResource(name string) resource {
 	pascal := toPascal(words)
 	return resource{
 		Pascal: pascal,
-		Camel:  toCamel(pascal),
 		Snake:  snake,
 		Table:  pluralize(snake),
 		Module: moduleName,
@@ -172,15 +202,6 @@ func toPascal(words []string) string {
 		b.WriteString(string(runes))
 	}
 	return b.String()
-}
-
-func toCamel(pascal string) string {
-	if pascal == "" {
-		return ""
-	}
-	runes := []rune(pascal)
-	runes[0] = unicode.ToLower(runes[0])
-	return string(runes)
 }
 
 // pluralize appends "s". It is intentionally naive; rename the table in the

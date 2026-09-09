@@ -17,7 +17,7 @@ import (
 func TestRepositoryCRUD(t *testing.T) {
 	t.Parallel()
 	pool := testutil.NewDB(t)
-	svc := NewService(NewRepository(pool), nil)
+	svc := NewService(NewRepository(pool))
 	admin := auth.Principal{Subject: "tester", Roles: []string{"admin"}}
 	ctx := context.Background()
 
@@ -53,7 +53,7 @@ func TestRepositoryCRUD(t *testing.T) {
 func TestRepositoryUpdate(t *testing.T) {
 	t.Parallel()
 	pool := testutil.NewDB(t)
-	svc := NewService(NewRepository(pool), nil)
+	svc := NewService(NewRepository(pool))
 	admin := auth.Principal{Subject: "tester", Roles: []string{"admin"}}
 	ctx := context.Background()
 

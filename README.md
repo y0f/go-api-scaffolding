@@ -1,87 +1,51 @@
 <p align="center">
-  <img src="docs/assets/logo.webp" alt="Go" width="200">
+  <img src="docs/assets/logo.webp" alt="Go" width="160">
 </p>
 
 <h1 align="center">go-api-scaffolding</h1>
 
 <p align="center">
-  A production Go API foundation you own outright: net/http and chi, pgx with sqlc,
-  an OpenAPI contract, OpenTelemetry, and a generator that keeps the codebase growing.
+  A Go API service to clone, rename and build on. The production concerns are
+  wired and tested; none of it is a framework.
 </p>
 
 <p align="center">
   <a href="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml"><img src="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pkg.go.dev/github.com/y0f/go-api-scaffolding"><img src="https://pkg.go.dev/badge/github.com/y0f/go-api-scaffolding.svg" alt="Go Reference"></a>
-  <img src="https://img.shields.io/badge/go-1.26-00ADD8?logo=go&logoColor=white" alt="Go 1.26">
+  <img src="https://img.shields.io/badge/go-1.26+-00ADD8?logo=go&logoColor=white" alt="Go 1.26+">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
 </p>
 
----
+## What you get
 
-A complete Go service with the production concerns already wired in, and a generator
-that adds new resources in the same shape, so the scaffold keeps working on day 200,
-not just day 1. Clone it, rename the module, and there is nothing to import at runtime
-and nothing to lock into.
-
-## What is wired in
-
-**HTTP**
-- Standard `net/http` handlers routed by chi, with no framework context.
-- `api/openapi.yaml` is the source of truth. Request validation and the typed
-  server interface are generated from it; CI fails if they drift.
-- RFC 9457 `application/problem+json` errors, each carrying the active trace ID.
-- Readiness-first graceful drain: `/readyz` flips to 503, then in-flight requests
-  bleed off, then the pool closes.
-
-**Data**
-- pgx/v5 with a tuned pool and a transaction helper.
-- sqlc generates type-safe queries from plain SQL checked against the real schema.
-- goose migrations, embedded into the binary and run as an explicit deploy step.
-- A transactional outbox writes events in the same transaction as the state change.
-- Idempotency keys make unsafe requests safe to retry.
-
-**Auth**
-- Bearer tokens verified against JWKS (OIDC) or a configured RSA public key.
-- Role-based access checks in the service layer, with a single seam for OPA or Casbin.
-- In development an ephemeral key is generated and a usable token is logged at startup.
-
-**Observability**
-- OpenTelemetry traces over OTLP and Prometheus metrics at `/metrics` (unauthenticated by convention; restrict it at the network layer in production).
-- slog with `trace_id` and `span_id` on every line, and a handler that redacts
-  secrets like passwords and tokens before they are logged.
-- `/livez` and `/readyz` probes, plus pprof and expvar on a separate guarded port.
-
-**Testing**
-- Integration tests run against a real Postgres via testcontainers, isolated per
-  test by cloning a migrated template database so they are safe to run in parallel.
-- Unit tests cover business logic with no database.
-
-**Supply chain**
-- GitHub Actions pinned to commit SHAs, kept current by Dependabot.
-- `govulncheck` and CodeQL gate the build; an OpenAPI and sqlc drift gate keeps
-  generated code honest.
-- A multi-stage build produces a distroless, non-root, static image.
-- GoReleaser publishes signed binaries (cosign keyless) with an SBOM.
+| | |
+|---|---|
+| HTTP | `net/http` and chi. Requests are validated against `api/openapi.yaml`, the typed server interface is generated from it, and CI fails on drift. Errors are RFC 9457 `problem+json` with the trace ID. |
+| Data | pgx/v5, sqlc-generated queries checked against the real schema, goose migrations embedded in the binary and run as a deploy step. |
+| Reliability | Transactional outbox with a relay, idempotency keys on unsafe requests, readiness-first graceful drain. |
+| Auth | Bearer tokens verified against JWKS (OIDC) or an RSA key. RBAC in the service layer. In development a token is minted and logged at startup. |
+| Observability | OpenTelemetry traces over OTLP, Prometheus `/metrics`, slog with `trace_id` and `span_id` on every line and secret redaction, pprof and expvar on a token-gated admin port. |
+| Testing | Unit tests without a database. Integration tests on a real Postgres via testcontainers, each test on its own clone of a migrated template database. |
+| Supply chain | SHA-pinned Actions, govulncheck and CodeQL, distroless non-root image, cosign-signed releases with an SBOM. |
+| Growth | `forge add resource <Name>` stamps a new vertical slice in the same shape as the example. |
 
 ## Quickstart
+
+Needs Docker and [Task](https://taskfile.dev).
 
 ```bash
 git clone https://github.com/y0f/go-api-scaffolding
 cd go-api-scaffolding
-
-task up        # builds and starts Postgres, runs migrations, starts the API
+task up          # Postgres, migrations, API on :8080
 ```
 
-The API listens on `:8080`. In development it prints a bearer token at startup;
-copy it from the logs:
+The API log prints a development bearer token at startup.
 
 ```bash
-export TOKEN="<token from the api startup log>"
+export TOKEN="<token from the api log>"
 
-# List widgets (public)
 curl -s localhost:8080/v1/widgets
 
-# Create one (requires the token)
 curl -s -X POST localhost:8080/v1/widgets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -89,80 +53,82 @@ curl -s -X POST localhost:8080/v1/widgets \
   -d '{"name":"first"}'
 ```
 
-Prefer running the binary directly? Build the toolchain and point it at any
-Postgres:
+`task down` stops the stack and deletes the database volume.
+
+To run the binary outside Docker against any Postgres, copy `.env.example` to
+`.env` (Task loads it), then:
 
 ```bash
-task setup
+task setup       # build the pinned toolchain from tools/go.mod into ./bin
 task migrate
 task run
 ```
 
-The linter, code generators, vulnerability scanner and live-reload binary are
-pinned in `tools/go.mod`, a module of its own so none of them reach the
-application's dependency graph. `task setup` builds them into `./bin`, CI builds
-the same versions from the same file, and dependabot keeps them current.
-
-See [`.env.example`](.env.example) for every setting.
-
 ## Add a resource
-
-The generator stamps a new vertical slice (SQL, store, service, handler, test, and
-a migration) in the same layout as the example `widget` module:
 
 ```bash
 go run ./cmd/forge add resource Order
 ```
 
-It prints the next steps: register the queries file with sqlc, run `task generate`,
-mount the handler (passing the auth verifier), grant the resource's write permission,
-and apply the migration with `task migrate`. Generated modules are secure by default:
-writes are authenticated and authorized and errors render as problem+json, but they
-are self-contained chi handlers rather than spec-first. The `internal/modules/widget`
-slice shows the full spec-first pattern with the generated OpenAPI server interface
-and idempotency.
+This writes `internal/modules/order` (domain, store, service, handler, test,
+queries) and a migration, then prints the remaining steps: register the queries
+with sqlc, `task generate`, add the handler to `RouterDeps.Mounts`, grant the
+write permission, `task migrate`.
 
-## Common tasks
+Generated modules are plain chi handlers with authentication, authorization,
+validation, outbox events and `problem+json` errors. The `widget` module is the
+spec-first version of the same slice, driven by `api/openapi.yaml` with
+idempotency; move a generated module there by adding its paths to the spec.
+
+## Tasks
 
 ```bash
 task generate          # regenerate sqlc and OpenAPI code
-task lint              # golangci-lint v2
-task test              # unit tests with the race detector and coverage
-task test:integration  # integration tests against real Postgres (needs Docker)
+task lint              # golangci-lint
+task test              # unit tests with coverage
+task test:race         # unit tests under the race detector (needs a C toolchain)
+task test:integration  # integration tests on real Postgres (needs Docker)
 task vuln              # govulncheck
+task ci                # every gate CI runs
 task observe           # full stack with OpenTelemetry Collector, Tempo, Prometheus, Grafana
-task build             # build api, migrate, and forge into ./bin
+task build             # api, migrate and forge into ./bin
 ```
 
-With `task observe` running, Grafana is on `http://localhost:3000` with Prometheus
-and Tempo already provisioned, and traces flow from the API through the Collector
-into Tempo.
+With `task observe`, Grafana is at `http://localhost:3000` with Prometheus and
+Tempo provisioned; traces flow from the API through the Collector into Tempo.
+
+The toolchain (linter, generators, scanner, live reload) is pinned in
+`tools/go.mod`, a module of its own so none of it enters the application's
+dependency graph. CI builds the same versions from the same file.
 
 ## Layout
 
 ```
-cmd/api        service entrypoint and composition root
-cmd/migrate    migration runner
-cmd/forge      resource generator
-internal/      config, server, auth, observability, platform, modules
-api/           the OpenAPI contract
-migrations/    versioned SQL, embedded into the binaries
-deployments/   Dockerfile, docker compose, observability configs
-docs/          architecture notes and ADRs
+cmd/api          composition root
+cmd/migrate      migration runner
+cmd/forge        resource generator and its templates
+api/             the OpenAPI contract
+internal/
+  config/        typed, validated environment configuration
+  server/        http.Server, middleware, router, health, admin
+  auth/          token verification, RBAC, OpenAPI authenticator
+  observability/ slog handlers, OpenTelemetry, Prometheus
+  platform/      pgx pool and tx helper, problem+json
+  idempotency/   store and replay for unsafe requests
+  outbox/        transactional outbox and relay
+  maintenance/   periodic reaper
+  modules/       one package per resource; widget is the example
+  gen/           generated code, committed
+  testutil/      Postgres testcontainer for integration tests
+migrations/      versioned SQL, embedded into the binaries
+deployments/     Dockerfile, docker compose, observability configs
+docs/            architecture and ADRs
 ```
 
-The architecture, request flow, and the reasoning behind each choice are in
-[`docs/architecture.md`](docs/architecture.md) and [`docs/adr`](docs/adr).
+Design and reasoning: [`docs/architecture.md`](docs/architecture.md) and
+[`docs/adr`](docs/adr). Conventions for coding agents: [`AGENTS.md`](AGENTS.md).
 
-## For AI agents
-
-An [`AGENTS.md`](AGENTS.md) describes the build and conventions for coding agents.
-Because `api/openapi.yaml` is the single source of truth, the operations convert
-cleanly into tool or function schemas for an LLM without hand-written glue.
-
-## Rename the module
-
-The module path is `github.com/y0f/go-api-scaffolding`. To make it yours:
+## Make it yours
 
 ```bash
 grep -rl github.com/y0f/go-api-scaffolding . \
@@ -171,12 +137,10 @@ go mod edit -module github.com/you/yourapp
 go mod tidy
 ```
 
-The `FORGE_` environment prefix and the `forge` generator name are independent of
-the module path; rename them too if you like.
+The `FORGE_` environment prefix and the `forge` command name are independent
+of the module path.
 
 ## Verify a release
-
-Released binaries are signed with cosign keyless signing. Verify the checksums:
 
 ```bash
 cosign verify-blob \

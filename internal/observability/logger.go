@@ -26,6 +26,9 @@ func (h *TraceHandler) Enabled(ctx context.Context, level slog.Level) bool {
 
 func (h *TraceHandler) Handle(ctx context.Context, r slog.Record) error {
 	if sc := trace.SpanContextFromContext(ctx); sc.IsValid() {
+		// A Record's attrs may share backing storage with a copy held by
+		// another handler, so it must be cloned before adding to it.
+		r = r.Clone()
 		r.AddAttrs(
 			slog.String("trace_id", sc.TraceID().String()),
 			slog.String("span_id", sc.SpanID().String()),

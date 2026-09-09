@@ -3,48 +3,49 @@ package {{.Snake}}
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/google/uuid"
 
 	"{{.Module}}/internal/auth"
-	dbgen "{{.Module}}/internal/gen/db"
+	db "{{.Module}}/internal/gen/db"
 )
 
-// Permission{{.Pascal}}Write is required to create or delete a {{.Snake}}. Grant
+// PermissionWrite is required to create or delete a {{.Snake}}. Grant
 // it to roles in internal/auth/principal.go, or issue tokens carrying it as a
 // scope.
-const Permission{{.Pascal}}Write = "{{.Table}}:write"
+const PermissionWrite = "{{.Table}}:write"
 
 // Service holds the business rules for {{.Snake}}, including authorization. It
 // depends on the Repository interface, so it is unit-testable without a
 // database.
 type Service struct {
-	repo   Repository
-	logger *slog.Logger
+	repo Repository
 }
 
-func NewService(repo Repository, logger *slog.Logger) *Service {
-	return &Service{repo: repo, logger: logger}
+func NewService(repo Repository) *Service {
+	return &Service{repo: repo}
 }
 
-func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (dbgen.{{.Pascal}}, error) {
-	if !actor.HasPermission(Permission{{.Pascal}}Write) {
-		return dbgen.{{.Pascal}}{}, ErrForbidden
+func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (db.{{.Pascal}}, error) {
+	if !actor.HasPermission(PermissionWrite) {
+		return db.{{.Pascal}}{}, ErrForbidden
+	}
+	if err := in.Validate(); err != nil {
+		return db.{{.Pascal}}{}, err
 	}
 	return s.repo.Create(ctx, in)
 }
 
-func (s *Service) Get(ctx context.Context, id uuid.UUID) (dbgen.{{.Pascal}}, error) {
+func (s *Service) Get(ctx context.Context, id uuid.UUID) (db.{{.Pascal}}, error) {
 	return s.repo.Get(ctx, id)
 }
 
-func (s *Service) List(ctx context.Context, limit, offset int32) ([]dbgen.{{.Pascal}}, error) {
+func (s *Service) List(ctx context.Context, limit, offset int32) ([]db.{{.Pascal}}, error) {
 	return s.repo.List(ctx, limit, offset)
 }
 
 func (s *Service) Delete(ctx context.Context, actor auth.Principal, id uuid.UUID) error {
-	if !actor.HasPermission(Permission{{.Pascal}}Write) {
+	if !actor.HasPermission(PermissionWrite) {
 		return ErrForbidden
 	}
 	return s.repo.Delete(ctx, id)

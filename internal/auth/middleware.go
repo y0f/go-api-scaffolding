@@ -17,7 +17,7 @@ import (
 func Middleware(v Verifier) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := bearerToken(r.Header.Get("Authorization"))
+			token := BearerToken(r.Header.Get("Authorization"))
 			if token == "" {
 				problem.Status(w, r, http.StatusUnauthorized, "unauthorized")
 				return

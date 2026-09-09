@@ -1,5 +1,9 @@
 version: "3"
 
+# Loaded for every task, so the .env described in .env.example is what
+# `task run`, `task dev` and `task migrate` actually read.
+dotenv: [".env"]
+
 vars:
   BINARY: api
   # Developer tools are pinned in tools/go.mod and built into ./bin, so the
@@ -11,9 +15,6 @@ vars:
   VERSION:
     sh: git describe --tags --always --dirty 2>/dev/null || echo dev
   LDFLAGS: -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{.VERSION}}
-
-env:
-  CGO_ENABLED: "0"
 
 tasks:
   default:
@@ -65,17 +66,28 @@ tasks:
       - "{{.TOOLS}}/govulncheck{{.EXT}} ./..."
 
   test:
-    desc: Run unit tests with the race detector and coverage
+    desc: Run unit tests with coverage
     cmds:
-      - go test -race -shuffle=on -covermode=atomic -coverprofile=coverage.out ./...
+      - go test -shuffle=on -covermode=atomic -coverprofile=coverage.out ./...
+
+  test:race:
+    desc: Run unit tests under the race detector (needs a C toolchain, as CI has)
+    env:
+      CGO_ENABLED: "1"
+    cmds:
+      - go test -race -shuffle=on ./...
 
   test:integration:
     desc: Run integration tests against a real Postgres (requires Docker)
     cmds:
-      - go test -tags integration -race -count=1 ./...
+      - go test -tags integration -count=1 ./...
 
   build:
-    desc: Build the service and tools into ./bin
+    desc: Build api, migrate and forge into ./bin
+    # Static binaries for the distroless image. Not global: the test tasks use
+    # -race, which requires cgo.
+    env:
+      CGO_ENABLED: "0"
     cmds:
       - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY}} {{.PKG}}
       - go build -trimpath -ldflags "{{.LDFLAGS}}" -o bin/migrate ./cmd/migrate
@@ -104,7 +116,7 @@ tasks:
       - docker compose up --build -d
 
   down:
-    desc: Stop the docker compose stack
+    desc: Stop the docker compose stack and delete the database volume
     dir: deployments
     cmds:
       - docker compose --profile observability down -v
@@ -118,13 +130,17 @@ tasks:
       - docker compose --profile observability up --build -d
 
   tidy:
+    desc: Tidy both modules
     cmds:
       - go mod tidy
+      - go -C tools mod tidy
 
   ci:
     desc: Run the same gates as CI
     cmds:
       - task: lint
       - task: vuln
+      - task: generate:check
       - task: test
+      - task: test:integration
       - task: build

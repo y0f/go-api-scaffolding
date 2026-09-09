@@ -240,16 +240,3 @@ components:
         traceId:
           type: string
           description: Correlates this response with a distributed trace.
-        errors:
-          type: array
-          description: Field-level validation failures.
-          items:
-            $ref: "#/components/schemas/FieldError"
-    FieldError:
-      type: object
-      required: [field, message]
-      properties:
-        field:
-          type: string
-        message:
-          type: string

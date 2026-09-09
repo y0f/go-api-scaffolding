@@ -16,7 +16,7 @@ type Querier interface {
 	CreateWidget(ctx context.Context, name string, description string, status string) (Widget, error)
 	DeletePublishedOutboxBefore(ctx context.Context, before time.Time) (int64, error)
 	DeleteWidget(ctx context.Context, id uuid.UUID) (int64, error)
-	EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUID, eventType string, payload []byte) (OutboxMessage, error)
+	EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUID, eventType string, payload []byte) error
 	FetchUnpublishedOutbox(ctx context.Context, limit int32) ([]OutboxMessage, error)
 	GetIdempotencyKey(ctx context.Context, key string) (IdempotencyKey, error)
 	GetWidget(ctx context.Context, id uuid.UUID) (Widget, error)
