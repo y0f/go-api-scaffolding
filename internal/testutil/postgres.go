@@ -37,7 +37,9 @@ var (
 // template into its own database, which makes the integration tests safe to run
 // in parallel at full speed.
 func start(ctx context.Context) {
-	container, err := postgres.Run(ctx, "postgres:17-alpine",
+	// The same major as deployments/docker-compose.yml, so the tests exercise
+	// the Postgres the service is developed and shipped against.
+	container, err := postgres.Run(ctx, "postgres:18-alpine",
 		postgres.WithDatabase("postgres"),
 		postgres.WithUsername("forge"),
 		postgres.WithPassword("forge"),

@@ -4,5 +4,9 @@ package migrations
 
 import "embed"
 
-//go:embed *.sql
+// Every file rather than *.sql: an embed pattern that matches nothing is a
+// compile error, and a project has no migrations until its first resource.
+// goose only runs files with a numeric version prefix, so this file is inert.
+//
+//go:embed *
 var FS embed.FS

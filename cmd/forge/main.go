@@ -290,8 +290,6 @@ func toPascal(words []string) string {
 	return b.String()
 }
 
-// pluralize appends "s". It is intentionally naive; rename the table in the
-// generated migration if a different plural is needed.
 // pluralize covers the regular English forms; rename the table by hand for an
 // irregular noun.
 func pluralize(snake string) string {

@@ -40,6 +40,11 @@ func TestCreateAndIdempotentReplay(t *testing.T) {
 	if second.Header.Get("Location") != first.Header.Get("Location") {
 		t.Errorf("replay Location = %q, want %q", second.Header.Get("Location"), first.Header.Get("Location"))
 	}
+	firstBody, _ := io.ReadAll(first.Body)
+	secondBody, _ := io.ReadAll(second.Body)
+	if !bytes.Equal(firstBody, secondBody) {
+		t.Errorf("replay body differs from the original:\n%q\n%q", secondBody, firstBody)
+	}
 }
 
 func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
@@ -70,9 +75,9 @@ func TestConcurrentIdempotentCreateMakesOneWidget(t *testing.T) {
 	const n = 6
 	var wg sync.WaitGroup
 	codes := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		wg.Add(1)
-		go func(i int) {
+		go func() {
 			defer wg.Done()
 			req, err := http.NewRequest(http.MethodPost, srv.URL+"/v1/widgets", strings.NewReader(`{"name":"race"}`))
 			if err != nil {
@@ -89,7 +94,7 @@ func TestConcurrentIdempotentCreateMakesOneWidget(t *testing.T) {
 			}
 			codes[i] = resp.StatusCode
 			resp.Body.Close()
-		}(i)
+		}()
 	}
 	wg.Wait()
 

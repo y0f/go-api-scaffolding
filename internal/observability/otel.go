@@ -7,14 +7,13 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	otelprom "go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.43.0"
 )
 
 // TelemetryConfig configures tracing and metrics.
@@ -50,9 +49,7 @@ func Setup(ctx context.Context, cfg TelemetryConfig) (*Telemetry, error) {
 	res, err := resource.New(ctx, resource.WithAttributes(
 		semconv.ServiceName(cfg.ServiceName),
 		semconv.ServiceVersion(cfg.ServiceVersion),
-		// Spelled out because semconv v1.26.0 still exports the older
-		// deployment.environment; this is the current name.
-		attribute.String("deployment.environment.name", cfg.Environment),
+		semconv.DeploymentEnvironmentNameKey.String(cfg.Environment),
 	))
 	if err != nil {
 		return nil, fmt.Errorf("build otel resource: %w", err)

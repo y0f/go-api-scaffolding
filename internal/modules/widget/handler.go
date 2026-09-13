@@ -162,8 +162,16 @@ func writeBodyError(w http.ResponseWriter, r *http.Request, err error, badReques
 	problem.Status(w, r, http.StatusBadRequest, badRequestMsg)
 }
 
+// writeJSON marshals rather than streams so the bytes are exactly what an
+// idempotent replay stores and serves back: json.Encoder would append a
+// newline the stored copy does not have.
 func writeJSON(w http.ResponseWriter, status int, v any) {
+	body, err := json.Marshal(v)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(v)
+	_, _ = w.Write(body)
 }

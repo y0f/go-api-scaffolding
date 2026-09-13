@@ -14,6 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
+	spec "github.com/y0f/go-api-scaffolding/api"
 	"github.com/y0f/go-api-scaffolding/internal/auth"
 	api "github.com/y0f/go-api-scaffolding/internal/gen/api"
 	"github.com/y0f/go-api-scaffolding/internal/observability"
@@ -79,6 +80,8 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	r.Get("/livez", deps.Health.Livez)
 	r.Get("/readyz", deps.Health.Readyz)
 	r.Handle("/metrics", promhttp.HandlerFor(deps.Telemetry.Registry, promhttp.HandlerOpts{}))
+	r.Get("/openapi.yaml", SpecHandler(spec.OpenAPI))
+	r.Get("/docs", DocsHandler)
 
 	// The validator enforces the contract (params, bodies, enums) and runs the
 	// security scheme's authentication function for protected operations.

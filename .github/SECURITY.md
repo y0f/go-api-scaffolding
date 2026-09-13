@@ -7,7 +7,7 @@ Please report security issues privately through GitHub's
 rather than opening a public issue. Include reproduction steps and the affected
 version. You can expect an acknowledgement within a few days.
 
-## What this scaffold gives you
+## What this service does
 
 - `govulncheck` runs in CI and fails on reachable vulnerabilities.
 - GitHub Actions are pinned to commit SHAs, and Dependabot keeps them current.

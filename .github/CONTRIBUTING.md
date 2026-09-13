@@ -36,6 +36,9 @@ output. CI fails if `internal/gen` is out of date with its sources.
 - Code is formatted with gofumpt and goimports (`task fmt`).
 - New resources are added with `go run ./cmd/forge add resource <Name>`, one
   package per resource.
+- Edit `api/openapi.yaml` and the `*.sql` files, then run `task generate`. Never
+  edit anything under `internal/gen`; it is generated and CI fails on drift.
+- Handlers are plain `http.Handler`. Authorization lives in the service layer.
 - Add a test with every change. Repository code is covered by integration tests
   against a real Postgres; business logic is covered by unit tests.
 

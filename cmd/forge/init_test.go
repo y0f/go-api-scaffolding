@@ -104,6 +104,66 @@ func TestScaffoldMarkers(t *testing.T) {
 	}
 }
 
+func TestRewriteLicenseUsesModuleOwnerAndYear(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "LICENSE")
+	src := "MIT License\n\nCopyright (c) 2020 someone\n\nPermission is hereby granted"
+	if err := os.WriteFile(path, []byte(src), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := rewriteLicense(path, "github.com/you/app", 2031); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "MIT License\n\nCopyright (c) 2031 you\n\nPermission is hereby granted"
+	if string(got) != want {
+		t.Fatalf("LICENSE =\n%q\nwant\n%q", got, want)
+	}
+	if err := rewriteLicense(filepath.Join(t.TempDir(), "missing"), "github.com/you/app", 2031); err != nil {
+		t.Fatalf("missing LICENSE should be skipped, got %v", err)
+	}
+	if err := os.WriteFile(path, []byte(src), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := rewriteLicense(path, "app", 2031); err != nil {
+		t.Fatal(err)
+	}
+	got, _ = os.ReadFile(path)
+	if !strings.Contains(string(got), "Copyright (c) 2031 app") {
+		t.Fatalf("a module path without a slash should use the whole path as owner, got %q", got)
+	}
+}
+
+func TestRenumberMigrationsClosesGaps(t *testing.T) {
+	dir := t.TempDir()
+	for _, name := range []string{"00002_outbox.sql", "00003_idempotency.sql", "00005_create_orders.sql", "embed.go"} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(name), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := renumberMigrations(dir); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, e := range entries {
+		got = append(got, e.Name())
+	}
+	want := "00001_outbox.sql 00002_idempotency.sql 00003_create_orders.sql embed.go"
+	if strings.Join(got, " ") != want {
+		t.Fatalf("migrations = %q, want %q", strings.Join(got, " "), want)
+	}
+	body, err := os.ReadFile(filepath.Join(dir, "00003_create_orders.sql"))
+	if err != nil || string(body) != "00005_create_orders.sql" {
+		t.Fatalf("renamed file lost its content: %q, %v", body, err)
+	}
+}
+
 func repoRoot(t *testing.T) string {
 	t.Helper()
 	dir, err := os.Getwd()

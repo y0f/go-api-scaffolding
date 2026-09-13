@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
@@ -36,6 +37,7 @@ var slices = []slice{
 			"internal/modules/widget",
 			"internal/server/api_integration_test.go",
 			"internal/server/idempotency_integration_test.go",
+			"migrations/00001_widgets.sql",
 		},
 	},
 	{
@@ -44,6 +46,7 @@ var slices = []slice{
 		Paths: []string{
 			"internal/outbox",
 			"internal/modules/widget/outbox_integration_test.go",
+			"migrations/00002_outbox.sql",
 		},
 	},
 	{
@@ -55,6 +58,9 @@ var slices = []slice{
 			"internal/modules/widget/idempotent_test.go",
 			"internal/modules/widget/idempotent_integration_test.go",
 			"internal/server/idempotency_integration_test.go",
+			"cmd/forge/templates/idempotent.go.tmpl",
+			"cmd/forge/templates/idempotent_test.go.tmpl",
+			"migrations/00003_idempotency.sql",
 		},
 	},
 	{
@@ -324,10 +330,16 @@ func apply(module string, dropped map[string]bool) error {
 			}
 		}
 	}
+	if err := rewriteLicense("LICENSE", module, time.Now().Year()); err != nil {
+		return err
+	}
 	for _, path := range removed {
 		if err := os.RemoveAll(filepath.FromSlash(path)); err != nil {
 			return err
 		}
+	}
+	if err := renumberMigrations("migrations"); err != nil {
+		return err
 	}
 
 	// goimports runs before tidy: a dropped block can leave an import of a
@@ -410,6 +422,62 @@ func strip(src string, dropped map[string]bool) (string, error) {
 		return "", fmt.Errorf("forge:begin %s without matching end", stack[len(stack)-1])
 	}
 	return strings.TrimLeft(collapseBlankLines(out.String()), "\n"), nil
+}
+
+var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} .+$`)
+
+// rewriteLicense makes the copyright line the project's: the current year and
+// the owner segment of the module path, since the scaffold's author holds no
+// copyright on what is generated from it. A LICENSE without that line is left
+// alone.
+func rewriteLicense(path, module string, year int) error {
+	src, err := os.ReadFile(path) //#nosec G304 -- fixed relative path
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	owner := module
+	if _, rest, ok := strings.Cut(module, "/"); ok {
+		owner, _, _ = strings.Cut(rest, "/")
+	}
+	out := copyrightRe.ReplaceAllLiteralString(string(src), fmt.Sprintf("Copyright (c) %d %s", year, owner))
+	if out == string(src) {
+		return nil
+	}
+	return os.WriteFile(path, []byte(out), 0o600) //#nosec G703 -- same fixed relative path that was just read
+}
+
+// renumberMigrations closes the gaps that dropping a slice leaves in the
+// version prefixes, so a new project's history starts at 00001 like one that
+// grew by hand. Order is preserved; only the numbers change.
+func renumberMigrations(dir string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	var names []string
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".sql") {
+			names = append(names, e.Name())
+		}
+	}
+	sort.Strings(names)
+	for i, name := range names {
+		_, rest, ok := strings.Cut(name, "_")
+		if !ok {
+			continue
+		}
+		want := fmt.Sprintf("%05d_%s", i+1, rest)
+		if want == name {
+			continue
+		}
+		if err := os.Rename(filepath.Join(dir, name), filepath.Join(dir, want)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 var blankRunRe = regexp.MustCompile(`\n{3,}`)
