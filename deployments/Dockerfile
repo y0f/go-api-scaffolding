@@ -3,7 +3,7 @@
 # Multi-stage build producing a small, static, non-root image. Base images are
 # pinned by digest for reproducible builds; Dependabot keeps the digests current.
 
-FROM golang:1.27-bookworm@sha256:648f440f42a0958804efb24df176f806f9d353b41f1c0627f666428e40310f6b AS build
+FROM golang:1.27-bookworm@sha256:69a7b9788769bec032d238959b61854e9ae87f57be9029ec04e9885fabf99195 AS build
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.mod go.sum ./
