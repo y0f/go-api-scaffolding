@@ -53,7 +53,7 @@ services:
 
   # forge:begin otlp
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.160.0
+    image: otel/opentelemetry-collector-contrib:0.161.0
     profiles: ["observability"]
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
@@ -70,7 +70,7 @@ services:
       - ./observability/tempo.yaml:/etc/tempo.yaml:ro
 
   prometheus:
-    image: prom/prometheus:v3.14.0
+    image: prom/prometheus:v3.15.0
     profiles: ["observability"]
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
@@ -78,7 +78,7 @@ services:
       - "9090:9090"
 
   grafana:
-    image: grafana/grafana:13.2.1
+    image: grafana/grafana:13.2.2
     profiles: ["observability"]
     environment:
       GF_AUTH_ANONYMOUS_ENABLED: "true"
