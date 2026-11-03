@@ -36,6 +36,18 @@ func TestStatusWritesRFC9457Document(t *testing.T) {
 	}
 }
 
+// instance must be a URI reference (RFC 9457 section 3.1.5), so a path with
+// escaped characters stays escaped rather than carrying a raw space or quote.
+func TestInstanceIsAnEscapedURIReference(t *testing.T) {
+	rec := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/no%20such%22x", nil)
+	Status(rec, r, http.StatusNotFound, "")
+
+	if got := decode(t, rec).Instance; got != "/no%20such%22x" {
+		t.Errorf("instance = %q, want %q", got, "/no%20such%22x")
+	}
+}
+
 func TestWriteKeepsAnExplicitInstance(t *testing.T) {
 	rec := httptest.NewRecorder()
 	r := httptest.NewRequest(http.MethodGet, "/v1/widgets", nil)

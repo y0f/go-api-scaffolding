@@ -14,7 +14,9 @@ import (
 type Querier interface {
 	CountWidgets(ctx context.Context) (int64, error)
 	CreateWidget(ctx context.Context, name string, description string, status string) (Widget, error)
-	DeletePublishedOutboxBefore(ctx context.Context, before time.Time) (int64, error)
+	// Deletes at most max_rows rows per call, so a large backlog is purged in
+	// short transactions rather than one long one.
+	DeletePublishedOutboxBefore(ctx context.Context, before time.Time, maxRows int32) (int64, error)
 	DeleteWidget(ctx context.Context, id uuid.UUID) (int64, error)
 	EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUID, eventType string, payload []byte) error
 	FetchUnpublishedOutbox(ctx context.Context, limit int32) ([]OutboxMessage, error)
@@ -24,6 +26,10 @@ type Querier interface {
 	MarkOutboxPublished(ctx context.Context, ids []int64) error
 	PurgeExpiredIdempotencyKeys(ctx context.Context) (int64, error)
 	PutIdempotencyKey(ctx context.Context, arg PutIdempotencyKeyParams) (int64, error)
+	// Backs the message off exponentially (2s, 4s, 8s, ... capped at one
+	// hour) so a message the publisher keeps rejecting is retried rarely instead
+	// of on every poll.
+	RecordOutboxFailure(ctx context.Context, lastError string, iD int64) (int32, error)
 	UpdateWidget(ctx context.Context, iD uuid.UUID, name string, description string, status string) (Widget, error)
 }
 

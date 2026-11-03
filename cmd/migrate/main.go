@@ -12,10 +12,12 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/caarlos0/env/v11"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
@@ -40,12 +42,17 @@ func run() error {
 		return fmt.Errorf("unknown command %q (want up, down, status or version)", command)
 	}
 
-	cfg, err := config.Load()
-	if err != nil {
-		return err
+	// Only the database settings are read: a migration job must not need the
+	// API's auth or admin secrets just to pass the full config validation.
+	var dbCfg config.DatabaseConfig
+	if err := env.ParseWithOptions(&dbCfg, env.Options{Prefix: "FORGE_DB_"}); err != nil {
+		return fmt.Errorf("parse environment: %w", err)
+	}
+	if dbCfg.URL == "" {
+		return errors.New("FORGE_DB_URL is required")
 	}
 
-	db, err := sql.Open("pgx", cfg.Database.URL)
+	db, err := sql.Open("pgx", dbCfg.URL)
 	if err != nil {
 		return fmt.Errorf("open database: %w", err)
 	}

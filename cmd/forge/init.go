@@ -38,6 +38,7 @@ var slices = []slice{
 			"internal/server/api_integration_test.go",
 			"internal/server/idempotency_integration_test.go",
 			"migrations/00001_widgets.sql",
+			"migrations/00005_widgets_list_index.sql",
 		},
 	},
 	{
@@ -47,6 +48,7 @@ var slices = []slice{
 			"internal/outbox",
 			"internal/modules/widget/outbox_integration_test.go",
 			"migrations/00002_outbox.sql",
+			"migrations/00004_outbox_retry.sql",
 		},
 	},
 	{

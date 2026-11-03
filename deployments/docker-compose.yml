@@ -7,8 +7,10 @@ services:
       POSTGRES_USER: forge
       POSTGRES_PASSWORD: forge
       POSTGRES_DB: forge
+    # Dev-only credentials, so the port is published on loopback only. Without a
+    # host IP Docker binds 0.0.0.0 and its iptables rules bypass host firewalls.
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U forge -d forge"]
       interval: 5s
@@ -53,14 +55,14 @@ services:
 
   # forge:begin otlp
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.161.0-386
+    image: otel/opentelemetry-collector-contrib:0.161.0
     profiles: ["observability"]
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
     ports:
-      - "4317:4317"
-      - "8888:8888"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:8888:8888"
 
   tempo:
     image: grafana/tempo:3.1.0
@@ -75,21 +77,23 @@ services:
     volumes:
       - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
 
   grafana:
     image: grafana/grafana:13.2.3
     profiles: ["observability"]
     environment:
+      # Anonymous Editor is enough to use Explore, without admin rights over the
+      # instance. The port is published on loopback only.
       GF_AUTH_ANONYMOUS_ENABLED: "true"
-      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Editor
     volumes:
       # Only the datasources directory: mounting all of provisioning hides the
       # image's own empty dashboards/plugins/alerting dirs and Grafana logs an
       # error for each at startup.
       - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       - prometheus
       - tempo

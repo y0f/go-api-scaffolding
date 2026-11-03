@@ -26,11 +26,13 @@
   the typed server interface is generated from it, and CI fails on drift. Errors
   are RFC 9457 `problem+json` carrying the trace ID. Per-client rate limiting
   that keys on the forwarded client behind the proxies in
-  `FORGE_HTTP_TRUSTED_PROXIES`. Readiness-first graceful drain.
+  `FORGE_HTTP_TRUSTED_PROXIES`, grouping IPv6 clients by /64. Readiness-first graceful drain.
 - **Data.** pgx/v5, sqlc-generated queries checked against the real schema,
   goose migrations embedded in the binary and applied as a deploy step.
 - **Auth.** Bearer tokens verified against JWKS (OIDC) or an RSA key. RBAC in
-  the service layer. In development a token is minted and logged at startup.
+  the service layer. `FORGE_ENV` defaults to `production`, which refuses to
+  start without a verifier; with `FORGE_ENV=development` (set by `.env.example`
+  and the compose file) a token is minted and logged at startup.
 - **Docs.** The spec served verbatim at `/openapi.yaml` and an interactive
   reference at `/docs`.
 - **Observability.** Prometheus `/metrics`; slog with `trace_id` and `span_id`
@@ -41,11 +43,13 @@
 <!-- forge:end otlp -->
 <!-- forge:begin outbox -->
 - **Outbox.** Events written in the same transaction as the state change,
-  relayed at-least-once by a poller.
+  relayed at-least-once by a poller. A message the publisher rejects is retried
+  with backoff and never blocks the ones behind it.
 <!-- forge:end outbox -->
 <!-- forge:begin idempotency -->
-- **Idempotency.** `Idempotency-Key` on unsafe requests: the response is stored
-  with the write and replayed on retry, scoped to the caller.
+- **Idempotency.** An `Idempotency-Key` header on create requests: the response
+  is stored with the write and replayed on retry (`Idempotency-Replayed: true`),
+  scoped to the caller. Reusing a key for a different body is a 409.
 <!-- forge:end idempotency -->
 <!-- forge:begin admin -->
 - **Admin.** pprof and expvar on a separate token-gated port.
@@ -93,12 +97,18 @@ cd go-api-scaffolding
 task up          # Postgres, migrations, API on :8080
 ```
 
-The API log prints a development bearer token at startup. The API reference
-is at `http://localhost:8080/docs`.
+The API logs a development bearer token at startup; `task up` runs detached,
+so read it from the container log:
+
+```bash
+docker compose -f deployments/docker-compose.yml logs api | grep "bearer token"
+```
+
+The API reference is at `http://localhost:8080/docs`.
 <!-- forge:begin example -->
 
 ```bash
-export TOKEN="<token from the api log>"
+export TOKEN="<bearer token from the api log>"
 
 curl -s localhost:8080/v1/widgets
 
@@ -133,8 +143,9 @@ go run ./cmd/forge add resource Order
 
 This writes `internal/modules/order` (domain, store, service, handler, test,
 queries) and a migration, registers the queries with sqlc, and prints the
-remaining steps: `task generate`, add the handler to `RouterDeps.Mounts`, grant
-the write permission, `task migrate`.
+remaining steps: `task generate`, append the handler to `RouterDeps.Mounts`,
+grant the write permission, `task migrate`. It pins the sqlc model name to the
+resource name, and imports use the module path in your `go.mod`.
 
 Generated modules are plain chi handlers with authentication, authorization,
 validation and `problem+json` errors. Make one spec-first by adding its paths
@@ -152,7 +163,7 @@ task test              # unit tests with coverage
 task test:race         # unit tests under the race detector (needs a C toolchain)
 task test:integration  # integration tests on real Postgres (needs Docker)
 task vuln              # govulncheck
-task ci                # every gate CI runs
+task ci                # lint, vuln, generate:check, test, test:integration, build
 task build             # api, migrate and forge into ./bin
 ```
 <!-- forge:begin otlp -->
@@ -161,6 +172,9 @@ task build             # api, migrate and forge into ./bin
 Prometheus and Grafana. Grafana is at `http://localhost:3000` with both data
 sources provisioned; traces flow from the API through the Collector into Tempo.
 <!-- forge:end otlp -->
+
+CI also runs the tests under `-race`, builds the Docker image, checks the
+compose files and `forge init` presets, and validates the release config.
 
 The toolchain (linter, generators, scanner, live reload) is pinned in
 `tools/go.mod`, a module of its own so none of it enters the application's

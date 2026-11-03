@@ -35,13 +35,14 @@ func New(status int, detail string) *Problem {
 }
 
 // Write renders the problem, setting the trace ID from the request context and
-// defaulting the instance to the request path.
+// defaulting the instance to the request path. The path is kept percent-encoded
+// because RFC 9457 section 3.1.5 requires instance to be a URI reference.
 func (p *Problem) Write(w http.ResponseWriter, r *http.Request) {
 	if sc := trace.SpanContextFromContext(r.Context()); sc.IsValid() {
 		p.TraceID = sc.TraceID().String()
 	}
 	if p.Instance == "" {
-		p.Instance = r.URL.Path
+		p.Instance = r.URL.EscapedPath()
 	}
 	w.Header().Set("Content-Type", ContentType)
 	w.WriteHeader(p.Status)

@@ -65,7 +65,13 @@ func NewRelay(pool *pgxpool.Pool, publisher Publisher, logger *slog.Logger, batc
 	return &Relay{pool: pool, publisher: publisher, logger: logger, batchSize: batchSize, interval: interval}
 }
 
-// Run polls until the context is cancelled. Each tick drains up to one batch.
+// purgeBatchSize bounds how many rows one purge statement deletes, keeping
+// each delete transaction (and its locks and WAL) short.
+const purgeBatchSize = 5000
+
+// Run polls until the context is cancelled. Each tick drains the backlog: it
+// keeps fetching batches while they come back full and fully published, so
+// throughput is not capped at one batch per interval.
 func (r *Relay) Run(ctx context.Context) error {
 	ticker := time.NewTicker(r.interval)
 	defer ticker.Stop()
@@ -74,30 +80,65 @@ func (r *Relay) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			if n, err := r.ProcessBatch(ctx); err != nil {
-				r.logger.ErrorContext(ctx, "outbox relay batch failed", slog.Any("error", err))
-			} else if n > 0 {
-				r.logger.DebugContext(ctx, "outbox relay published batch", slog.Int("count", n))
-			}
+			r.drain(ctx)
 		}
 	}
 }
 
-// PurgePublished deletes already-published messages older than retention and
-// returns how many were removed, keeping the table and its index bounded.
-func (r *Relay) PurgePublished(ctx context.Context, retention time.Duration) (int64, error) {
-	n, err := db.New(r.pool).DeletePublishedOutboxBefore(ctx, time.Now().Add(-retention))
-	if err != nil {
-		return 0, fmt.Errorf("purge published outbox messages: %w", err)
+func (r *Relay) drain(ctx context.Context) {
+	total := 0
+	for ctx.Err() == nil {
+		n, err := r.ProcessBatch(ctx)
+		total += n
+		if err != nil {
+			r.logger.ErrorContext(ctx, "outbox relay batch failed", slog.Any("error", err))
+			break
+		}
+		if n < int(r.batchSize) {
+			break
+		}
 	}
-	return n, nil
+	if total > 0 {
+		r.logger.DebugContext(ctx, "outbox relay published", slog.Int("count", total))
+	}
 }
 
-// ProcessBatch publishes one batch within a transaction. Rows are locked with
-// FOR UPDATE SKIP LOCKED so multiple relay instances do not collide.
+// PurgePublished deletes already-published messages older than retention and
+// returns how many were removed, keeping the table and its index bounded. It
+// deletes in bounded batches so a large backlog never becomes one huge
+// transaction.
+func (r *Relay) PurgePublished(ctx context.Context, retention time.Duration) (int64, error) {
+	before := time.Now().Add(-retention)
+	queries := db.New(r.pool)
+	var total int64
+	for {
+		n, err := queries.DeletePublishedOutboxBefore(ctx, before, purgeBatchSize)
+		total += n
+		if err != nil {
+			return total, fmt.Errorf("purge published outbox messages: %w", err)
+		}
+		if n < purgeBatchSize {
+			return total, nil
+		}
+	}
+}
+
+// ProcessBatch publishes one batch within a transaction and returns how many
+// messages it published. Rows are locked with FOR UPDATE SKIP LOCKED so
+// multiple relay instances do not collide.
+//
+// A message the publisher rejects does not stop the batch: its attempt and
+// error are recorded and it backs off before it is fetched again, while the
+// messages around it are published and marked as usual. The rejections are
+// returned, joined, after the batch commits. Because a rejected message is
+// retried later, delivery order is not guaranteed.
 func (r *Relay) ProcessBatch(ctx context.Context) (int, error) {
-	var published int
+	var (
+		published int
+		failures  []error
+	)
 	err := database.WithinTx(ctx, r.pool, func(tx pgx.Tx) error {
+		published, failures = 0, nil
 		queries := db.New(tx)
 		rows, err := queries.FetchUnpublishedOutbox(ctx, r.batchSize)
 		if err != nil {
@@ -108,17 +149,30 @@ func (r *Relay) ProcessBatch(ctx context.Context) (int, error) {
 		}
 		ids := make([]int64, 0, len(rows))
 		for _, row := range rows {
-			if err := r.publisher.Publish(ctx, Message{
+			pubErr := r.publisher.Publish(ctx, Message{
 				ID:          row.ID,
 				AggregateID: row.AggregateID,
 				EventType:   row.EventType,
 				Payload:     row.Payload,
-			}); err != nil {
+			})
+			if pubErr == nil {
+				ids = append(ids, row.ID)
+				continue
+			}
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				// Shutting down: the rejection says nothing about the message.
+				return ctxErr
+			}
+			attempts, err := queries.RecordOutboxFailure(ctx, pubErr.Error(), row.ID)
+			if err != nil {
 				return err
 			}
-			ids = append(ids, row.ID)
+			failures = append(failures, fmt.Errorf("publish outbox message %d (attempt %d): %w", row.ID, attempts, pubErr))
 		}
 		published = len(ids)
+		if published == 0 {
+			return nil
+		}
 		return queries.MarkOutboxPublished(ctx, ids)
 	})
 	if err != nil {
@@ -127,5 +181,5 @@ func (r *Relay) ProcessBatch(ctx context.Context) (int, error) {
 		}
 		return 0, err
 	}
-	return published, nil
+	return published, errors.Join(failures...)
 }

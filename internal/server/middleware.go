@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/netip"
 	"runtime/debug"
 	"strings"
 	"sync"
@@ -40,10 +41,13 @@ func AccessLog(logger *slog.Logger) func(http.Handler) http.Handler {
 }
 
 // Recoverer converts a panic into a 500 problem response and logs the stack,
-// keeping a single bad request from taking down the process.
+// keeping a single bad request from taking down the process. If the handler
+// had already started the response, a problem body can no longer be sent
+// cleanly, so the connection is aborted instead of appending one.
 func Recoverer(logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			wrapped := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 			defer func() {
 				rec := recover()
 				if rec == nil {
@@ -56,9 +60,12 @@ func Recoverer(logger *slog.Logger) func(http.Handler) http.Handler {
 					slog.Any("panic", rec),
 					slog.String("stack", string(debug.Stack())),
 				)
+				if wrapped.Status() != 0 {
+					panic(http.ErrAbortHandler)
+				}
 				problem.Status(w, r, http.StatusInternalServerError, "internal server error")
 			}()
-			next.ServeHTTP(w, r)
+			next.ServeHTTP(wrapped, r)
 		})
 	}
 }
@@ -80,6 +87,15 @@ var corsAllowedHeaders = []string{
 	"Content-Type",
 	//forge:begin idempotency
 	"Idempotency-Key",
+	//forge:end idempotency
+}
+
+// corsExposedHeaders are the non-safelisted response headers a browser lets
+// cross-origin callers read.
+var corsExposedHeaders = []string{
+	"Location",
+	//forge:begin idempotency
+	"Idempotency-Replayed",
 	//forge:end idempotency
 }
 
@@ -107,6 +123,8 @@ func CORS(allowed []string, reflectAnyWhenEmpty bool) func(http.Handler) http.Ha
 						h.Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 						h.Set("Access-Control-Allow-Headers", strings.Join(corsAllowedHeaders, ", "))
 						h.Set("Access-Control-Max-Age", "600")
+					} else {
+						h.Set("Access-Control-Expose-Headers", strings.Join(corsExposedHeaders, ", "))
 					}
 				}
 			}
@@ -138,14 +156,14 @@ func MaxBytes(limit int64) func(http.Handler) http.Handler {
 	}
 }
 
-// RateLimit applies a per-client-IP token bucket. Idle limiters are evicted so
+// RateLimit applies a per-client token bucket. Idle limiters are evicted so
 // the map does not grow without bound. The client address is RemoteAddr, which
 // RealIP has already resolved through any trusted proxies.
 func RateLimit(perSecond float64, burst int) func(http.Handler) http.Handler {
 	limiters := newIPLimiters(rate.Limit(perSecond), burst)
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if !limiters.get(clientIP(r)).Allow() {
+			if !limiters.get(rateLimitKey(clientIP(r))).Allow() {
 				problem.Status(w, r, http.StatusTooManyRequests, "rate limit exceeded")
 				return
 			}
@@ -162,6 +180,26 @@ func clientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+// rateLimitKey groups IPv6 clients by their /64 prefix. A single IPv6 host
+// normally controls a whole /64, so keying on the full address would let it
+// take a fresh bucket for every source address it rotates through. IPv4 (and
+// IPv4-mapped IPv6) addresses are keyed as they are.
+func rateLimitKey(ip string) string {
+	addr, err := netip.ParseAddr(ip)
+	if err != nil {
+		return ip
+	}
+	addr = addr.Unmap().WithZone("")
+	if addr.Is4() {
+		return addr.String()
+	}
+	prefix, err := addr.Prefix(64)
+	if err != nil {
+		return ip
+	}
+	return prefix.String()
 }
 
 type ipLimiters struct {

@@ -15,7 +15,7 @@ that built the generator. `task setup` handles it; never run the generators off
 
 ## Before opening a pull request
 
-Run the same gates CI runs:
+Run the local gates:
 
 ```bash
 task ci
@@ -23,8 +23,8 @@ task ci
 
 That is lint, govulncheck, the generated-code drift gate, unit tests,
 integration tests (requires Docker) and a build. CI also runs the unit tests
-under the race detector; run `task test:race` yourself if you have a C
-toolchain.
+under the race detector (run `task test:race` yourself if you have a C
+toolchain), builds the Docker image and checks the `forge init` presets.
 
 If you change SQL or the OpenAPI spec, run `task generate` and commit the
 output. CI fails if `internal/gen` is out of date with its sources.
@@ -43,7 +43,8 @@ output. CI fails if `internal/gen` is out of date with its sources.
   against a real Postgres; business logic is covered by unit tests.
 
 Install the git hooks with `pre-commit install` so formatting and linting run
-before each commit.
+before each commit. The hooks run the task pinned in `tools/go.mod` through
+`go tool`, so no global task install is needed.
 
 <!-- forge:begin init -->
 ## Optional slices

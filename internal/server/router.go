@@ -2,11 +2,13 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"net/netip"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -60,7 +62,10 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	// First, so the access log and the rate limiter see the client, not the proxy.
 	r.Use(RealIP(deps.Config.TrustedProxies))
 	r.Use(middleware.RequestID)
-	r.Use(otelhttp.NewMiddleware("forge"))
+	// A fixed server name keeps the client-controlled Host header out of the
+	// server.address/server.port metric labels, which would otherwise mint a new
+	// series per Host value. Port 0 is never recorded, so it stays unlabelled.
+	r.Use(otelhttp.NewMiddleware("forge", otelhttp.WithServerName("forge:0")))
 	r.Use(SecureHeaders)
 	r.Use(AccessLog(deps.Logger))
 	r.Use(Recoverer(deps.Logger))
@@ -86,12 +91,15 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	// The validator enforces the contract (params, bodies, enums) and runs the
 	// security scheme's authentication function for protected operations.
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(swagger, &nethttpmiddleware.Options{
-		Options: openapi3filter.Options{AuthenticationFunc: deps.Authenticator.Authenticate},
+		Options: openapi3filter.Options{
+			AuthenticationFunc: deps.Authenticator.Authenticate,
+			// Keep the schema and the offending value out of error messages, so
+			// the problem detail is one line and never echoes the spec back.
+			SchemaValidationOptions: []openapi3.SchemaValidationOption{openapi3.DisableSchemaErrorDetails()},
+		},
 		// WithOpts, not the deprecated ErrorHandler: only this form receives the
 		// request, without which the problem response carries no trace ID.
-		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter, r *http.Request, opts nethttpmiddleware.ErrorHandlerOpts) {
-			problem.Status(w, r, opts.StatusCode, err.Error())
-		},
+		ErrorHandlerWithOpts: validationErrorHandler,
 	})
 
 	for _, mount := range deps.Mounts {
@@ -108,6 +116,27 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	})
 
 	return r, nil
+}
+
+// validationErrorHandler writes the validator's failures as problem responses.
+func validationErrorHandler(_ context.Context, err error, w http.ResponseWriter, r *http.Request, opts nethttpmiddleware.ErrorHandlerOpts) {
+	// The security check buffers the body before authenticating, so a chunked
+	// body over MaxBytes surfaces as an authentication failure. It is a size
+	// problem, not a credentials one.
+	if mbe := new(http.MaxBytesError); errors.As(err, &mbe) {
+		problem.Status(w, r, http.StatusRequestEntityTooLarge, "request body exceeds the size limit")
+		return
+	}
+	if opts.StatusCode == http.StatusUnauthorized {
+		// RFC 9110 15.5.2 requires a challenge on every 401; RFC 6750 section 3
+		// adds error="invalid_token" when credentials were sent but rejected.
+		challenge := `Bearer realm="forge"`
+		if r.Header.Get("Authorization") != "" {
+			challenge += `, error="invalid_token"`
+		}
+		w.Header().Set("WWW-Authenticate", challenge)
+	}
+	problem.Status(w, r, opts.StatusCode, err.Error())
 }
 
 func paramErrorHandler(w http.ResponseWriter, r *http.Request, err error) {

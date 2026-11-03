@@ -40,7 +40,11 @@ paths:
       security:
         - bearerAuth: []
       # forge:begin idempotency
-      description: Send an Idempotency-Key header (up to 255 characters) to make the request safe to retry; the stored response is replayed for the same key and body.
+      description: |
+        Send an Idempotency-Key header (up to 255 characters) to make the
+        request safe to retry. A retry with the same key and body replays the
+        stored response with `Idempotency-Replayed: true`; reusing the key for a
+        different body is a 409. Only this operation honors the header.
       # forge:end idempotency
       requestBody:
         required: true
@@ -55,10 +59,23 @@ paths:
             Location:
               schema: { type: string }
               description: URL of the created widget.
+            # forge:begin idempotency
+            Idempotency-Replayed:
+              schema: { type: string, enum: ["true"] }
+              description: Set when this is the stored response replayed for a repeated Idempotency-Key.
+            # forge:end idempotency
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Widget"
+        # forge:begin idempotency
+        "409":
+          description: The Idempotency-Key was already used for a different request.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        # forge:end idempotency
         default:
           $ref: "#/components/responses/Problem"
   /v1/widgets/{id}:
@@ -137,8 +154,11 @@ components:
         type: integer
         format: int32
         minimum: 0
+        maximum: 10000
         default: 0
-      description: Number of items to skip.
+      description: >-
+        Number of items to skip. Capped at 10000, because the database still
+        reads every skipped row.
     WidgetID:
       name: id
       in: path

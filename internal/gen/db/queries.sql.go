@@ -45,11 +45,17 @@ func (q *Queries) CreateWidget(ctx context.Context, name string, description str
 
 const deletePublishedOutboxBefore = `-- name: DeletePublishedOutboxBefore :execrows
 DELETE FROM outbox_messages
-WHERE published_at IS NOT NULL AND published_at < $1::timestamptz
+WHERE id IN (
+    SELECT id FROM outbox_messages
+    WHERE published_at IS NOT NULL AND published_at < $1::timestamptz
+    LIMIT $2
+)
 `
 
-func (q *Queries) DeletePublishedOutboxBefore(ctx context.Context, before time.Time) (int64, error) {
-	result, err := q.db.Exec(ctx, deletePublishedOutboxBefore, before)
+// Deletes at most max_rows rows per call, so a large backlog is purged in
+// short transactions rather than one long one.
+func (q *Queries) DeletePublishedOutboxBefore(ctx context.Context, before time.Time, maxRows int32) (int64, error) {
+	result, err := q.db.Exec(ctx, deletePublishedOutboxBefore, before, maxRows)
 	if err != nil {
 		return 0, err
 	}
@@ -80,8 +86,8 @@ func (q *Queries) EnqueueOutboxMessage(ctx context.Context, aggregateID uuid.UUI
 }
 
 const fetchUnpublishedOutbox = `-- name: FetchUnpublishedOutbox :many
-SELECT id, aggregate_id, event_type, payload, created_at, published_at FROM outbox_messages
-WHERE published_at IS NULL
+SELECT id, aggregate_id, event_type, payload, created_at, published_at, attempts, last_error, next_attempt_at FROM outbox_messages
+WHERE published_at IS NULL AND next_attempt_at <= now()
 ORDER BY id
 LIMIT $1
 FOR UPDATE SKIP LOCKED
@@ -103,6 +109,9 @@ func (q *Queries) FetchUnpublishedOutbox(ctx context.Context, limit int32) ([]Ou
 			&i.Payload,
 			&i.CreatedAt,
 			&i.PublishedAt,
+			&i.Attempts,
+			&i.LastError,
+			&i.NextAttemptAt,
 		); err != nil {
 			return nil, err
 		}
@@ -240,6 +249,27 @@ func (q *Queries) PutIdempotencyKey(ctx context.Context, arg PutIdempotencyKeyPa
 		return 0, err
 	}
 	return result.RowsAffected(), nil
+}
+
+const recordOutboxFailure = `-- name: RecordOutboxFailure :one
+UPDATE outbox_messages
+SET attempts        = attempts + 1,
+    last_error      = $1::text,
+    next_attempt_at = now() + least(
+        make_interval(secs => power(2, least(attempts + 1, 12))),
+        interval '1 hour')
+WHERE id = $2
+RETURNING attempts
+`
+
+// Backs the message off exponentially (2s, 4s, 8s, ... capped at one
+// hour) so a message the publisher keeps rejecting is retried rarely instead
+// of on every poll.
+func (q *Queries) RecordOutboxFailure(ctx context.Context, lastError string, iD int64) (int32, error) {
+	row := q.db.QueryRow(ctx, recordOutboxFailure, lastError, iD)
+	var attempts int32
+	err := row.Scan(&attempts)
+	return attempts, err
 }
 
 const updateWidget = `-- name: UpdateWidget :one

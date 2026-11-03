@@ -17,7 +17,8 @@ var sensitiveKeys = []string{
 const redactedValue = "REDACTED"
 
 // RedactingHandler wraps a slog.Handler and replaces the values of attributes
-// whose key looks sensitive, recursing into groups. It guards against logging
+// whose key looks sensitive, recursing into groups and slog.LogValuer values
+// (which resolve to groups). It guards against logging
 // credentials by accident, which is the most common log-hygiene failure.
 type RedactingHandler struct {
 	next slog.Handler
@@ -32,6 +33,16 @@ func (h *RedactingHandler) Enabled(ctx context.Context, level slog.Level) bool {
 }
 
 func (h *RedactingHandler) Handle(ctx context.Context, r slog.Record) error {
+	// Most records carry nothing to redact; pass those through rather than
+	// copying every attr into a new record on the hot path.
+	clean := true
+	r.Attrs(func(a slog.Attr) bool {
+		clean = !needsRedaction(a)
+		return clean
+	})
+	if clean {
+		return h.next.Handle(ctx, r)
+	}
 	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	r.Attrs(func(a slog.Attr) bool {
 		clone.AddAttrs(redactAttr(a))
@@ -52,7 +63,28 @@ func (h *RedactingHandler) WithGroup(name string) slog.Handler {
 	return &RedactingHandler{next: h.next.WithGroup(name)}
 }
 
+// needsRedaction reports whether redactAttr could change a. LogValuers are
+// not resolved here, so they always count.
+func needsRedaction(a slog.Attr) bool {
+	switch a.Value.Kind() {
+	case slog.KindLogValuer:
+		return true
+	case slog.KindGroup:
+		for _, ga := range a.Value.Group() {
+			if needsRedaction(ga) {
+				return true
+			}
+		}
+		return false
+	default:
+		return isSensitive(a.Key)
+	}
+}
+
 func redactAttr(a slog.Attr) slog.Attr {
+	// A LogValuer (such as a struct with a LogValue method) may resolve to a
+	// group holding sensitive keys, so resolve it before inspecting it.
+	a.Value = a.Value.Resolve()
 	if a.Value.Kind() == slog.KindGroup {
 		group := a.Value.Group()
 		out := make([]slog.Attr, len(group))

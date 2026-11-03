@@ -91,15 +91,27 @@ func (r *pgRepository) Get(ctx context.Context, id uuid.UUID) (db.Widget, error)
 	return found, nil
 }
 
+// List reads the page and the total from one read-only snapshot, so the total
+// always agrees with the items returned.
 func (r *pgRepository) List(ctx context.Context, limit, offset int32) ([]db.Widget, int64, error) {
-	queries := db.New(r.pool)
-	items, err := queries.ListWidgets(ctx, limit, offset)
+	var (
+		items []db.Widget
+		total int64
+	)
+	snapshot := pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly}
+	err := pgx.BeginTxFunc(ctx, r.pool, snapshot, func(tx pgx.Tx) error {
+		queries := db.New(tx)
+		var err error
+		if items, err = queries.ListWidgets(ctx, limit, offset); err != nil {
+			return fmt.Errorf("list widgets: %w", err)
+		}
+		if total, err = queries.CountWidgets(ctx); err != nil {
+			return fmt.Errorf("count widgets: %w", err)
+		}
+		return nil
+	})
 	if err != nil {
-		return nil, 0, fmt.Errorf("list widgets: %w", err)
-	}
-	total, err := queries.CountWidgets(ctx)
-	if err != nil {
-		return nil, 0, fmt.Errorf("count widgets: %w", err)
+		return nil, 0, err
 	}
 	return items, total, nil
 }

@@ -9,23 +9,23 @@ repos:
       - id: check-added-large-files
   - repo: local
     hooks:
-      # Through task, so these run the versions pinned in tools/go.mod rather
-      # than whatever happens to be on PATH.
+      # Through the task pinned in tools/go.mod (run with `go tool`), so these
+      # use the pinned versions and need no task install on PATH.
       - id: fmt
         name: gofumpt and goimports
-        entry: task fmt
+        entry: go -C tools tool task -d .. fmt
         language: system
         types: [go]
         pass_filenames: false
       - id: lint
         name: golangci-lint
-        entry: task lint
+        entry: go -C tools tool task -d .. lint
         language: system
         types: [go]
         pass_filenames: false
       - id: vuln
         name: govulncheck
-        entry: task vuln
+        entry: go -C tools tool task -d .. vuln
         language: system
         types: [go]
         pass_filenames: false

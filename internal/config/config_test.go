@@ -11,6 +11,8 @@ func validConfig() Config {
 	c.Database.URL = "postgres://forge:forge@localhost:5432/forge"
 	c.Database.MaxConns = 10
 	c.Database.MinConns = 2
+	c.Log.Level = "info"
+	c.Log.Format = "json"
 	//forge:begin otlp
 	c.Telemetry.SampleRatio = 1
 	//forge:end otlp
@@ -37,6 +39,8 @@ func TestValidate(t *testing.T) {
 		{"zero rate limit", func(c *Config) { c.HTTP.RateLimitPerSecond = 0 }},
 		{"zero burst", func(c *Config) { c.HTTP.RateLimitBurst = 0 }},
 		{"zero max body", func(c *Config) { c.HTTP.MaxBodyBytes = 0 }},
+		{"unknown log level", func(c *Config) { c.Log.Level = "dbug" }},
+		{"unknown log format", func(c *Config) { c.Log.Format = "jsonn" }},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -49,7 +53,37 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+// An unset FORGE_ENV must fail closed: it means production, which refuses to
+// start without a real token verifier.
+func TestLoadDefaultsToProduction(t *testing.T) {
+	t.Setenv("FORGE_ENV", "")
+	t.Setenv("FORGE_AUTH_JWKS_URL", "")
+	t.Setenv("FORGE_AUTH_PUBLIC_KEY_PATH", "")
+	if _, err := Load(); err == nil {
+		t.Fatal("unset FORGE_ENV loaded without a verifier; want the production check to fail")
+	}
+
+	t.Setenv("FORGE_AUTH_JWKS_URL", "https://issuer.example/.well-known/jwks.json")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if !cfg.IsProduction() {
+		t.Errorf("env = %q, want %q", cfg.Env, EnvProduction)
+	}
+}
+
+func TestLoadAcceptsLogSettingsCaseInsensitively(t *testing.T) {
+	t.Setenv("FORGE_ENV", EnvDevelopment)
+	t.Setenv("FORGE_LOG_LEVEL", "Debug")
+	t.Setenv("FORGE_LOG_FORMAT", "TEXT")
+	if _, err := Load(); err != nil {
+		t.Fatalf("load: %v", err)
+	}
+}
+
 func TestLoadParsesTrustedProxies(t *testing.T) {
+	t.Setenv("FORGE_ENV", EnvDevelopment)
 	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "10.0.0.0/8,fd00::/8")
 	cfg, err := Load()
 	if err != nil {
@@ -67,6 +101,7 @@ func TestLoadParsesTrustedProxies(t *testing.T) {
 }
 
 func TestLoadRejectsTrustedProxyWithoutPrefixLength(t *testing.T) {
+	t.Setenv("FORGE_ENV", EnvDevelopment)
 	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "10.0.0.1")
 	if _, err := Load(); err == nil {
 		t.Fatal("expected a parse error for a bare address without a prefix length")
@@ -74,6 +109,7 @@ func TestLoadRejectsTrustedProxyWithoutPrefixLength(t *testing.T) {
 }
 
 func TestLoadDefaultsToNoTrustedProxies(t *testing.T) {
+	t.Setenv("FORGE_ENV", EnvDevelopment)
 	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "")
 	cfg, err := Load()
 	if err != nil {

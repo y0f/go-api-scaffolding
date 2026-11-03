@@ -21,12 +21,15 @@ type IdempotencyKey struct {
 }
 
 type OutboxMessage struct {
-	ID          int64
-	AggregateID uuid.UUID
-	EventType   string
-	Payload     []byte
-	CreatedAt   time.Time
-	PublishedAt pgtype.Timestamptz
+	ID            int64
+	AggregateID   uuid.UUID
+	EventType     string
+	Payload       []byte
+	CreatedAt     time.Time
+	PublishedAt   pgtype.Timestamptz
+	Attempts      int32
+	LastError     *string
+	NextAttemptAt time.Time
 }
 
 type Widget struct {

@@ -70,7 +70,24 @@ func TestReaperLogsAFailingTaskAndKeepsGoing(t *testing.T) {
 	}
 }
 
-func TestReaperRunsNothingBeforeTheFirstTick(t *testing.T) {
+// A process that lives shorter than the interval must still purge, so the
+// tasks run once as soon as Run starts rather than after the first tick.
+func TestReaperRunsTasksAtStartup(t *testing.T) {
+	var runs atomic.Int32
+	reaper := NewReaper(slog.New(slog.DiscardHandler), time.Hour,
+		Task{Name: "t", Run: func(context.Context) (int64, error) { runs.Add(1); return 0, nil }},
+	)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	if err := reaper.Run(ctx); !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("Run = %v, want context.DeadlineExceeded", err)
+	}
+	if got := runs.Load(); got != 1 {
+		t.Errorf("task ran %d times within one interval, want exactly 1 (at startup)", got)
+	}
+}
+
+func TestReaperRunsNothingWhenAlreadyCancelled(t *testing.T) {
 	var runs atomic.Int32
 	reaper := NewReaper(slog.New(slog.DiscardHandler), time.Hour,
 		Task{Name: "t", Run: func(context.Context) (int64, error) { runs.Add(1); return 0, nil }},
@@ -81,6 +98,6 @@ func TestReaperRunsNothingBeforeTheFirstTick(t *testing.T) {
 		t.Errorf("Run = %v, want context.Canceled", err)
 	}
 	if runs.Load() != 0 {
-		t.Errorf("task ran %d times before the first tick", runs.Load())
+		t.Errorf("task ran %d times on a cancelled context", runs.Load())
 	}
 }

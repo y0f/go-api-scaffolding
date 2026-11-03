@@ -15,7 +15,7 @@ internal/
     problem/    RFC 9457 problem+json responses
   server/         http.Server, middleware, router, health, graceful drain, admin
   auth/           JWKS/RSA verification, RBAC, OpenAPI authenticator
-  idempotency/    store and replay for unsafe requests
+  idempotency/    Idempotency-Key store and replay for create requests
   outbox/         transactional outbox and relay
   maintenance/    periodic reaper for expired keys and published events
   modules/
@@ -54,7 +54,11 @@ operations. The handler maps transport types to the service, which enforces
 authorization before calling the repository.
 <!-- forge:begin outbox -->
 Writes that emit events persist the event to `outbox_messages` in the same
-transaction; a relay publishes them at-least-once.
+transaction; a relay publishes them at-least-once and, while batches come back
+full, keeps draining within a tick. A message the publisher rejects records the
+attempt and error and backs off (up to an hour between tries) without holding
+up the rest, so delivery order is not guaranteed and consumers must be
+idempotent.
 <!-- forge:end outbox -->
 
 ## Boundaries

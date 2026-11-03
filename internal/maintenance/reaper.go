@@ -25,8 +25,14 @@ func NewReaper(logger *slog.Logger, interval time.Duration, tasks ...Task) *Reap
 	return &Reaper{logger: logger, interval: interval, tasks: tasks}
 }
 
-// Run blocks until ctx is cancelled, running every task each interval.
+// Run blocks until ctx is cancelled. It runs every task once at startup, so a
+// process that lives shorter than the interval still purges, then again each
+// interval.
 func (r *Reaper) Run(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	r.runTasks(ctx)
 	ticker := time.NewTicker(r.interval)
 	defer ticker.Stop()
 	for {
@@ -34,17 +40,21 @@ func (r *Reaper) Run(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-ticker.C:
-			for _, task := range r.tasks {
-				removed, err := task.Run(ctx)
-				switch {
-				case err != nil:
-					r.logger.ErrorContext(ctx, "reaper task failed",
-						slog.String("task", task.Name), slog.Any("error", err))
-				case removed > 0:
-					r.logger.DebugContext(ctx, "reaper removed rows",
-						slog.String("task", task.Name), slog.Int64("count", removed))
-				}
-			}
+			r.runTasks(ctx)
+		}
+	}
+}
+
+func (r *Reaper) runTasks(ctx context.Context) {
+	for _, task := range r.tasks {
+		removed, err := task.Run(ctx)
+		switch {
+		case err != nil:
+			r.logger.ErrorContext(ctx, "reaper task failed",
+				slog.String("task", task.Name), slog.Any("error", err))
+		case removed > 0:
+			r.logger.DebugContext(ctx, "reaper removed rows",
+				slog.String("task", task.Name), slog.Int64("count", removed))
 		}
 	}
 }

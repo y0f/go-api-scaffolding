@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/netip"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/env/v11"
@@ -18,7 +19,10 @@ const (
 )
 
 type Config struct {
-	Env  string     `env:"FORGE_ENV" envDefault:"development"`
+	// Env defaults to production so a deployment that forgets FORGE_ENV fails
+	// closed (a real verifier is required, CORS is not reflected) instead of
+	// silently running with the development key and any-origin CORS.
+	Env  string     `env:"FORGE_ENV" envDefault:"production"`
 	HTTP HTTPConfig `envPrefix:"FORGE_HTTP_"`
 	//forge:begin admin
 	Admin AdminConfig `envPrefix:"FORGE_ADMIN_"`
@@ -119,6 +123,16 @@ func (c Config) Validate() error {
 	var errs []error
 	if c.Env != EnvDevelopment && c.Env != EnvProduction {
 		errs = append(errs, fmt.Errorf("FORGE_ENV must be %q or %q, got %q", EnvDevelopment, EnvProduction, c.Env))
+	}
+	switch strings.ToLower(strings.TrimSpace(c.Log.Level)) {
+	case "debug", "info", "warn", "warning", "error":
+	default:
+		errs = append(errs, fmt.Errorf("FORGE_LOG_LEVEL must be debug, info, warn or error, got %q", c.Log.Level))
+	}
+	switch strings.ToLower(c.Log.Format) {
+	case "json", "text":
+	default:
+		errs = append(errs, fmt.Errorf("FORGE_LOG_FORMAT must be json or text, got %q", c.Log.Format))
 	}
 	if c.HTTP.Port < 1 || c.HTTP.Port > 65535 {
 		errs = append(errs, fmt.Errorf("FORGE_HTTP_PORT out of range: %d", c.HTTP.Port))

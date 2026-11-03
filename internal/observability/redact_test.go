@@ -2,9 +2,15 @@ package observability
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"io"
 	"log/slog"
+	"strings"
 	"testing"
+	"time"
+
+	"go.opentelemetry.io/otel/trace"
 )
 
 func TestRedactingHandler(t *testing.T) {
@@ -33,5 +39,68 @@ func TestRedactingHandler(t *testing.T) {
 	}
 	if credentials["api_token"] != redactedValue {
 		t.Errorf("nested api_token = %v, want redacted", credentials["api_token"])
+	}
+}
+
+type loginUser struct{}
+
+func (loginUser) LogValue() slog.Value {
+	return slog.GroupValue(slog.String("name", "alice"), slog.String("password", "hunter2"))
+}
+
+type apiToken string
+
+func (t apiToken) LogValue() slog.Value { return slog.StringValue(string(t)) }
+
+func TestRedactingHandlerResolvesLogValuer(t *testing.T) {
+	var buf bytes.Buffer
+	logger := slog.New(NewRedactingHandler(slog.NewJSONHandler(&buf, nil)))
+
+	logger.Info("login", slog.Any("user", loginUser{}), slog.Any("token", apiToken("abc123")))
+	logger.With(slog.Any("user", loginUser{})).Info("again")
+
+	out := buf.String()
+	for _, secret := range []string{"hunter2", "abc123"} {
+		if strings.Contains(out, secret) {
+			t.Errorf("secret %q logged in clear text:\n%s", secret, out)
+		}
+	}
+	if !strings.Contains(out, `"name":"alice"`) {
+		t.Errorf("non-sensitive field of the LogValuer lost:\n%s", out)
+	}
+}
+
+func TestNeedsRedaction(t *testing.T) {
+	tests := []struct {
+		attr slog.Attr
+		want bool
+	}{
+		{slog.String("method", "GET"), false},
+		{slog.String("Authorization", "Bearer x"), true},
+		{slog.Group("req", slog.String("path", "/")), false},
+		{slog.Group("req", slog.Group("hdr", slog.String("cookie", "c"))), true},
+		{slog.Any("user", loginUser{}), true},
+	}
+	for _, tt := range tests {
+		if got := needsRedaction(tt.attr); got != tt.want {
+			t.Errorf("needsRedaction(%v) = %v, want %v", tt.attr, got, tt.want)
+		}
+	}
+}
+
+// The access log line passes through the full handler chain on every request;
+// with nothing to redact, the only record copy should be TraceHandler's.
+func BenchmarkAccessLogChain(b *testing.B) {
+	logger := slog.New(NewTraceHandler(NewRedactingHandler(slog.NewJSONHandler(io.Discard, nil))))
+	ctx := trace.ContextWithSpanContext(context.Background(), trace.NewSpanContext(trace.SpanContextConfig{
+		TraceID: trace.TraceID{1}, SpanID: trace.SpanID{1}, TraceFlags: trace.FlagsSampled,
+	}))
+	b.ReportAllocs()
+	for b.Loop() {
+		logger.InfoContext(ctx, "http request",
+			slog.String("method", "GET"), slog.String("path", "/v1/widgets"),
+			slog.Int("status", 200), slog.Int("bytes", 123),
+			slog.Duration("duration", time.Millisecond), slog.String("request_id", "abc"),
+			slog.String("remote_ip", "127.0.0.1"))
 	}
 }

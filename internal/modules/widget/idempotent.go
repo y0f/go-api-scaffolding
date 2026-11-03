@@ -46,6 +46,13 @@ func (h *Handler) createIdempotent(w http.ResponseWriter, r *http.Request, actor
 		problem.Status(w, r, http.StatusBadRequest, "Idempotency-Key exceeds 255 characters")
 		return
 	}
+	// Keys are scoped to the caller's subject. Every token without a "sub"
+	// claim would share one namespace, so one such caller could be served
+	// another's stored response; refuse rather than mix them up.
+	if actor.Subject == "" {
+		problem.Status(w, r, http.StatusBadRequest, "Idempotency-Key requires a token with a subject (sub) claim")
+		return
+	}
 	// Scoped to the caller: the stored key is a global primary key, so two
 	// principals picking the same Idempotency-Key value would otherwise
 	// collide, and one would be served the other's stored response.

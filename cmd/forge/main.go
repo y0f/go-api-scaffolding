@@ -35,6 +35,9 @@ import (
 //go:embed templates/*.tmpl
 var templateFS embed.FS
 
+// moduleName is the scaffold's own module path. forge init rewrites it in the
+// project's source; add resource reads the real path from go.mod instead, so a
+// forge binary built elsewhere still writes the project's own import paths.
 const moduleName = "github.com/y0f/go-api-scaffolding"
 
 var usage = "usage: forge add resource <Name>"
@@ -111,7 +114,10 @@ func run(args []string) error {
 	if err := registerQueries(filepath.ToSlash(filepath.Join(moduleDir, "queries.sql"))); err != nil {
 		return err
 	}
-	fmt.Println("registered the queries file in sqlc.yaml")
+	if err := registerModel(res.Table, res.Pascal); err != nil {
+		return err
+	}
+	fmt.Println("registered the queries file and model name in sqlc.yaml")
 
 	printNextSteps(res)
 	return nil
@@ -137,6 +143,50 @@ func registerQueries(path string) error {
 	at := i + len(key)
 	out := string(src[:at]) + "      - " + path + "\n" + string(src[at:])
 	return os.WriteFile(sqlcConfig, []byte(out), 0o600) //#nosec G703 -- constant path; the inserted line comes from the validated resource name
+}
+
+// registerModel pins the name sqlc gives the table's model struct to pascal.
+// sqlc otherwise singularizes the table name with its own inflection rules,
+// which disagree with pluralize for nouns such as quiz, analysis and news, and
+// the templates reference db.<Pascal>. Excluding the table from inflection
+// makes the rename key the table name itself, so no inflection is involved.
+func registerModel(table, pascal string) error {
+	src, err := os.ReadFile(sqlcConfig)
+	if err != nil {
+		return err
+	}
+	out := string(src)
+	for _, opt := range []struct{ key, entry string }{
+		{"inflection_exclude_table_names", "- " + table},
+		{"rename", table + ": " + pascal},
+	} {
+		if out, err = addGoOption(out, opt.key, opt.entry); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(sqlcConfig, []byte(out), 0o600) //#nosec G703 -- constant path; the inserted lines come from the validated resource name
+}
+
+// addGoOption adds entry under key in the gen.go block of sqlc.yaml, creating
+// the key when it is missing. An entry already present is left alone.
+func addGoOption(src, key, entry string) (string, error) {
+	const goBlock = "      go:\n"
+	const indent = "        "
+	line := indent + "  " + entry + "\n"
+	header := indent + key + ":\n"
+	if i := strings.Index(src, header); i >= 0 {
+		at := i + len(header)
+		if strings.Contains(src[at:], line) {
+			return src, nil
+		}
+		return src[:at] + line + src[at:], nil
+	}
+	i := strings.Index(src, goBlock)
+	if i < 0 {
+		return "", fmt.Errorf("%s: no gen.go block found", sqlcConfig)
+	}
+	at := i + len(goBlock)
+	return src[:at] + header + line + src[at:], nil
 }
 
 // nextMigrationVersion returns the next sequential prefix for dir, matching the
@@ -195,25 +245,42 @@ func renderFile(tmplName, outPath string, res resource) error {
 }
 
 func printNextSteps(res resource) {
-	mount := fmt.Sprintf("Mounts: []func(chi.Router){%s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier).Mount},",
-		res.Snake, res.Snake, res.Snake)
+	enable := ""
 	if res.Idempotency {
-		mount = fmt.Sprintf(`%sHandler := %s.NewHandler(%s.NewService(%s.NewRepository(pool)), verifier)
-       %sHandler.EnableIdempotency(idemStore)
-       Mounts: []func(chi.Router){%sHandler.Mount},`, res.Camel, res.Snake, res.Snake, res.Snake, res.Camel, res.Camel)
+		enable = fmt.Sprintf("\n       %sHandler.EnableIdempotency(idemStore)", res.Camel)
 	}
 	fmt.Printf(`
 Next steps:
   1. Regenerate type-safe code:
        task generate
-  2. Mount the handler in cmd/api/main.go, in server.RouterDeps:
-       %s
-     with imports "github.com/go-chi/chi/v5" and "%s/internal/modules/%s".
+  2. Build the handler in cmd/api/main.go, before server.NewRouter:
+       %[1]sHandler := %[2]s.NewHandler(%[2]s.NewService(%[2]s.NewRepository(pool)), verifier)%[3]s
+     then append %[1]sHandler.Mount to the Mounts slice in server.RouterDeps.
+     For the first resource, add the field:
+       Mounts: []func(chi.Router){%[1]sHandler.Mount},
+     with imports "github.com/go-chi/chi/v5" and "%[4]s/internal/modules/%[2]s".
   3. Grant write access in internal/auth/principal.go (rolePermissions) by adding
-     %q to the roles that may write, or issue tokens carrying it as a scope.
+     %[5]q to the roles that may write, or issue tokens carrying it as a scope.
   4. Apply the new migration (task up does this too):
        task migrate
-`, mount, res.Module, res.Snake, res.Table+":write")
+`, res.Camel, res.Snake, enable, res.Module, res.Table+":write")
+}
+
+// projectModule returns the module path declared in ./go.mod, falling back to
+// moduleName when there is no readable module directive.
+func projectModule() string {
+	src, err := os.ReadFile("go.mod")
+	if err != nil {
+		return moduleName
+	}
+	for line := range strings.Lines(string(src)) {
+		if f := strings.Fields(line); len(f) >= 2 && f[0] == "module" {
+			if mod := strings.Trim(f[1], "\"`"); mod != "" {
+				return mod
+			}
+		}
+	}
+	return moduleName
 }
 
 func exists(path string) bool {
@@ -234,7 +301,7 @@ func newResource(name string) resource {
 		Camel:       camel,
 		Snake:       snake,
 		Table:       pluralize(snake),
-		Module:      moduleName,
+		Module:      projectModule(),
 		Outbox:      exists(filepath.Join("internal", "outbox")),
 		Idempotency: exists(filepath.Join("internal", "idempotency")),
 	}
