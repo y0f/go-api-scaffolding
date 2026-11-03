@@ -69,6 +69,8 @@ func TestHostHeaderDoesNotCreateMetricSeries(t *testing.T) {
 	}
 }
 
+//forge:begin example
+
 // An oversized chunked body on a secured operation is a 413, not a 401 from
 // the security check that buffers the body.
 func TestChunkedOversizeBodyIs413(t *testing.T) {
@@ -85,6 +87,10 @@ func TestChunkedOversizeBodyIs413(t *testing.T) {
 	}
 }
 
+//forge:end example
+
+//forge:begin example
+
 // Every 401 carries a Bearer challenge (RFC 9110 15.5.2, RFC 6750 section 3).
 func TestUnauthorizedHasWWWAuthenticate(t *testing.T) {
 	router, _ := regressionRouter(t, 1<<20)
@@ -98,6 +104,8 @@ func TestUnauthorizedHasWWWAuthenticate(t *testing.T) {
 		t.Fatal("401 response has no WWW-Authenticate header")
 	}
 }
+
+//forge:end example
 
 // Rotating the interface ID within one IPv6 /64 must not yield fresh buckets.
 func TestRateLimitGroupsIPv6By64(t *testing.T) {
@@ -119,7 +127,7 @@ func TestRateLimitGroupsIPv6By64(t *testing.T) {
 	}
 }
 
-// Location and Idempotency-Replayed are readable by allowed cross-origin callers.
+// Location (and Idempotency-Replayed) are readable by allowed cross-origin callers.
 func TestCORSExposesResponseHeaders(t *testing.T) {
 	handler := server.CORS([]string{"https://app.example"}, false)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Location", "/v1/widgets/1")
@@ -134,9 +142,14 @@ func TestCORSExposesResponseHeaders(t *testing.T) {
 		t.Fatal("precondition: origin not allowed")
 	}
 	exp := rec.Header().Get("Access-Control-Expose-Headers")
-	if !strings.Contains(exp, "Location") || !strings.Contains(exp, "Idempotency-Replayed") {
-		t.Fatalf("Access-Control-Expose-Headers = %q; browser cannot read Location/Idempotency-Replayed", exp)
+	if !strings.Contains(exp, "Location") {
+		t.Fatalf("Access-Control-Expose-Headers = %q; browser cannot read Location", exp)
 	}
+	//forge:begin idempotency
+	if !strings.Contains(exp, "Idempotency-Replayed") {
+		t.Fatalf("Access-Control-Expose-Headers = %q; browser cannot read Idempotency-Replayed", exp)
+	}
+	//forge:end idempotency
 }
 
 // A panic after the response started aborts the connection instead of
@@ -161,6 +174,8 @@ func TestRecovererAbortsStartedResponse(t *testing.T) {
 	t.Fatalf("panicking handler produced a complete response: status=%d body=%q", resp.StatusCode, string(b))
 }
 
+//forge:begin example
+
 // Validator problem details stay one line, without the schema/value dump.
 func TestValidatorDetailHasNoSchemaDump(t *testing.T) {
 	router, _ := regressionRouter(t, 1<<20)
@@ -173,3 +188,5 @@ func TestValidatorDetailHasNoSchemaDump(t *testing.T) {
 		t.Fatalf("problem detail contains an embedded schema dump: %s", rec.Body.String())
 	}
 }
+
+//forge:end example

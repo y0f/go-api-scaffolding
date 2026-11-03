@@ -18,7 +18,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/y0f/go-api-scaffolding/internal/auth"
+	//forge:begin idempotency
 	"github.com/y0f/go-api-scaffolding/internal/idempotency"
+	//forge:end idempotency
 	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
 	"github.com/y0f/go-api-scaffolding/internal/observability"
 	"github.com/y0f/go-api-scaffolding/internal/server"
@@ -39,7 +41,9 @@ func newRouterServer(t *testing.T) (*httptest.Server, *auth.DevIssuer, *pgxpool.
 		t.Fatal(err)
 	}
 	h := widget.NewHandler(widget.NewService(widget.NewRepository(pool)))
+	//forge:begin idempotency
 	h.EnableIdempotency(idempotency.NewStore(pool, time.Hour))
+	//forge:end idempotency
 	router, err := server.NewRouter(server.RouterDeps{
 		Logger: slog.New(slog.DiscardHandler), Telemetry: tel, Health: server.NewHealth(pool),
 		Authenticator: auth.NewAuthenticator(verifier), API: h,
@@ -85,6 +89,8 @@ func mint(t *testing.T, issuer *auth.DevIssuer, subject string) string {
 	return token
 }
 
+//forge:begin idempotency
+
 // Idempotency keys are scoped to the token's subject. A token without one must
 // not share a namespace with every other such token, where one caller would be
 // served another's stored create.
@@ -105,6 +111,8 @@ func TestIdempotencyKeyRequiresASubject(t *testing.T) {
 		t.Errorf("%d widgets created, want 0", n)
 	}
 }
+
+//forge:end idempotency
 
 // A body must be exactly one JSON document: a second value or trailing bytes
 // mean a truncated or concatenated payload, not a valid request.
