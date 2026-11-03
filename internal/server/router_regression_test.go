@@ -87,6 +87,21 @@ func TestChunkedOversizeBodyIs413(t *testing.T) {
 	}
 }
 
+// SingleJSONDocument does not read a non-JSON body, so the validator's
+// security check is the first to hit the size limit; that is still a 413.
+func TestChunkedOversizeNonJSONBodyIs413(t *testing.T) {
+	router, token := regressionRouter(t, 64)
+	req := httptest.NewRequest(http.MethodPost, "/v1/widgets", strings.NewReader(strings.Repeat("a", 200)))
+	req.ContentLength = -1
+	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+	if rec.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want 413; body = %s", rec.Code, rec.Body.String())
+	}
+}
+
 //forge:end example
 
 //forge:begin example

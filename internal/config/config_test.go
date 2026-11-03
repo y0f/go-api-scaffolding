@@ -82,6 +82,21 @@ func TestLoadAcceptsLogSettingsCaseInsensitively(t *testing.T) {
 	}
 }
 
+// Surrounding whitespace is tolerated the same way for level and format, and
+// Load hands the logger the trimmed value.
+func TestLoadTrimsLogSettings(t *testing.T) {
+	t.Setenv("FORGE_ENV", EnvDevelopment)
+	t.Setenv("FORGE_LOG_LEVEL", " debug ")
+	t.Setenv("FORGE_LOG_FORMAT", "text ")
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if cfg.Log.Level != "debug" || cfg.Log.Format != "text" {
+		t.Errorf("log = %q/%q, want debug/text", cfg.Log.Level, cfg.Log.Format)
+	}
+}
+
 func TestLoadParsesTrustedProxies(t *testing.T) {
 	t.Setenv("FORGE_ENV", EnvDevelopment)
 	t.Setenv("FORGE_HTTP_TRUSTED_PROXIES", "10.0.0.0/8,fd00::/8")

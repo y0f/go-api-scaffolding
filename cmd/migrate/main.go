@@ -48,7 +48,10 @@ func run() error {
 	if err := env.ParseWithOptions(&dbCfg, env.Options{Prefix: "FORGE_DB_"}); err != nil {
 		return fmt.Errorf("parse environment: %w", err)
 	}
-	if dbCfg.URL == "" {
+	// DatabaseConfig defaults the URL to the local development database, so
+	// the field is never empty; check the variable itself, or a migration job
+	// deployed without it would quietly migrate localhost instead of failing.
+	if os.Getenv("FORGE_DB_URL") == "" {
 		return errors.New("FORGE_DB_URL is required")
 	}
 

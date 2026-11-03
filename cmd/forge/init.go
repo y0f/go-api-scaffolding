@@ -49,11 +49,12 @@ var slices = []slice{
 			"internal/modules/widget/outbox_integration_test.go",
 			"migrations/00002_outbox.sql",
 			"migrations/00004_outbox_retry.sql",
+			"migrations/00006_outbox_published_at_idx.sql",
 		},
 	},
 	{
 		Name:  "idempotency",
-		Title: "Idempotency keys: safe retries of unsafe requests via the Idempotency-Key header",
+		Title: "Idempotency keys: safe retries of create requests via the Idempotency-Key header",
 		Paths: []string{
 			"internal/idempotency",
 			"internal/modules/widget/idempotent.go",
@@ -90,8 +91,9 @@ var derived = []struct {
 }
 
 // The installer removes itself: these paths and every "init" block go on
-// every run, so the project keeps no trace of the scaffold's machinery.
-var initPaths = []string{"cmd/forge/init.go", "cmd/forge/init_test.go", "docs/assets/logo.webp"}
+// every run, so the project keeps no trace of the scaffold's machinery. The
+// changelog goes too: it describes the scaffold's releases, not the project's.
+var initPaths = []string{"cmd/forge/init.go", "cmd/forge/init_test.go", "docs/assets/logo.webp", "CHANGELOG.md"}
 
 func init() {
 	usage = "usage: forge new <dir> | forge init | forge add resource <Name>"
@@ -281,10 +283,18 @@ func validateModule(module string) error {
 	return nil
 }
 
-// apply performs the whole transformation in dependency order: text first, so
-// a failure leaves files intact rather than half-deleted; then deletions; then
-// the toolchain steps that prove the result builds.
+// apply performs the whole transformation in dependency order: the file
+// rewrite first, then the toolchain steps that prove the result builds.
 func apply(module string, dropped map[string]bool) error {
+	if err := rewriteTree(module, dropped); err != nil {
+		return err
+	}
+	return runToolchain(module, dropped)
+}
+
+// rewriteTree edits and deletes the tracked files: text first, so a failure
+// leaves files intact rather than half-deleted; then deletions.
+func rewriteTree(module string, dropped map[string]bool) error {
 	for _, d := range derived {
 		all := true
 		for _, of := range d.Of {
@@ -340,10 +350,11 @@ func apply(module string, dropped map[string]bool) error {
 			return err
 		}
 	}
-	if err := renumberMigrations("migrations"); err != nil {
-		return err
-	}
+	return renumberMigrations("migrations")
+}
 
+// runToolchain regenerates code and proves the rewritten project builds.
+func runToolchain(module string, dropped map[string]bool) error {
 	// goimports runs before tidy: a dropped block can leave an import of a
 	// package that no longer exists, and tidy would go looking for it.
 	steps := [][]string{

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -101,6 +103,51 @@ func TestScaffoldMarkers(t *testing.T) {
 	}
 	if !referenced["init"] {
 		t.Error("no init block: the installer would not remove its own wiring")
+	}
+}
+
+// Files that describe the scaffold rather than the project it generates go
+// with the installer. The rewrite runs on a copy of those files plus one the
+// project keeps, staged in a fresh repository as forge new does.
+func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
+	root := repoRoot(t)
+	dir := t.TempDir()
+	for _, p := range append([]string{"README.md", "CHANGELOG.md"}, initPaths...) {
+		src, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(p)))
+		if err != nil {
+			t.Fatal(err)
+		}
+		dst := filepath.Join(dir, filepath.FromSlash(p))
+		if err := os.MkdirAll(filepath.Dir(dst), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(dst, src, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Mkdir(filepath.Join(dir, "migrations"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(dir)
+	for _, step := range [][]string{{"git", "init", "--quiet"}, {"git", "add", "--all"}} {
+		if out, err := exec.Command(step[0], step[1:]...).CombinedOutput(); err != nil { //#nosec G204 -- fixed argv
+			t.Fatalf("%v: %v\n%s", step, err, out)
+		}
+	}
+	if err := rewriteTree("github.com/you/app", map[string]bool{}); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range append([]string{"CHANGELOG.md"}, initPaths...) {
+		if _, err := os.Stat(filepath.FromSlash(p)); !errors.Is(err, os.ErrNotExist) {
+			t.Errorf("%s survived forge init (stat err %v)", p, err)
+		}
+	}
+	readme, err := os.ReadFile("README.md")
+	if err != nil {
+		t.Fatalf("README.md was removed: %v", err)
+	}
+	if strings.Contains(string(readme), moduleName) {
+		t.Error("README.md kept the scaffold module path")
 	}
 }
 

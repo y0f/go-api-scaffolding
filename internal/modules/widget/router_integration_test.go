@@ -100,8 +100,8 @@ func TestIdempotencyKeyRequiresASubject(t *testing.T) {
 	token := mint(t, issuer, "")
 
 	resp, body := send(t, srv, http.MethodPost, "/v1/widgets", token, `{"name":"x"}`, map[string]string{"Idempotency-Key": "1"})
-	if resp.StatusCode < 400 || resp.StatusCode >= 500 {
-		t.Fatalf("subject-less idempotent create = %d %s, want a 4xx", resp.StatusCode, body)
+	if resp.StatusCode != http.StatusBadRequest || !strings.Contains(body, "subject (sub) claim") {
+		t.Fatalf("subject-less idempotent create = %d %s, want 400 asking for a subject (sub) claim", resp.StatusCode, body)
 	}
 	var n int
 	if err := pool.QueryRow(context.Background(), "SELECT count(*) FROM widgets").Scan(&n); err != nil {

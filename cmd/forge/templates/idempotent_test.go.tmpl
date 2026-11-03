@@ -4,12 +4,16 @@ package {{.Snake}}
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 
 	"{{.Module}}/internal/auth"
 	db "{{.Module}}/internal/gen/db"
+	"{{.Module}}/internal/idempotency"
 )
 
 func (f *fakeRepo) CreateIdempotent(_ context.Context, in Input, _ IdempotencyClaim) (db.{{.Pascal}}, error) {
@@ -27,5 +31,37 @@ func TestServiceCreateIdempotentRequiresPermission(t *testing.T) {
 	}
 	if repo.createCalled {
 		t.Error("repository CreateIdempotent should not run without permission")
+	}
+}
+
+// Keys are namespaced by subject, so a token without one would share a key
+// space with every other subject-less caller and could be replayed their
+// stored response.
+func TestCreateIdempotentRequiresSubject(t *testing.T) {
+	repo := &fakeRepo{}
+	h := NewHandler(NewService(repo), nil)
+	h.EnableIdempotency(idempotency.NewStore(nil, time.Hour))
+	actor := auth.Principal{Scopes: []string{PermissionWrite}}
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/", nil)
+	h.createIdempotent(rec, req, actor, Input{Name: "example"}, nil, "k")
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+	if repo.createCalled {
+		t.Error("repository CreateIdempotent should not run without a subject")
+	}
+}
+
+func TestIdempotencyRowKeyIsUnambiguous(t *testing.T) {
+	if idempotencyRowKey("a", "b:c") == idempotencyRowKey("a:b", "c") {
+		t.Error("subjects containing ':' share row keys with other subjects")
+	}
+	if idempotencyRowKey("a%3Ab", "c") == idempotencyRowKey("a:b", "c") {
+		t.Error("an escaped subject aliases a raw one")
+	}
+	// Rows stored before the escaping stay readable for ordinary subjects.
+	if got := idempotencyRowKey("alice", "k:1"); got != "alice:k:1" {
+		t.Errorf("row key = %q, want alice:k:1", got)
 	}
 }

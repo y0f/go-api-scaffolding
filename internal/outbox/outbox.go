@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,6 +66,22 @@ func NewRelay(pool *pgxpool.Pool, publisher Publisher, logger *slog.Logger, batc
 	return &Relay{pool: pool, publisher: publisher, logger: logger, batchSize: batchSize, interval: interval}
 }
 
+// maxErrorBytes bounds the publisher error stored in last_error.
+const maxErrorBytes = 2048
+
+// storableError turns a publisher error into text Postgres always accepts. A
+// TEXT column rejects NUL bytes and invalid UTF-8, which a broker error that
+// echoes payload bytes can contain, and a failed RecordOutboxFailure rolls back
+// the whole batch: the messages already published would be sent again on every
+// tick while the rejected one never backs off.
+func storableError(err error) string {
+	msg := strings.ReplaceAll(err.Error(), "\x00", "")
+	if len(msg) > maxErrorBytes {
+		msg = msg[:maxErrorBytes]
+	}
+	return strings.ToValidUTF8(msg, "?")
+}
+
 // purgeBatchSize bounds how many rows one purge statement deletes, keeping
 // each delete transaction (and its locks and WAL) short.
 const purgeBatchSize = 5000
@@ -94,7 +111,9 @@ func (r *Relay) drain(ctx context.Context) {
 			r.logger.ErrorContext(ctx, "outbox relay batch failed", slog.Any("error", err))
 			break
 		}
-		if n < int(r.batchSize) {
+		// n == 0 also ends the drain when batchSize is not positive, where
+		// n < batchSize never holds and the loop would spin without pausing.
+		if n == 0 || n < int(r.batchSize) {
 			break
 		}
 	}
@@ -163,7 +182,7 @@ func (r *Relay) ProcessBatch(ctx context.Context) (int, error) {
 				// Shutting down: the rejection says nothing about the message.
 				return ctxErr
 			}
-			attempts, err := queries.RecordOutboxFailure(ctx, pubErr.Error(), row.ID)
+			attempts, err := queries.RecordOutboxFailure(ctx, storableError(pubErr), row.ID)
 			if err != nil {
 				return err
 			}

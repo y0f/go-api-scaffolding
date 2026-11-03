@@ -94,14 +94,9 @@ func (h *Handler) GetWidget(w http.ResponseWriter, r *http.Request, id api.Widge
 
 func (h *Handler) UpdateWidget(w http.ResponseWriter, r *http.Request, id api.WidgetID) {
 	var input api.WidgetInput
-	dec := json.NewDecoder(r.Body)
-	if err := dec.Decode(&input); err != nil {
-		writeBodyError(w, r, err, "invalid JSON body")
-		return
-	}
-	// Decode stops after the first value; anything after it (a second object,
-	// trailing garbage) means the body is not one JSON document.
-	if _, err := dec.Token(); !errors.Is(err, io.EOF) {
+	// The router's SingleJSONDocument middleware has already rejected bodies
+	// with trailing data after the JSON document.
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		writeBodyError(w, r, err, "invalid JSON body")
 		return
 	}

@@ -158,7 +158,8 @@ components:
         default: 0
       description: >-
         Number of items to skip. Capped at 10000, because the database still
-        reads every skipped row.
+        reads every skipped row; a larger offset is a 400. Items past
+        offset 10000 plus limit cannot be listed, although `total` counts them.
     WidgetID:
       name: id
       in: path

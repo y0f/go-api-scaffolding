@@ -27,3 +27,16 @@ func TestCreateIdempotentRequiresWritePermission(t *testing.T) {
 		t.Error("repository CreateIdempotent should not run when forbidden")
 	}
 }
+
+func TestIdempotencyRowKeyIsUnambiguous(t *testing.T) {
+	if idempotencyRowKey("a", "b:c") == idempotencyRowKey("a:b", "c") {
+		t.Error("subjects containing ':' share row keys with other subjects")
+	}
+	if idempotencyRowKey("a%3Ab", "c") == idempotencyRowKey("a:b", "c") {
+		t.Error("an escaped subject aliases a raw one")
+	}
+	// Rows stored before the escaping stay readable for ordinary subjects.
+	if got := idempotencyRowKey("alice", "k:1"); got != "alice:k:1" {
+		t.Errorf("row key = %q, want alice:k:1", got)
+	}
+}

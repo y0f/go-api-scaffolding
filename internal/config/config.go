@@ -105,6 +105,10 @@ func Load() (Config, error) {
 	if err := env.Parse(&cfg); err != nil {
 		return Config{}, fmt.Errorf("parse environment: %w", err)
 	}
+	// Trim the log settings once so validation and the logger see the same
+	// value ("json " is json, not an unknown format).
+	cfg.Log.Level = strings.TrimSpace(cfg.Log.Level)
+	cfg.Log.Format = strings.TrimSpace(cfg.Log.Format)
 	if err := cfg.Validate(); err != nil {
 		return Config{}, err
 	}
@@ -129,7 +133,7 @@ func (c Config) Validate() error {
 	default:
 		errs = append(errs, fmt.Errorf("FORGE_LOG_LEVEL must be debug, info, warn or error, got %q", c.Log.Level))
 	}
-	switch strings.ToLower(c.Log.Format) {
+	switch strings.ToLower(strings.TrimSpace(c.Log.Format)) {
 	case "json", "text":
 	default:
 		errs = append(errs, fmt.Errorf("FORGE_LOG_FORMAT must be json or text, got %q", c.Log.Format))

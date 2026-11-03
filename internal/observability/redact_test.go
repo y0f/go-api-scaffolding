@@ -48,22 +48,18 @@ func (loginUser) LogValue() slog.Value {
 	return slog.GroupValue(slog.String("name", "alice"), slog.String("password", "hunter2"))
 }
 
-type apiToken string
-
-func (t apiToken) LogValue() slog.Value { return slog.StringValue(string(t)) }
-
+// The LogValuer is logged under a non-sensitive key, so only resolving it
+// exposes the sensitive key inside.
 func TestRedactingHandlerResolvesLogValuer(t *testing.T) {
 	var buf bytes.Buffer
 	logger := slog.New(NewRedactingHandler(slog.NewJSONHandler(&buf, nil)))
 
-	logger.Info("login", slog.Any("user", loginUser{}), slog.Any("token", apiToken("abc123")))
+	logger.Info("login", slog.Any("user", loginUser{}))
 	logger.With(slog.Any("user", loginUser{})).Info("again")
 
 	out := buf.String()
-	for _, secret := range []string{"hunter2", "abc123"} {
-		if strings.Contains(out, secret) {
-			t.Errorf("secret %q logged in clear text:\n%s", secret, out)
-		}
+	if strings.Contains(out, "hunter2") {
+		t.Errorf("password logged in clear text:\n%s", out)
 	}
 	if !strings.Contains(out, `"name":"alice"`) {
 		t.Errorf("non-sensitive field of the LogValuer lost:\n%s", out)

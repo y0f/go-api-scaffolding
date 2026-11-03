@@ -1,4 +1,4 @@
-// Package idempotency stores and replays responses to unsafe requests keyed by
+// Package idempotency stores and replays responses to create requests keyed by
 // a client-supplied Idempotency-Key, so retries do not duplicate side effects.
 // The key is written in the same transaction as the state change it guards,
 // which makes concurrent retries safe as well as sequential ones. This package

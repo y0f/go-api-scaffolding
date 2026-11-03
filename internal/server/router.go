@@ -122,9 +122,10 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 
 // validationErrorHandler writes the validator's failures as problem responses.
 func validationErrorHandler(_ context.Context, err error, w http.ResponseWriter, r *http.Request, opts nethttpmiddleware.ErrorHandlerOpts) {
-	// The security check buffers the body before authenticating, so a chunked
-	// body over MaxBytes surfaces as an authentication failure. It is a size
-	// problem, not a credentials one.
+	// SingleJSONDocument already turns an oversized JSON body into a 413. Any
+	// other body is first read by the security check, which buffers it before
+	// authenticating, so a chunked one over MaxBytes surfaces as an
+	// authentication failure. It is a size problem, not a credentials one.
 	if mbe := new(http.MaxBytesError); errors.As(err, &mbe) {
 		problem.Status(w, r, http.StatusRequestEntityTooLarge, "request body exceeds the size limit")
 		return

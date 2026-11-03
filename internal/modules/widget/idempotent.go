@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -33,6 +34,17 @@ var ErrIdempotencyReserved = errors.New("idempotency key already reserved")
 // maxIdempotencyKeyLen bounds the header, which is stored as the row key.
 const maxIdempotencyKeyLen = 255
 
+// subjectEscaper removes ':' from the subject, so the first ':' in a row key
+// always ends the subject: subject "a" with key "b:c" and subject "a:b" with
+// key "c" no longer share the row key "a:b:c". Subjects without ':' or '%'
+// keep the row key they had before the escaping was added.
+var subjectEscaper = strings.NewReplacer("%", "%25", ":", "%3A")
+
+// idempotencyRowKey is the stored key for a caller's Idempotency-Key.
+func idempotencyRowKey(subject, key string) string {
+	return subjectEscaper.Replace(subject) + ":" + key
+}
+
 // EnableIdempotency makes CreateWidget honour the Idempotency-Key header.
 func (h *Handler) EnableIdempotency(store *idempotency.Store) {
 	h.idempotency = store
@@ -57,7 +69,7 @@ func (h *Handler) createIdempotent(w http.ResponseWriter, r *http.Request, actor
 	// principals picking the same Idempotency-Key value would otherwise
 	// collide, and one would be served the other's stored response.
 	claim := IdempotencyClaim{
-		Key:  actor.Subject + ":" + key,
+		Key:  idempotencyRowKey(actor.Subject, key),
 		Hash: idempotency.Hash([]byte(actor.Subject), []byte(r.URL.Path), body),
 		TTL:  h.idempotency.TTL(),
 	}

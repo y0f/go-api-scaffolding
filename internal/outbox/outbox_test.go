@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
 	"github.com/y0f/go-api-scaffolding/internal/platform/database"
 	"github.com/y0f/go-api-scaffolding/internal/testutil"
 )
@@ -220,6 +221,63 @@ func TestRelayRejectedMessageDoesNotBlockOrDuplicate(t *testing.T) {
 	}
 }
 
+// binaryErrorPublisher rejects one message ID with an error carrying a NUL
+// byte, invalid UTF-8 and more text than last_error is meant to hold.
+type binaryErrorPublisher struct{ reject int64 }
+
+func (p binaryErrorPublisher) Publish(_ context.Context, m Message) error {
+	if m.ID == p.reject {
+		return errors.New("broker echoed \x00\xff\xfe payload " + strings.Repeat("x", 10000))
+	}
+	return nil
+}
+
+// A publisher error Postgres cannot store as text must still be recorded,
+// rather than failing the batch and rolling back the messages already sent.
+func TestRelayRecordsUnstorablePublisherError(t *testing.T) {
+	t.Parallel()
+	pool := testutil.NewDB(t)
+	ctx := context.Background()
+	ids := enqueueN(t, pool, 3)
+
+	relay := NewRelay(pool, binaryErrorPublisher{reject: ids[1]}, slog.New(slog.DiscardHandler), 10, time.Second)
+	if published, err := relay.ProcessBatch(ctx); published != 2 {
+		t.Fatalf("published %d (err %v), want 2", published, err)
+	}
+	var marked int
+	if err := pool.QueryRow(ctx, "SELECT count(*) FROM outbox_messages WHERE published_at IS NOT NULL").Scan(&marked); err != nil {
+		t.Fatal(err)
+	}
+	if marked != 2 {
+		t.Errorf("%d messages marked published, want 2", marked)
+	}
+	var (
+		attempts  int32
+		lastError string
+	)
+	if err := pool.QueryRow(ctx, "SELECT attempts, last_error FROM outbox_messages WHERE id = $1", ids[1]).
+		Scan(&attempts, &lastError); err != nil {
+		t.Fatal(err)
+	}
+	if attempts != 1 || !strings.HasPrefix(lastError, "broker echoed") || len(lastError) > maxErrorBytes {
+		t.Errorf("attempts=%d last_error=%.40q (%d bytes), want 1 and a bounded, sanitized error", attempts, lastError, len(lastError))
+	}
+}
+
+// A non-positive batch size fetches nothing; the drain must still end instead
+// of running empty transactions back to back until the context is cancelled.
+func TestRelayDrainStopsOnEmptyBatch(t *testing.T) {
+	t.Parallel()
+	pool := testutil.NewDB(t)
+	relay := NewRelay(pool, &capturePublisher{}, slog.New(slog.DiscardHandler), 0, time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	relay.drain(ctx)
+	if ctx.Err() != nil {
+		t.Fatal("drain ran until the context expired, want it to stop after an empty batch")
+	}
+}
+
 type countPublisher struct {
 	mu sync.Mutex
 	n  int
@@ -268,8 +326,20 @@ func TestRelayDrainsBacklogWithinOneTick(t *testing.T) {
 	}
 }
 
-// The retention purge must be served by an index rather than a full scan, and
-// must remove a backlog larger than one delete batch.
+// sqlCapture records the SQL text of the last query run on a connection.
+type sqlCapture struct{ sql string }
+
+func (c *sqlCapture) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
+	c.sql = data.SQL
+	return ctx
+}
+
+func (c *sqlCapture) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQueryEndData) {}
+
+// The shipped retention-purge statement must be able to use the partial
+// published_at index, and the purge must remove a backlog larger than one
+// delete batch. Sequential scans are disabled, so this checks that the index
+// is usable for that exact statement, not which plan the planner prefers.
 func TestPurgePublishedUsesIndexAndBatches(t *testing.T) {
 	t.Parallel()
 	pool := testutil.NewDB(t)
@@ -287,25 +357,37 @@ func TestPurgePublishedUsesIndexAndBatches(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	conn, err := pool.Acquire(ctx)
+	// Capture the statement DeletePublishedOutboxBefore really sends (max_rows
+	// 0 deletes nothing), then EXPLAIN that exact text with the same arguments.
+	capture := &sqlCapture{}
+	connCfg := pool.Config().ConnConfig.Copy()
+	connCfg.Tracer = capture
+	conn, err := pgx.ConnectConfig(ctx, connCfg)
 	if err != nil {
 		t.Fatal(err)
+	}
+	defer conn.Close(ctx)
+	before := time.Now().Add(-7 * 24 * time.Hour)
+	if _, err := db.New(conn).DeletePublishedOutboxBefore(ctx, before, 0); err != nil {
+		t.Fatal(err)
+	}
+	purgeSQL := capture.sql
+	if !strings.Contains(purgeSQL, "DELETE FROM outbox_messages") {
+		t.Fatalf("captured %q, want the purge DELETE", purgeSQL)
 	}
 	if _, err := conn.Exec(ctx, "SET enable_seqscan = off"); err != nil {
 		t.Fatal(err)
 	}
-	rows, err := conn.Query(ctx, `EXPLAIN SELECT id FROM outbox_messages
-		WHERE published_at IS NOT NULL AND published_at < now() - interval '7 days' LIMIT 5000`)
+	rows, err := conn.Query(ctx, "EXPLAIN "+purgeSQL, before, int32(purgeBatchSize))
 	if err != nil {
 		t.Fatal(err)
 	}
 	plan, err := pgx.CollectRows(rows, pgx.RowTo[string])
-	conn.Release()
 	if err != nil {
 		t.Fatal(err)
 	}
 	if joined := strings.Join(plan, "\n"); !strings.Contains(joined, "outbox_published_at_idx") {
-		t.Errorf("purge predicate does not use outbox_published_at_idx:\n%s", joined)
+		t.Errorf("purge statement does not use outbox_published_at_idx:\n%s", joined)
 	}
 
 	relay := NewRelay(pool, &capturePublisher{}, slog.New(slog.DiscardHandler), 10, time.Second)
