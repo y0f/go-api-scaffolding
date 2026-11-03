@@ -91,7 +91,9 @@ func TestNeedsRedaction(t *testing.T) {
 // The access log line passes through the full handler chain on every request;
 // with nothing to redact, the only record copy should be TraceHandler's.
 func BenchmarkAccessLogChain(b *testing.B) {
-	logger := slog.New(NewTraceHandler(NewRedactingHandler(slog.NewJSONHandler(io.Discard, nil))))
+	// A real handler, not slog.DiscardHandler: that one reports disabled, so the
+	// logger would skip the chain and the benchmark would measure nothing.
+	logger := slog.New(NewTraceHandler(NewRedactingHandler(slog.NewJSONHandler(io.Discard, nil)))) //nolint:sloglint // see above
 	ctx := trace.ContextWithSpanContext(context.Background(), trace.NewSpanContext(trace.SpanContextConfig{
 		TraceID: trace.TraceID{1}, SpanID: trace.SpanID{1}, TraceFlags: trace.FlagsSampled,
 	}))

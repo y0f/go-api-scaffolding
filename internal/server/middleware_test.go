@@ -92,3 +92,53 @@ func TestAccessLogRecordsClientIPWithoutPort(t *testing.T) {
 		t.Errorf("logged remote_ip=%q status=%d, want 203.0.113.5/200", line.RemoteIP, line.Status)
 	}
 }
+
+func TestSingleJSONDocument(t *testing.T) {
+	cases := []struct {
+		name, contentType, body string
+		want                    int
+		wantBody                string
+	}{
+		{"one object", "application/json", `{"name":"a"}`, http.StatusOK, `{"name":"a"}`},
+		{"one object with whitespace", "application/json; charset=utf-8", " {\"name\":\"a\"}\n", http.StatusOK, " {\"name\":\"a\"}\n"},
+		{"problem+json counts as JSON", "application/problem+json", `{}{}`, http.StatusBadRequest, ""},
+		{"two objects", "application/json", `{"name":"a"}{"name":"b"}`, http.StatusBadRequest, ""},
+		{"trailing garbage", "application/json", `{"name":"a"}xyz`, http.StatusBadRequest, ""},
+		{"malformed", "application/json", `{"name":`, http.StatusBadRequest, ""},
+		{"empty body is left to the validator", "application/json", ``, http.StatusOK, ``},
+		{"not JSON is left alone", "text/plain", `a}b`, http.StatusOK, `a}b`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var got string
+			h := SingleJSONDocument(http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
+				b, _ := io.ReadAll(r.Body)
+				got = string(b)
+			}))
+			r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(tc.body))
+			r.Header.Set("Content-Type", tc.contentType)
+			w := httptest.NewRecorder()
+			h.ServeHTTP(w, r)
+			if w.Code != tc.want {
+				t.Fatalf("status = %d, want %d (%s)", w.Code, tc.want, w.Body.String())
+			}
+			if tc.want == http.StatusOK && got != tc.wantBody {
+				t.Errorf("next saw body %q, want %q", got, tc.wantBody)
+			}
+		})
+	}
+}
+
+func TestSingleJSONDocumentOversizeIs413(t *testing.T) {
+	h := MaxBytes(8)(SingleJSONDocument(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("next must not run")
+	})))
+	r := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"name":"too long"}`))
+	r.ContentLength = -1 // chunked: only the read can catch it
+	r.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("status = %d, want 413", w.Code)
+	}
+}

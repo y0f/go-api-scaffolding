@@ -109,9 +109,11 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	if deps.API == nil {
 		deps.API = api.Unimplemented{}
 	}
+	// The generated wrapper applies Middlewares last-to-first, so the
+	// single-document check sees the raw body before the validator re-encodes it.
 	api.HandlerWithOptions(deps.API, api.ChiServerOptions{
 		BaseRouter:       r,
-		Middlewares:      []api.MiddlewareFunc{validator},
+		Middlewares:      []api.MiddlewareFunc{validator, SingleJSONDocument},
 		ErrorHandlerFunc: paramErrorHandler,
 	})
 

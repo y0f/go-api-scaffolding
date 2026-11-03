@@ -22,6 +22,11 @@ linters:
           - gosec
           - errcheck
           - bodyclose
+      # sqlc's own plural of "quiz" is "quizes"; the forge test pins that rule.
+      - path: cmd/forge/resource_test\.go
+        linters:
+          - misspell
+        text: "quizes"
       # Doc comments are present where they add value; do not require one on
       # every exported identifier (avoids comment noise).
       - linters:

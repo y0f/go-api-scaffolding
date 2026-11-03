@@ -1,7 +1,10 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -135,6 +138,45 @@ func CORS(allowed []string, reflectAnyWhenEmpty bool) func(http.Handler) http.Ha
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// SingleJSONDocument rejects a JSON request body that is not exactly one JSON
+// document (a second value or trailing bytes after the first). It runs before
+// the OpenAPI validator, which decodes the body and hands the handler a
+// re-encoded copy, so trailing data would otherwise be silently dropped.
+func SingleJSONDocument(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ct := strings.ToLower(r.Header.Get("Content-Type"))
+		isJSON := strings.HasPrefix(ct, "application/json") || strings.Contains(ct, "+json")
+		if r.Body == nil || r.Body == http.NoBody || !isJSON {
+			next.ServeHTTP(w, r)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		_ = r.Body.Close()
+		if err != nil {
+			if mbe := new(http.MaxBytesError); errors.As(err, &mbe) {
+				problem.Status(w, r, http.StatusRequestEntityTooLarge, "request body exceeds the size limit")
+				return
+			}
+			problem.Status(w, r, http.StatusBadRequest, "cannot read request body")
+			return
+		}
+		if len(bytes.TrimSpace(body)) > 0 {
+			dec := json.NewDecoder(bytes.NewReader(body))
+			var first json.RawMessage
+			if err := dec.Decode(&first); err != nil {
+				problem.Status(w, r, http.StatusBadRequest, "invalid JSON body")
+				return
+			}
+			if _, err := dec.Token(); !errors.Is(err, io.EOF) {
+				problem.Status(w, r, http.StatusBadRequest, "invalid JSON body")
+				return
+			}
+		}
+		r.Body = io.NopCloser(bytes.NewReader(body))
+		next.ServeHTTP(w, r)
+	})
 }
 
 // MaxBytes caps request body size. It rejects a declared-oversize body up front
