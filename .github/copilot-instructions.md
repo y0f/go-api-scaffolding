@@ -6,8 +6,8 @@ Keep authorization in services and add tests for changed behavior.
 For parallel work, use separate worktrees and a coordinator for shared contracts,
 migrations, and wiring. See [the workflow](../docs/workflows/parallel.md).
 
-Complete the PR template's required yes/no AI-assistance declaration. Name tools
-and scope when AI helped. Report only checks actually run, including failures
+When opening or updating a pull request, complete the template's required yes/no
+AI-assistance declaration. Name tools and scope when AI helped. Report only checks actually run, including failures
 and unavailable prerequisites. Do not add AI authors or co-author trailers.
 
 ## Code review priorities
