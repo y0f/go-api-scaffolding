@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +13,7 @@ import (
 func TestGeneratedCheckIncludesEveryWorkingTreeState(t *testing.T) {
 	for _, state := range []string{"tracked", "staged", "untracked"} {
 		t.Run(state, func(t *testing.T) {
-			t.Chdir(t.TempDir())
+			t.Chdir(gitFixtureDir(t))
 			git := func(args ...string) {
 				t.Helper()
 				if out, err := exec.Command("git", args...).CombinedOutput(); err != nil {
@@ -39,6 +40,83 @@ func TestGeneratedCheckIncludesEveryWorkingTreeState(t *testing.T) {
 				t.Fatalf("valid uncommitted output must pass: %v", err)
 			}
 		})
+	}
+}
+
+func gitFixtureDir(t *testing.T) string {
+	t.Helper()
+	directory := t.TempDir()
+	// Git objects are read-only. Some Windows sandboxes require clearing that
+	// attribute explicitly before testing's TempDir cleanup can remove them.
+	t.Cleanup(func() {
+		if err := makeFixtureWritable(directory); err != nil {
+			t.Errorf("prepare owned Git fixture for cleanup: %v", err)
+		}
+	})
+	return directory
+}
+
+func makeFixtureWritable(directory string) error {
+	root, err := os.OpenRoot(directory)
+	if err != nil {
+		return err
+	}
+	defer root.Close()
+	return fs.WalkDir(root.FS(), ".", func(name string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		// WalkDir does not follow links; change only regular files in this root.
+		if !entry.Type().IsRegular() {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		return root.Chmod(name, info.Mode().Perm()|0o600)
+	})
+}
+
+func TestGitFixtureCleanupMakesReadOnlyObjectsRemovable(t *testing.T) {
+	directory := gitFixtureDir(t)
+	object := filepath.Join(directory, "objects", "object")
+	writeFixture(t, object, "owned fixture")
+	if err := os.Chmod(object, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	if err := makeFixtureWritable(directory); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.RemoveAll(filepath.Dir(object)); err != nil {
+		t.Fatalf("read-only fixture remains undeletable: %v", err)
+	}
+}
+
+func TestGitFixtureCleanupDoesNotFollowSymlinks(t *testing.T) {
+	directory := gitFixtureDir(t)
+	outside := filepath.Join(t.TempDir(), "outside")
+	writeFixture(t, outside, "not owned by fixture")
+	if err := os.Chmod(outside, 0o444); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if err := os.Chmod(outside, 0o600); err != nil {
+			t.Error(err)
+		}
+	})
+	if err := os.Symlink(outside, filepath.Join(directory, "link")); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	if err := makeFixtureWritable(directory); err != nil {
+		t.Fatal(err)
+	}
+	info, err := os.Stat(outside)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.Mode().Perm()&0o200 != 0 {
+		t.Fatal("cleanup changed the symlink target outside the fixture")
 	}
 }
 
