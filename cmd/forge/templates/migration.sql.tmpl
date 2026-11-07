@@ -1,15 +1,15 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE {{.Table}} (
+CREATE TABLE "{{.Table}}" (
     id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     name       TEXT        NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX {{.Table}}_list_idx ON {{.Table}} (created_at DESC, id DESC);
+CREATE INDEX "{{.Table}}_list_idx" ON "{{.Table}}" (created_at DESC, id DESC);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE {{.Table}};
+DROP TABLE "{{.Table}}";
 -- +goose StatementEnd

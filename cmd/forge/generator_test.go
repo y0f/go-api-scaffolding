@@ -48,7 +48,7 @@ func TestGeneratedProjects(t *testing.T) {
 			module := "example.com/generator/" + preset.name
 			generatorCommand(t, dir, "go", "run", "./cmd/forge", "init", "-yes", "-module", module, "-drop", preset.drop)
 			generatorCommand(t, dir, "go", "run", "./cmd/dev", "check")
-			for _, resource := range []string{"Order", "Category", "Api", "Http", "Idempotency", "Store", "AuditTest", "InvoiceLinux"} {
+			for _, resource := range []string{"Order", "Category", "Api", "Http", "Idempotency", "Store", "AuditTest", "InvoiceLinux", "Reference", "Value", strings.Repeat("A", 53)} {
 				generatorCommand(t, dir, "go", "run", "./cmd/forge", "add", "resource", resource)
 			}
 			generatorCommand(t, dir, "go", "run", "./cmd/dev", "generate")

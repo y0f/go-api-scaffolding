@@ -1,25 +1,25 @@
 -- name: Create{{.Pascal}} :one
-INSERT INTO {{.Table}} (name)
+INSERT INTO "{{.Table}}" (name)
 VALUES ($1)
 RETURNING *;
 
 -- name: Get{{.Pascal}} :one
-SELECT * FROM {{.Table}}
+SELECT * FROM "{{.Table}}"
 WHERE id = $1;
 
 -- name: List{{.Plural}} :many
-SELECT * FROM {{.Table}}
+SELECT * FROM "{{.Table}}"
 ORDER BY created_at DESC, id DESC
 LIMIT $1 OFFSET $2;
 
 -- name: Delete{{.Pascal}} :execrows
-DELETE FROM {{.Table}}
+DELETE FROM "{{.Table}}"
 WHERE id = $1;
 
 -- name: Count{{.Plural}} :one
-SELECT count(*) FROM {{.Table}};
+SELECT count(*) FROM "{{.Table}}";
 
 -- name: Update{{.Pascal}} :one
-UPDATE {{.Table}} SET name = $2, updated_at = now()
+UPDATE "{{.Table}}" SET name = $2, updated_at = now()
 WHERE id = $1
 RETURNING *;

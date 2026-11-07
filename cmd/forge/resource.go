@@ -306,6 +306,13 @@ func validateResourceName(res resource) error {
 	if !token.IsIdentifier(res.Snake) || token.Lookup(res.Snake).IsKeyword() {
 		return fmt.Errorf("resource %q does not produce a valid Go package name", res.Pascal)
 	}
+	// PostgreSQL truncates identifiers beyond its default 63-byte limit. Keep
+	// the table, implicit primary-key index and explicit list index distinct.
+	for _, name := range []string{res.Table, res.Table + "_pkey", res.Table + "_list_idx"} {
+		if len(name) > 63 {
+			return fmt.Errorf("resource %s produces PostgreSQL identifier %q (%d bytes), exceeding the 63-byte limit; shorten the resource name so its pluralized table name is at most 54 bytes", res.Pascal, name, len(name))
+		}
+	}
 	// Check on every host: a resource generated on Linux must still check out
 	// and build on Windows, where these directory names are device aliases.
 	switch res.Snake {

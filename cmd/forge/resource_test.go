@@ -3,6 +3,8 @@ package main
 import (
 	"go/format"
 	"io"
+	"io/fs"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -218,6 +220,97 @@ func TestResourceDryRunDoesNotWrite(t *testing.T) {
 	}
 	if _, err := os.Stat(".forge-resource.lock"); !os.IsNotExist(err) {
 		t.Fatalf("dry run left a lock: %v", err)
+	}
+}
+
+func TestResourceAcceptsPostgresIdentifierBoundary(t *testing.T) {
+	resourceFixture(t)
+	res := newResource(strings.Repeat("A", 53))
+	index := res.Table + "_list_idx"
+	if len(index) != 63 {
+		t.Fatalf("fixture index has %d bytes, want 63", len(index))
+	}
+	for _, dryRun := range []bool{true, false} {
+		if err := addResource(res, dryRun); err != nil {
+			t.Fatalf("63-byte index rejected (dry-run=%v): %v", dryRun, err)
+		}
+	}
+	migration, err := os.ReadFile(filepath.Join("migrations", "00001_create_"+res.Table+".sql"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(migration), `CREATE INDEX "`+index+`" ON "`+res.Table+`"`) {
+		t.Fatalf("migration changed the boundary identifier: %s", migration)
+	}
+}
+
+func TestResourceRejectsLongPostgresIdentifiersBeforeWriting(t *testing.T) {
+	for _, tc := range []struct{ name, resource, identifier string }{
+		{"long_index", strings.Repeat("A", 54), strings.Repeat("a", 54) + "s_list_idx"},
+		{"long_table", strings.Repeat("A", 63), strings.Repeat("a", 63) + "s"},
+		{"plural_expansion", strings.Repeat("b", 52) + "y", strings.Repeat("b", 52) + "ies_list_idx"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, dryRun := range []bool{true, false} {
+				resourceFixture(t)
+				before := resourceFixtureFiles(t)
+				err := addResource(newResource(tc.resource), dryRun)
+				if err == nil || !strings.Contains(err.Error(), tc.identifier) || !strings.Contains(err.Error(), "63") || !strings.Contains(err.Error(), "shorten") {
+					t.Fatalf("want actionable identifier error (dry-run=%v), got %v", dryRun, err)
+				}
+				if !maps.Equal(before, resourceFixtureFiles(t)) {
+					t.Fatalf("identifier rejection changed project files (dry-run=%v)", dryRun)
+				}
+			}
+		})
+	}
+}
+
+func resourceFixtureFiles(t *testing.T) map[string]string {
+	t.Helper()
+	files := map[string]string{}
+	if err := filepath.WalkDir(".", func(path string, entry fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if entry.IsDir() {
+			files[path+"/"] = ""
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		files[path] = string(data)
+		return err
+	}); err != nil {
+		t.Fatal(err)
+	}
+	return files
+}
+
+func TestResourceQuotesPostgresIdentifiers(t *testing.T) {
+	for _, name := range []string{"Reference", "Value"} {
+		t.Run(name, func(t *testing.T) {
+			resourceFixture(t)
+			res := newResource(name)
+			if err := addResource(res, false); err != nil {
+				t.Fatal(err)
+			}
+			migration, err := os.ReadFile(filepath.Join("migrations", "00001_create_"+res.Table+".sql"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, want := range []string{`CREATE TABLE "` + res.Table + `"`, `CREATE INDEX "` + res.Table + `_list_idx" ON "` + res.Table + `"`, `DROP TABLE "` + res.Table + `";`} {
+				if !strings.Contains(string(migration), want) {
+					t.Errorf("migration missing quoted identifier %s", want)
+				}
+			}
+			queries, err := os.ReadFile(filepath.Join("internal", "modules", res.Snake, "queries.sql"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if strings.Count(string(queries), `"`+res.Table+`"`) != 6 {
+				t.Fatalf("each CRUD/count query must quote its table: %s", queries)
+			}
+		})
 	}
 }
 

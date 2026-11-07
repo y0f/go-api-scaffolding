@@ -9,6 +9,9 @@ The generator adds `internal/modules/note`, a migration, SQL registration,
 OpenAPI operations, tests, and composition wiring. List, create, get, update,
 and delete use the same contract and pagination conventions as the API.
 Add `-dry-run` to inspect the planned files before writing them.
+Generated SQL identifiers must fit PostgreSQL's 63-byte limit, including the
+`_list_idx` suffix; shorten names rejected by preflight. SQL names are quoted,
+so resource names such as `Reference` can use reserved words as table names.
 
 Concurrent generation in one checkout is locked. After an interrupted command,
 inspect `.forge-resource.lock` and confirm its process has stopped before

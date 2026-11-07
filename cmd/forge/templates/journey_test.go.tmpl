@@ -28,7 +28,7 @@ type journeyVerifier struct{}
 func (journeyVerifier) Verify(_ context.Context, token string) (*auth.Claims, error) {
 	claims := &auth.Claims{RegisteredClaims: jwt.RegisteredClaims{Subject: "journey"}, Roles: []string{"admin"}}
 	if token == "allowed" {
-		claims.Scope = "orders:write categories:write"
+		claims.Scope = "orders:write categories:write references:write values:write " + strings.Repeat("a", 53) + "s:write"
 	}
 	return claims, nil
 }
@@ -70,7 +70,7 @@ func TestGeneratedResourceJourney(t *testing.T) {
 	}
 	spec := send("GET", "/openapi.yaml", "", "", "")
 	check(spec, 200)
-	for _, resource := range []string{"orders", "categories"} {
+	for _, resource := range []string{"orders", "categories", "references", "values", strings.Repeat("a", 53) + "s"} {
 		t.Run(resource, func(t *testing.T) {
 			path := "/v1/" + resource
 			if !strings.Contains(spec.Body.String(), path+":") {
