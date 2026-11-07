@@ -60,10 +60,11 @@ tasks:
       - "{{.TOOLS}}/golangci-lint{{.EXT}} run ./..."
 
   vuln:
-    desc: Scan for known vulnerabilities reachable from the code
+    desc: Scan for known vulnerabilities reachable from the app and pinned tools
     deps: [setup]
     cmds:
       - "{{.TOOLS}}/govulncheck{{.EXT}} ./..."
+      - "{{.TOOLS}}/govulncheck{{.EXT}} -C tools tool"
 
   test:
     desc: Run unit tests with coverage

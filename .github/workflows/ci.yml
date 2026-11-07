@@ -286,6 +286,7 @@ jobs:
       # and a scanner release cannot turn CI red on its own.
       - run: go -C tools build -o ../bin/ golang.org/x/vuln/cmd/govulncheck
       - run: ./bin/govulncheck ./...
+      - run: ./bin/govulncheck -C tools tool
 
   build:
     runs-on: ubuntu-latest
