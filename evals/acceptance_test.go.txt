@@ -17,6 +17,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
@@ -211,7 +212,7 @@ func (app *application) request(t *testing.T, method, path, token, body string, 
 	return result
 }
 
-func (app *application) contractContains(t *testing.T, path string) {
+func (app *application) contractContains(t *testing.T, path string) *openapi3.T {
 	t.Helper()
 	response, err := app.client.Get(app.base + "/openapi.yaml")
 	if err != nil {
@@ -228,6 +229,46 @@ func (app *application) contractContains(t *testing.T, path string) {
 	}
 	if response.StatusCode != 200 || contract.Paths == nil || contract.Paths.Value(path) == nil {
 		t.Fatalf("served OpenAPI missing %s", path)
+	}
+	return contract
+}
+
+func checkFieldContract(t *testing.T, app *application) {
+	t.Helper()
+	contract := app.contractContains(t, "/v1/widgets")
+	if err := contract.Validate(t.Context()); err != nil {
+		t.Fatalf("served field contract is invalid: %v", err)
+	}
+	for _, route := range []struct{ method, path string }{{"POST", "/v1/widgets"}, {"PUT", "/v1/widgets/{id}"}} {
+		path := contract.Paths.Value(route.path)
+		if path == nil {
+			t.Fatalf("served field contract missing %s", route.path)
+		}
+		operation := path.Operations()[route.method]
+		if operation == nil || operation.RequestBody == nil || operation.RequestBody.Value == nil {
+			t.Fatalf("served field contract missing %s request body", route.method)
+		}
+		content := operation.RequestBody.Value.Content["application/json"]
+		if content == nil || content.Schema == nil || content.Schema.Value == nil {
+			t.Fatalf("served field contract missing %s JSON schema", route.method)
+		}
+		input := content.Schema.Value
+		for _, required := range input.Required {
+			if required == "priority" {
+				t.Fatalf("%s priority must remain optional", route.method)
+			}
+		}
+		ref := input.Properties["priority"]
+		if ref == nil || ref.Value == nil {
+			t.Fatalf("served field contract missing %s priority", route.method)
+		}
+		priority := ref.Value
+		defaultJSON, err := json.Marshal(priority.Default)
+		if err != nil || !priority.Type.Is("integer") || priority.Nullable ||
+			priority.Min == nil || *priority.Min != 1 || priority.Max == nil || *priority.Max != 5 ||
+			string(defaultJSON) != "3" {
+			t.Fatalf("%s priority must be nonnullable integer 1..5 with default3: %+v", route.method, priority)
+		}
 	}
 }
 
@@ -349,6 +390,7 @@ func TestAcceptance(t *testing.T) {
 			checkNameValidation(t, app, resource)
 		}
 	case "field":
+		checkFieldContract(t, app)
 		legacy := app.request(t, "GET", "/v1/widgets/"+app.legacy, "", "", 200)
 		if legacy["priority"] != float64(3) || legacy["name"] != "before migration" {
 			t.Fatalf("existing widget was not preserved with the default priority: %v", legacy)
@@ -375,12 +417,25 @@ func TestAcceptance(t *testing.T) {
 		if read["priority"] != float64(1) {
 			t.Fatalf("updated priority = %v", read["priority"])
 		}
-		for _, value := range []int{0, 6} {
-			app.request(t, "POST", "/v1/widgets", writer, fmt.Sprintf(`{"name":"invalid","priority":%d}`, value), 400)
-			app.request(t, "PUT", "/v1/widgets/"+id, writer, fmt.Sprintf(`{"name":"invalid","priority":%d}`, value), 400)
-			read = app.request(t, "GET", "/v1/widgets/"+id, "", "", 200)
-			if read["priority"] != float64(1) || read["name"] != "custom" {
-				t.Fatalf("rejected update changed the widget: %v", read)
+		beforeItem := read
+		beforePage := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+		for _, value := range []string{"0", "6", "null"} {
+			for _, method := range []string{"POST", "PUT"} {
+				t.Run("invalid-priority/"+method+"/"+value, func(t *testing.T) {
+					path := "/v1/widgets"
+					if method == "PUT" {
+						path += "/" + id
+					}
+					app.request(t, method, path, writer, fmt.Sprintf(`{"name":"invalid","priority":%s}`, value), 400)
+					afterItem := app.request(t, "GET", "/v1/widgets/"+id, "", "", 200)
+					if !reflect.DeepEqual(afterItem, beforeItem) {
+						t.Fatalf("rejected %s changed stored widget: before=%v after=%v", method, beforeItem, afterItem)
+					}
+					afterPage := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+					if !reflect.DeepEqual(afterPage, beforePage) {
+						t.Fatalf("rejected %s changed stored rows or count: before=%v after=%v", method, beforePage, afterPage)
+					}
+				})
 			}
 		}
 		updated = app.request(t, "PUT", "/v1/widgets/"+id, writer, `{"name":"omitted"}`, 200)

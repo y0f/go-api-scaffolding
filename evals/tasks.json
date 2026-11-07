@@ -9,7 +9,7 @@
   },
   {
     "id": "field",
-    "prompt": "Add an optional integer priority input field to widgets. Its valid range is 1 through 5; omitting it on POST or PUT uses 3. Persist it through a new migration, include it in all widget responses including lists, and support changing it through PUT. Existing records must receive priority 3 without losing their other data. Reject out-of-range create and update inputs with 400 without changing stored data. Update OpenAPI, SQL, and tests."
+    "prompt": "Add an optional integer priority input field to widgets. Its valid range is 1 through 5; omitting it on POST or PUT uses 3. Explicit null is invalid; only omission uses the default. Persist it through a new migration, include it in all widget responses including lists, and support changing it through PUT. Existing records must receive priority 3 without losing their other data. Reject out-of-range or null create and update inputs with 400 without changing stored data. Update OpenAPI, SQL, and tests."
   },
   {
     "id": "authorization",
