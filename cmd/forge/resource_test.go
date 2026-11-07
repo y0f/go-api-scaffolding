@@ -278,7 +278,7 @@ func TestCompositionAliasesAvoidInfrastructureImports(t *testing.T) {
 }
 
 func TestResourceRejectsReservedNamesBeforeWriting(t *testing.T) {
-	for _, name := range []string{"Type", "Unimplemented", "ServerInterface", "Handler"} {
+	for _, name := range []string{"Type", "Unimplemented", "ServerInterface", "Handler", "Con", "Prn", "Aux", "Nul", "Com1", "Com9", "Lpt1", "Lpt9"} {
 		t.Run(name, func(t *testing.T) {
 			resourceFixture(t)
 			if err := addResource(newResource(name), false); err == nil {

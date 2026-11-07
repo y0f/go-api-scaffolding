@@ -49,9 +49,12 @@ func addResource(res resource, dryRun bool) error {
 	if err != nil {
 		return err
 	}
+	if err := validateResourceTable(res.Table); err != nil {
+		return err
+	}
 	dir := filepath.Join("internal", "modules", res.Snake)
 	targets := []struct{ tmpl, path string }{
-		{"domain.go.tmpl", filepath.Join(dir, res.Snake+".go")},
+		{"domain.go.tmpl", filepath.Join(dir, resourceDomainFile(res))},
 		{"store.go.tmpl", filepath.Join(dir, "store.go")},
 		{"service.go.tmpl", filepath.Join(dir, "service.go")},
 		{"handler.go.tmpl", filepath.Join(dir, "handler.go")},
@@ -128,6 +131,16 @@ func addResource(res resource, dryRun bool) error {
 	}
 	printNextSteps(res)
 	return nil
+}
+
+func resourceDomainFile(res resource) string {
+	// Compound names can end in Go's _test, _GOOS or _GOARCH file suffixes.
+	// Fixed template filenames must also remain distinct from the domain file.
+	name := res.Snake
+	if strings.Contains(name, "_") || name == "store" || name == "service" || name == "idempotent" {
+		name += "_model"
+	}
+	return name + ".go"
 }
 
 func render(name string, res resource) ([]byte, error) {
@@ -293,44 +306,114 @@ func validateResourceName(res resource) error {
 	if !token.IsIdentifier(res.Snake) || token.Lookup(res.Snake).IsKeyword() {
 		return fmt.Errorf("resource %q does not produce a valid Go package name", res.Pascal)
 	}
+	// Check on every host: a resource generated on Linux must still check out
+	// and build on Windows, where these directory names are device aliases.
+	switch res.Snake {
+	case "con", "prn", "aux", "nul":
+		return fmt.Errorf("resource %s uses a reserved Windows directory name", res.Pascal)
+	}
+	if len(res.Snake) == 4 && (strings.HasPrefix(res.Snake, "com") || strings.HasPrefix(res.Snake, "lpt")) && res.Snake[3] >= '1' && res.Snake[3] <= '9' {
+		return fmt.Errorf("resource %s uses a reserved Windows directory name", res.Pascal)
+	}
 	reserved := map[string]bool{}
 	for _, name := range []string{"Unimplemented", "ServerInterface", "ServerInterfaceWrapper", "MiddlewareFunc", "ChiServerOptions", "Handler", "HandlerFromMux", "HandlerFromMuxWithBaseURL", "HandlerWithOptions", "RegisterHandlers", "GetSpec"} {
 		reserved[name] = true
 	}
 	generated := "internal/gen/api/api.gen.go"
-	if src, err := os.ReadFile(generated); err == nil {
-		file, err := parser.ParseFile(token.NewFileSet(), generated, src, 0)
-		if err != nil {
-			return fmt.Errorf("parse existing generated API declarations: %w", err)
-		}
-		for _, decl := range file.Decls {
-			switch d := decl.(type) {
-			case *ast.GenDecl:
-				for _, spec := range d.Specs {
-					switch item := spec.(type) {
-					case *ast.TypeSpec:
-						reserved[item.Name.Name] = true
-					case *ast.ValueSpec:
-						for _, name := range item.Names {
-							reserved[name.Name] = true
-						}
-					}
-				}
-			case *ast.FuncDecl:
-				if d.Recv == nil {
-					reserved[d.Name.Name] = true
-				}
-			}
-		}
-	} else if !errors.Is(err, os.ErrNotExist) {
+	declarations, _, err := readGoDeclarations(generated)
+	if err != nil {
 		return err
+	}
+	for name := range declarations {
+		reserved[name] = true
 	}
 	for _, name := range []string{res.Pascal, res.Pascal + "Input", res.Pascal + "List", res.Pascal + "ID", "List" + res.Plural + "Params", "Create" + res.Pascal + "JSONRequestBody", "Update" + res.Pascal + "JSONRequestBody"} {
 		if reserved[name] {
 			return fmt.Errorf("resource %s conflicts with API declaration %s; choose a different name", res.Pascal, name)
 		}
 	}
+	return validateDatabaseNames(res)
+}
+
+func validateDatabaseNames(res resource) error {
+	reserved := map[string]bool{"Querier": true, "Queries": true, "DBTX": true, "Dbtx": true, "New": true}
+	methods := map[string]bool{}
+	entries, err := os.ReadDir("internal/gen/db")
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".go") || strings.HasSuffix(entry.Name(), "_test.go") {
+			continue
+		}
+		names, queries, err := readGoDeclarations(filepath.Join("internal/gen/db", entry.Name()))
+		if err != nil {
+			return err
+		}
+		for name := range names {
+			reserved[name] = true
+		}
+		for name := range queries {
+			methods[name] = true
+		}
+	}
+	if reserved[res.Pascal] {
+		return fmt.Errorf("resource %s conflicts with a sqlc declaration; choose a different name", res.Pascal)
+	}
+	for _, query := range []string{"Create" + res.Pascal, "Get" + res.Pascal, "Update" + res.Pascal, "Delete" + res.Pascal, "List" + res.Plural, "Count" + res.Plural} {
+		if methods[query] || reserved[query+"Params"] || reserved[query+"Row"] {
+			return fmt.Errorf("resource %s conflicts with sqlc query %s or its Params/Row declarations", res.Pascal, query)
+		}
+	}
 	return nil
+}
+
+// Read package declarations and methods on sqlc's Queries receiver separately:
+// a method name can coexist with a package-level type of the same name.
+func readGoDeclarations(path string) (map[string]bool, map[string]bool, error) {
+	names, methods := map[string]bool{}, map[string]bool{}
+	source, err := os.ReadFile(path) //#nosec G304 -- callers use fixed generated paths or entries read from internal/gen/db
+	if errors.Is(err, os.ErrNotExist) {
+		return names, methods, nil
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	file, err := parser.ParseFile(token.NewFileSet(), path, source, 0)
+	if err != nil {
+		return nil, nil, fmt.Errorf("parse generated declarations in %s: %w", path, err)
+	}
+	for _, declaration := range file.Decls {
+		switch declaration := declaration.(type) {
+		case *ast.GenDecl:
+			for _, spec := range declaration.Specs {
+				switch spec := spec.(type) {
+				case *ast.TypeSpec:
+					names[spec.Name.Name] = true
+				case *ast.ValueSpec:
+					for _, name := range spec.Names {
+						names[name.Name] = true
+					}
+				}
+			}
+		case *ast.FuncDecl:
+			if declaration.Recv == nil {
+				names[declaration.Name.Name] = true
+				continue
+			}
+			if len(declaration.Recv.List) != 1 {
+				return nil, nil, fmt.Errorf("invalid generated method receiver in %s", path)
+			}
+			receiver := declaration.Recv.List[0].Type
+			if pointer, ok := receiver.(*ast.StarExpr); ok {
+				receiver = pointer.X
+			}
+			if name, ok := receiver.(*ast.Ident); ok && name.Name == "Queries" {
+				methods[declaration.Name.Name] = true
+			}
+		}
+	}
+	return names, methods, nil
 }
 
 // Refuse linked output directories, even links that currently point inside

@@ -174,11 +174,6 @@ func projectModule() string {
 	return moduleName
 }
 
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
-}
-
 func newResource(name string) resource {
 	words := splitWords(name)
 	snake := strings.Join(words, "_")
@@ -194,9 +189,25 @@ func newResource(name string) resource {
 		Snake:       snake,
 		Table:       pluralize(snake),
 		Module:      projectModule(),
-		Outbox:      exists(filepath.Join("internal", "outbox")),
-		Idempotency: exists(filepath.Join("internal", "idempotency")),
+		Outbox:      hasPackageSources(filepath.Join("internal", "outbox")),
+		Idempotency: hasPackageSources(filepath.Join("internal", "idempotency")),
 	}
+}
+
+// Init preserves unrelated local files, so a retained notes-only directory does
+// not mean an optional package is still part of the project.
+func hasPackageSources(dir string) bool {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if !entry.IsDir() && strings.HasSuffix(name, ".go") && !strings.HasSuffix(name, "_test.go") && !strings.HasPrefix(name, "_") && !strings.HasPrefix(name, ".") {
+			return true
+		}
+	}
+	return false
 }
 
 // splitWords breaks snake_case, kebab-case, camelCase, and PascalCase into
