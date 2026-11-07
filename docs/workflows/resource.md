@@ -23,6 +23,9 @@ before retrying. Separate worktrees avoid sharing that lock.
 5. Test successful requests, invalid input, and denied access.
 6. Run `go run ./cmd/dev check`, `task test:integration`, and `task migrate`.
 
+`task migrate` requires `FORGE_DB_URL`. For local development, copy `.env.example`
+to `.env` and set the database URL there; Task loads this file.
+
 Do not edit `internal/gen`. Module files outside that directory are ordinary
 application code. The route must appear in `/openapi.yaml` and work through
 the public router before the feature is complete.

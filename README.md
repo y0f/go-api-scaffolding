@@ -23,7 +23,7 @@ go run ./cmd/dev bootstrap
 
 The installer asks for a module path and the optional components to keep.
 For automation, pass `-yes -module github.com/you/myapp`. Use `-ref <tag-or-SHA>`
-to select the scaffold revision; `.forge.json` records its source.
+to select the scaffold revision; `.forge.json` records the resolved revision.
 For repeatable setup, pin the launcher version (`cmd/forge@<release>`) and use a
 full commit SHA for `-ref` when selecting older or custom source.
 

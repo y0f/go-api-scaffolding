@@ -14,14 +14,14 @@ internal/
   platform/
     database/   pgx pool and transaction helper
     problem/    RFC 9457 problem+json responses
-  server/         http.Server, middleware, router, health, graceful drain, admin
+  server/         http.Server, middleware, router, health, graceful drain
   auth/           JWKS/RSA verification, RBAC, OpenAPI authenticator
   modules/        one package per resource (SQL, store, service, handler)
   gen/            generated code (sqlc + oapi-codegen), committed
   testutil/       isolated Postgres databases, Docker or an external test server
 api/openapi.yaml  the API contract, source of truth
 migrations/       versioned SQL, embedded into the binaries
-deployments/      Dockerfile, docker compose, observability configs
+deployments/      Dockerfile and Docker Compose configuration
 ```
 
 <!-- forge:begin init -->

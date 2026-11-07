@@ -14,7 +14,8 @@ import (
 )
 
 // TestGeneratedProjects exercises the user journey in isolated projects. Run
-// with -tags generator; Docker and the pinned toolchain downloads are required.
+// with -tags generator and Docker or FORGE_TEST_DATABASE_URL for Postgres.
+// Tool bootstrap may download the pinned toolchain.
 func TestGeneratedProjects(t *testing.T) {
 	_, source, _, _ := runtime.Caller(0)
 	root := filepath.Clean(filepath.Join(filepath.Dir(source), "../.."))

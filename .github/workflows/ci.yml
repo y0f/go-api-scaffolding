@@ -180,10 +180,9 @@ jobs:
       - run: go run ./cmd/dev bootstrap
       - run: go test -tags generator -count=1 ./cmd/forge
 
-  # Every way `forge init` can shape a project must lint, build and pass its
-  # tests, including on a real Postgres, and `forge add resource` must stamp a
-  # module that compiles and lints in each of those shapes. Removed by init
-  # itself.
+  # Representative combinations of optional components must lint, build and
+  # pass tests against real Postgres. Generated resources must work in each
+  # selected combination. Removed by init itself.
   init:
     runs-on: ubuntu-latest
     strategy:

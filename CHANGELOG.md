@@ -34,7 +34,8 @@
   details when applicable, and actual validation evidence. Copilot setup is
   checked by CI and repository review instructions cover critical API behavior.
 - Public GitHub.com releases add build provenance attestations alongside signed
-  checksums and SBOMs.
+  checksums and SBOMs. Uploaded artifacts are verified before draft publication;
+  reruns verify published immutable releases without replacing their assets.
 
 ## v1.2.0
 

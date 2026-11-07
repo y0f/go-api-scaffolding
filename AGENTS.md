@@ -28,6 +28,9 @@ Report checks that could not run.
   coordinator integrates shared contracts, migrations, wiring, and generation.
 - Add regression tests for changed behavior. Keep existing checks intact.
 - `task down` preserves data; `task reset` deletes the local database volume.
+- Follow the [contribution policy](.github/CONTRIBUTING.md) for pull requests:
+  complete its required yes/no AI-assistance declaration. Do not name AI tools
+  as authors or coauthors.
 
 ## Task guides
 
@@ -46,5 +49,4 @@ The working reference is `internal/modules/widget`.
 <!-- forge:end example -->
 <!-- forge:begin init -->
 Scaffold maintainers: preserve slice markers and test initialized projects.
-See [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md).
 <!-- forge:end init -->

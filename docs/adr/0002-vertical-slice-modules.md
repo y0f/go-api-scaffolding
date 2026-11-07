@@ -24,6 +24,7 @@ interfaces that exist only to satisfy a pattern.
 
 ## Consequences
 
-Adding a feature means writing one directory, which is exactly what `forge add
-resource` does. Blast radius stays small. The trade-off is some duplication
-between slices, which we accept over premature shared abstractions.
+Resource logic stays in one directory. `forge add resource` also updates the
+shared OpenAPI contract, SQL registration, migrations, and application wiring.
+The trade-off is some duplication between slices, which we accept over
+premature shared abstractions.

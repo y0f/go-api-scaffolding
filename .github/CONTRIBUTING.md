@@ -96,8 +96,8 @@ keys, OTLP export and the admin listener. Each lives in its own package where
 it can, and where it must touch a shared file its lines sit between
 `forge:begin <slice>` and `forge:end <slice>` markers. When you change a slice,
 keep its markers whole: `go test ./cmd/forge` fails on an unbalanced marker,
-and the `init` CI job runs every preset through lint, build and the test
-suites.
+and the `init` CI job runs representative component combinations through lint,
+build and the test suites.
 
 Before changing agent-facing workflows, run the relevant tasks in
 [`evals`](../evals/README.md). Record failed attempts as well as successful ones.
