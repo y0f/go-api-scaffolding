@@ -46,6 +46,69 @@ func fixtureGit(t *testing.T, dir string, args ...string) string {
 	return strings.TrimSpace(string(out))
 }
 
+func TestRewriteTreePreservesRequestedModule(t *testing.T) {
+	const module = "example.com/gophling-team/gophling-app"
+	dir := fixtureRepository(t)
+	t.Chdir(dir)
+	files := map[string]string{
+		"README.md": "# gophling\n\nRun gophling with " + moduleName + "/cmd/api.\n",
+		"main.go":   "package main\nimport _ \"" + moduleName + "/migrations\"\n",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(name, []byte(content), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	fixtureGit(t, dir, "add", "--all")
+	if err := rewriteTree(module, map[string]bool{}); err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]string{
+		"go.mod":    "module " + module + "\n\ngo 1.26.0\n",
+		"README.md": "# gophling-app\n\nRun gophling-app with " + module + "/cmd/api.\n",
+		"main.go":   "package main\nimport _ \"" + module + "/migrations\"\n",
+	}
+	for name, expected := range want {
+		actual, err := os.ReadFile(name)
+		if err != nil || string(actual) != expected {
+			t.Errorf("%s = %q, %v; want %q", name, actual, err, expected)
+		}
+	}
+}
+
+func TestRewriteTreeGoReleaserProjectName(t *testing.T) {
+	for _, tc := range []struct {
+		name, file, projectName, wantName string
+	}{
+		{"default", ".goreleaser.yaml", "gophling", `"gophling-app"`},
+		{"single_quoted", ".goreleaser.yml", "'gophling'", `"gophling-app"`},
+		{"double_quoted_comment", ".goreleaser.yaml", `"gophling" # release name`, `"gophling-app" # release name`},
+		{"custom", ".goreleaser.yaml", "my-service", "my-service"},
+		{"custom_contains_scaffold", ".goreleaser.yaml", "my-gophling-service", "my-gophling-service"},
+		{"custom_quoted", ".goreleaser.yml", `'my-gophling-service' # keep`, `'my-gophling-service' # keep`},
+		{"custom_module", ".goreleaser.yaml", `"` + moduleName + `"`, `"` + moduleName + `"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := fixtureRepository(t)
+			t.Chdir(dir)
+			const module = "example.com/gophling-team/gophling-app"
+			src := "version: 2\nproject_name: " + tc.projectName + "\nbuilds:\n  - ldflags:\n      - -X " + moduleName + "/internal/config.version={{ .Version }}\n"
+			if err := os.WriteFile(tc.file, []byte(src), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			fixtureGit(t, dir, "add", tc.file)
+			if err := rewriteTree(module, map[string]bool{}); err != nil {
+				t.Fatal(err)
+			}
+			want := "version: 2\nproject_name: " + tc.wantName + "\nbuilds:\n  - ldflags:\n      - -X " + module + "/internal/config.version={{ .Version }}\n"
+			got, err := os.ReadFile(tc.file)
+			if err != nil || string(got) != want {
+				t.Fatalf("release config = %q, %v; want %q", got, err, want)
+			}
+		})
+	}
+}
+
 func TestCreateProjectPinsSourceAndStagesFinalTree(t *testing.T) {
 	source := fixtureRepository(t)
 	revision := fixtureGit(t, source, "rev-parse", "HEAD")

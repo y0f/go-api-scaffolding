@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -305,6 +306,7 @@ func rewriteTree(module string, dropped map[string]bool) error {
 	if err != nil {
 		return err
 	}
+	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
 	for _, file := range files {
 		if underAny(file, removed) {
 			continue
@@ -320,8 +322,12 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
-		out = strings.ReplaceAll(out, moduleName, module)
-		out = strings.ReplaceAll(out, path.Base(moduleName), path.Base(module))
+		if file == ".goreleaser.yaml" || file == ".goreleaser.yml" {
+			out = rewriteReleaseConfig(out, module)
+		} else {
+			// Replace once: a requested module may itself contain the scaffold name.
+			out = names.Replace(out)
+		}
 		if file == "README.md" && strings.HasPrefix(out, "# ") {
 			_, body, _ := strings.Cut(out, "\n")
 			out = "# " + path.Base(module) + "\n" + body
@@ -341,6 +347,25 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		}
 	}
 	return renumberMigrations("migrations")
+}
+
+// Only the default release name belongs to the scaffold. Preserve custom names
+// and YAML formatting while updating module paths used by linker flags.
+func rewriteReleaseConfig(src, module string) string {
+	defaultName := regexp.QuoteMeta(path.Base(moduleName))
+	name := regexp.MustCompile(`^(project_name:[ \t]*)(?:` + defaultName + `|"` + defaultName + `"|'` + defaultName + `')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
+	var out strings.Builder
+	for _, line := range strings.SplitAfter(src, "\n") {
+		if strings.HasPrefix(line, "project_name:") {
+			if match := name.FindStringSubmatch(line); match != nil {
+				line = match[1] + strconv.Quote(path.Base(module)) + match[2]
+			}
+		} else {
+			line = strings.ReplaceAll(line, moduleName, module)
+		}
+		out.WriteString(line)
+	}
+	return out.String()
 }
 
 // runToolchain regenerates code and proves the rewritten project builds.
