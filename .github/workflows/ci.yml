@@ -46,7 +46,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
           cache-dependency-path: go.sum
+      # Exercise the selected minimum/stable line instead of auto-upgrading
+      # both matrix entries to go.mod's preferred toolchain.
       - run: go test -race -shuffle=on -covermode=atomic -coverprofile=coverage.out ./...
+        env:
+          GOTOOLCHAIN: local
 
   integration:
     runs-on: ubuntu-latest
@@ -61,7 +65,103 @@ jobs:
           cache-dependency-path: go.sum
       - run: go test -tags integration -race -count=1 ./...
 
+  platform:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        if: runner.os == 'Linux'
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: |
+            go.sum
+            tools/go.sum
+      # Go-only bootstrap also installs Task. The exact generator toolchain is
+      # selected from tools/go.mod, even when the runner has a newer Go patch.
+      - run: go run ./cmd/dev bootstrap
+      - run: go run ./cmd/dev check
+      - run: git diff --exit-code
+
+  # Keep the existing required status name while requiring every OS in the
+  # platform matrix. A failed, skipped, or cancelled matrix must not pass it.
   generate:
+    needs: [platform]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every platform check
+        env:
+          PLATFORM_RESULT: ${{ needs.platform.result }}
+        run: test "$PLATFORM_RESULT" = success
+
+  integration-external:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395
+        env:
+          POSTGRES_USER: forge_test
+          POSTGRES_PASSWORD: forge_test
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U forge_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      FORGE_TEST_DATABASE_URL: postgres://forge_test:forge_test@localhost:5432/postgres?sslmode=disable
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: go.sum
+      - run: go test -tags integration -race -count=1 ./...
+
+  # forge:begin example
+  docker-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.27.x"
+          cache-dependency-path: go.sum
+      - run: go test -tags e2e -count=1 -timeout 15m ./cmd/api
+  # forge:end example
+
+  # forge:begin init
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/jekyll-build-pages@44a6e6beabd48582f863aeeb6cb2151cc1716697 # v1.0.13
+        with:
+          source: docs
+          destination: tmp/site
+
+  eval-harness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python -m unittest discover -s evals -p 'test_*.py'
+
+  generated-api:
     runs-on: ubuntu-latest
     steps:
       - uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
@@ -74,12 +174,9 @@ jobs:
           cache-dependency-path: |
             go.sum
             tools/go.sum
-      # The same task developers run, so the sqlc guard and the generator
-      # arguments have one definition. Task builds the generators itself.
-      - run: go -C tools build -o ../bin/ github.com/go-task/task/v3/cmd/task
-      - run: ./bin/task generate:check
+      - run: go run ./cmd/dev bootstrap
+      - run: go test -tags generator -count=1 ./cmd/forge
 
-  # forge:begin init
   # Every way `forge init` can shape a project must lint, build and pass its
   # tests, including on a real Postgres, and `forge add resource` must stamp a
   # module that compiles and lints in each of those shapes. Removed by init

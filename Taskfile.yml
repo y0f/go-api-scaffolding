@@ -19,7 +19,7 @@ vars:
 tasks:
   default:
     cmds:
-      - task --list
+      - '"{{.TASK_EXE}}" --list'
     silent: true
 
   setup:

@@ -2,7 +2,7 @@ name: forge
 
 services:
   postgres:
-    image: postgres:18-alpine
+    image: postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395
     environment:
       POSTGRES_USER: forge
       POSTGRES_PASSWORD: forge
@@ -10,7 +10,7 @@ services:
     # Dev-only credentials, so the port is published on loopback only. Without a
     # host IP Docker binds 0.0.0.0 and its iptables rules bypass host firewalls.
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${FORGE_DEV_DB_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U forge -d forge"]
       interval: 5s
@@ -36,6 +36,8 @@ services:
     restart: "no"
 
   api:
+    # Allow readiness drain, in-flight requests and worker/telemetry shutdown.
+    stop_grace_period: 40s
     build:
       context: ..
       dockerfile: deployments/Dockerfile
@@ -46,7 +48,7 @@ services:
       FORGE_OTEL_OTLP_ENDPOINT: ${FORGE_OTEL_OTLP_ENDPOINT:-}
       # forge:end otlp
     ports:
-      - "8080:8080"
+      - "127.0.0.1:${FORGE_DEV_API_PORT:-8080}:8080"
     depends_on:
       postgres:
         condition: service_healthy
