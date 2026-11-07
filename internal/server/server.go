@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/config"
+	"github.com/y0f/gophling/internal/config"
 )
 
 // Run starts the HTTP server and blocks until ctx is cancelled, then performs a
@@ -45,10 +45,23 @@ func Run(ctx context.Context, cfg config.HTTPConfig, handler http.Handler, healt
 
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 		defer cancel()
-		if err := srv.Shutdown(shutdownCtx); err != nil {
+		if err := shutdownHTTPServer(shutdownCtx, srv); err != nil {
 			return fmt.Errorf("graceful shutdown: %w", err)
 		}
 		logger.Info("http server stopped cleanly")
 		return nil
 	}
+}
+
+func shutdownHTTPServer(ctx context.Context, srv *http.Server) error {
+	if err := srv.Shutdown(ctx); err != nil {
+		// Shutdown leaves active connections open when its deadline expires.
+		// Close them so request contexts cancel database work before the caller
+		// closes its pool (which waits for acquired connections to return).
+		if closeErr := srv.Close(); closeErr != nil {
+			return errors.Join(err, fmt.Errorf("close active HTTP connections: %w", closeErr))
+		}
+		return err
+	}
+	return nil
 }

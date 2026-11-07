@@ -1,0 +1,910 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "snapshot_started_utc": "2026-11-07T16:04:40.417215+00:00",
+  "snapshot_finished_utc": "2026-11-07T16:04:40.488986+00:00",
+  "cohort_boundaries": "Never pool baseline, adapter followup, corrected product/prompt/verifier followup, historical trials, or capability probe.",
+  "cohort_group": "null-field-followup",
+  "cohorts": [
+    {
+      "id": "null-field-codex",
+      "cohort_group": "null-field-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "2717bcec94de8ce35b677bcbacf62f4a92da9849"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+        ],
+        "client_version": [
+          "codex-cli 0.166.0"
+        ],
+        "model_requested": [
+          "gpt-6-astra"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "null-field-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "observed_status_counts": {
+        "passed": 2
+      },
+      "observed_records_per_task": {
+        "field": 2
+      },
+      "aggregate_entries_observed": 2
+    },
+    {
+      "id": "null-field-claude",
+      "cohort_group": "null-field-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "2717bcec94de8ce35b677bcbacf62f4a92da9849"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "null-field-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "observed_status_counts": {
+        "passed": 1,
+        "permission_denied": 1
+      },
+      "observed_records_per_task": {
+        "field": 2
+      },
+      "aggregate_entries_observed": 2
+    }
+  ],
+  "attempts": [
+    {
+      "task": "field",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "prompt_sha256": "3a752658f105717a7ce887364afe0a356b3e487839c51e3ecb49ba095a3a8573",
+      "fixture_commit": "8ff240b5de431cf039022eb6ec49fb2036ae91d4",
+      "fixture_tree": "3c20373a7363ec50b66472ee67fe4ac5532ef403",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "null-field-codex/codex-field-1",
+      "cohort_group": "null-field-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.641
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.296
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 31.156
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 380.765
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 12.579
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.109
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.921
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 13,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 880968,
+          "cached_input_tokens": 825856,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 11810,
+          "reasoning_output_tokens": 2751
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual corrected-source priority feature, new HTTP/DB/migration tests, observed checks and stricter independent acceptance",
+        "findings": [],
+        "notes": [
+          "Optional pointer mapping defaults only omission to3; corrected shared OpenAPI validator rejects explicitnull, zero and other invalid inputs before handlers. Database nonnull/default/bounds constraint and SQL mapping persist priority across all responses.",
+          "New tests directly observe no repository calls for invalid HTTP inputs; live tests verify null/out-of-range rejection preserves stored row plus row/event/key counts, PUT omission resets, list persistence and idempotent replay. Additive migration test preserves every old column through upgrade/rollback.",
+          "Observed focused HTTP/unit, integration and fast/full integration checks exit0. New independent verifier parsed nonnullable integer1..5/default3 schema and passed POST/PUTnull400 with unchanged full GET/list snapshots.",
+          "Separate declared null-criteria followup at2717bce; no replacement of earlier field passes with contract finding."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "cf72e8ab30edbbe2a8a5d8e386611e57267a9520889becce5468eeeeaa01368e",
+          "output_sha256": "c68b2bc52afcfe49f1d332035125f4b124d6c3c980a4355409699bcb67a3dfe5"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "932cc0210774375306c1a6d0a529dc188a7b73d2c335cec84f4362268e1eef03",
+          "output_sha256": "ef36d19eacab69a47d14fdba19fb9178c0fc13d6504f9fc95c50ae46d6cbbfe3"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "2795ad8c866df8aa34931b17898b0a81e12eacaa44c993625e416b10011f9ff4",
+          "output_sha256": "fbc20d28d032a363096e49f9d4e4d38489bb721baf2ba20961f805ed120a6b83"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "e4f85217aa6b903e779ad8d244d3d0e86e27d1c96a546bc45b85dc03445cb751",
+          "output_sha256": "382564cf87cbf6492141afa57b6c2fc9119b5ffe41faef9e9548f92a2d34b95c"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "9b69702ff77b659ca4c938a6e842b48eea6ebf62a69169e30fb3d6477f6d26d2",
+          "output_sha256": "7b945be8e15daf70b321c841263106c737a7dc82be6175cb3af04117ea1c05d1"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "5d5eeefddee90dbbcb7955da51a8cad3742d6c3f09a32d5653843e8a0d61d842",
+          "output_sha256": "4799524884d39aaa09c465c7ab7fa32f781d5bf1cadf6ffc0b2ff40801aa18d3"
+        }
+      ]
+    },
+    {
+      "task": "field",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "prompt_sha256": "260d4466108b61ceebf6d281d348b84856bd764d0afd83b4704a315ae019c2ed",
+      "fixture_commit": "a7c03a04024f9a4efbb16d88a652d76411a54a03",
+      "fixture_tree": "3c20373a7363ec50b66472ee67fe4ac5532ef403",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "null-field-codex/codex-field-2",
+      "cohort_group": "null-field-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.093
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.0
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 14.14
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 343.813
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 13.625
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.515
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.25
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 13,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 676459,
+          "cached_input_tokens": 616448,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 10498,
+          "reasoning_output_tokens": 2801
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual corrected-source priority mapping, schema/DB constraints, new tests and stricter independent acceptance",
+        "findings": [],
+        "notes": [
+          "Production implementation matches reviewed correctedCodexfield1 semantics: nil alone defaults3, explicit0 survives mapping for validator/DB rejection, consistent persistence and response mapping; nonnullable integer1..5 schema/default retained.",
+          "New tests cover create/PUT/list/default persistence, null/range/type errors preserving row/event/claim counts, idempotent replay, and additive migration backfill/rollback preserving every original column. Protected tests unchanged.",
+          "Observed required focused/fast/full integration checks all exit0. New independent parsed-contract and POST/PUTnull400+unchanged GET/list acceptance pass.",
+          "Separate declared null-criteria followup at2717bce; original cohort findings and denominator remain unchanged."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "0a51d1dcc17bf91f2552607d5e3a0acb2c9158d69084ddec3bb134a5368a9f23",
+          "output_sha256": "d5d2c8e0c54b33a52a861ed33919e1804eccb4702521ae5a2df949e1a247d35f"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "69de3056f0cfb93a4dd03d5f60ebd9677028a66ecdfa85015bb6ed8c61b94e95",
+          "output_sha256": "21ae8089c49e41589224b44960733855e983b0df70129f6f8fb8133f2c410c86"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "7212148bad1d41bfa45e11ec2113137f79766f868e084e4b77efd005b7ac9033",
+          "output_sha256": "99df93869a3baafb72a94deb85776faa15d3ce6603dff51fe77f7be2c316c013"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "44ca1fe08c7e316fdd105a73e3cb5384e656fac3281f18852d0209c0525357b9",
+          "output_sha256": "a55727ee73458a1c8bda0cc78b999931dce6f5a4655fa46fec34b8f5f2bf73cb"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "e7292a8e6ad6c39a8a8d38ad545935cbeb85e7ed50cfa2d541371dd76a589a6f",
+          "output_sha256": "157ba31172bf5c49081f624f611ed3f1d5e8f4168d5b6283931612e923520b4e"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "c2326f32c023b4fc5f16ffef56b639a1c69711bd9573cca5d8032781721ecb2e",
+          "output_sha256": "36754c4b9e243529c77f0df39f06f07a530f80ac878647970beb0970accc3b2f"
+        }
+      ]
+    },
+    {
+      "task": "field",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "prompt_sha256": "762bcfd45b81c1e4fd103657389753b24ecc66e45406c3fd07abbbc750ead451",
+      "fixture_commit": "8ff240b5de431cf039022eb6ec49fb2036ae91d4",
+      "fixture_tree": "3c20373a7363ec50b66472ee67fe4ac5532ef403",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "null-field-claude/claude-field-1",
+      "cohort_group": "null-field-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.656
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.297
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 384.531
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.969
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.406
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.156
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 16,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 82,
+          "cache_creation_input_tokens": 99926,
+          "cache_read_input_tokens": 3655216,
+          "output_tokens": 28251
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual corrected-source priority feature, new service/router/DB/migration tests and stricter independent acceptance",
+        "findings": [],
+        "notes": [
+          "HTTP optional pointer is validated before conversion to internal int32; internalzero sentinel deliberately means omission for existing service callers, while explicitHTTPzero/null are rejected. Service/repository normalization, SQL constraints and response mapper preserve required1..5/default3 behavior.",
+          "New unit and live-router tests cover null400, out-of-range rejection before persistence, unchanged full row/list, idempotent writes/replay, PUT omission reset and pre-migration row preservation. Existing protected tests unchanged.",
+          "External fast/full integration and new independent schema+null+unchanged-state acceptance pass. Agent-side fast/integration success remains final JSON self-report only.",
+          "Separate declared null-criteria followup at2717bce; prior original field result and contract finding remain unchanged.",
+          "Agent final report describes an initial existing idempotency repository test failing because unset internal priority inserted0; it then added repository normalization so omitted internal values become3 while explicitHTTP0 remains rejected. This development retry is self-reported, not command-observed."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "field",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "prompt_sha256": "762bcfd45b81c1e4fd103657389753b24ecc66e45406c3fd07abbbc750ead451",
+      "fixture_commit": "ae2d624d71e2181c799231e0889e3063c57323d6",
+      "fixture_tree": "3c20373a7363ec50b66472ee67fe4ac5532ef403",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "null-field-claude/claude-field-2",
+      "cohort_group": "null-field-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 20.188
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.468
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 347.859
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 14,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 78,
+          "cache_creation_input_tokens": 95638,
+          "cache_read_input_tokens": 3300533,
+          "output_tokens": 27795
+        },
+        "permission_denials_count": 3,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "provider denials and final self-report only; no external feature grading",
+        "findings": [
+          "Three PowerShell denials: bare task generate, compound Get-Content.Replace pipeline to Set-Content editing a new test, and direct integration-tag golangci-lint invocation."
+        ],
+        "notes": [
+          "Named adapter allowed Go/dev and pinned bin/task commands; bare task and direct lint are unsupported command forms. Pipeline edit conflicts with individual-command guidance. No permissions broadened or retry performed.",
+          "Final JSON reports fallback go run dev generate and final fast/full integration passed, but integration-tag lint blocked; these are self-reports only.",
+          "Agent reports initial plain-int unsetpriority causing existing integration failures, then changing to pointer/default handling. This development retry is self-reported, not command-observed.",
+          "No external feature grading, so neither null rejection nor full feature correctness is established for this attempt; fixed-plan denominator and original result retained."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    }
+  ],
+  "evidence_manifest": [
+    {
+      "artifact": "null-field-codex/codex-field-1/result.json",
+      "sha256": "5cfe6d41dd0a80aac1eeedfc5b108fb0c8fd482106475049f0d0fe5ab09a11f3",
+      "bytes": 8520,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/acceptance.log",
+      "sha256": "5eeca9a07118cfffb5df055d74bf31b5ab07abecb13fe9d572232e163f52e59c",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/agent.log",
+      "sha256": "b71f6fca8b94f869dc696a70b06276ebff41a8dc9dc00f27cbb9505843c0ca3e",
+      "bytes": 194519,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/check.log",
+      "sha256": "08530def0234d35257140b482f5085b5791f9af54549d46fda339ddb301ebcc0",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/integration.log",
+      "sha256": "838b2168c1124187897e46744c87e64363a500773fb33c9f06ce9d1f83be933c",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/prompt.txt",
+      "sha256": "502e3612d7cf19a9c6b624d400e565ea6959eb57b120dc9382dea3d86c3aea44",
+      "bytes": 1544,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-1/sandbox-preflight.log",
+      "sha256": "a49d5effe95c49d4c59fdd18b989c4263bf2d250a4df92b942de3d6901707056",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/null-field-followup--codex-field-1.json",
+      "sha256": "441c87d56586d6c7afb3a2be42bfee867dd7f19d53e7d24093d36761fd0231a9",
+      "bytes": 16365,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/result.json",
+      "sha256": "153ddf23eb21bde355d317c092ec8489c49a41a103321d59bd3c3c0db88b7191",
+      "bytes": 8506,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/acceptance.log",
+      "sha256": "4b2e9c0b7befcdd0325809c60da60cbed97f62f7f70826f3d02ed31ca89df21f",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/agent.log",
+      "sha256": "4203878dfbcf95c8e7909a0870dca10c30ba63c90d94df20108f9ae999362bca",
+      "bytes": 202261,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/check.log",
+      "sha256": "b90c7a0e492a3b099d0ec6aff0b8285b9cf82b3f38159957243897cc2dc731db",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/integration.log",
+      "sha256": "342950ec19195e397b4a76ebbecd41c54faaa90fa61426589714ebb70e587a7d",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/prompt.txt",
+      "sha256": "f5b4d20e690cbe352ce16c375f1ef4f7abb23930eaa361456bbb913f9b4ef849",
+      "bytes": 1544,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/codex-field-2/sandbox-preflight.log",
+      "sha256": "525dccf7a0afe3b07df779a46ea46c8f4a101f054d4aec14b799a17b6e973e43",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/null-field-followup--codex-field-2.json",
+      "sha256": "3a57cfd8c5b54129a95e68bd4e2a1888f12894f964db3c1548f1cc7dbf1fa96e",
+      "bytes": 17468,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-codex/results.json",
+      "sha256": "bd1fb724d6c119649b9a83434ad23955611af140ba56d1a28fa1de314e124c2d",
+      "bytes": 17957,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/result.json",
+      "sha256": "ccff572376f8750ea97af6b9534f44b85e3e53985c0790db845da6fb806e5ade",
+      "bytes": 8665,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/acceptance.log",
+      "sha256": "cefa6faf6ca28d01eddcdcd46bb7f16002b6f93e9c6dc0ebf54c163002bd006c",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/agent.log",
+      "sha256": "37f2b6bdb13be9d657a658910ba84cc8e86b76e5d28590050091a2880df4d57d",
+      "bytes": 4783,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/check.log",
+      "sha256": "66f4ac228544509ac2f544532714132424276e0ed007851822bd2bd4466b234d",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/integration.log",
+      "sha256": "0ec3d27b172e4f38f46822be33df1d6fd49c191cf154db3caecae24686ee3ee0",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-1/prompt.txt",
+      "sha256": "675dde905564215c0e226bd6033177c84b73c8d3caa4bd79e886c42330061de0",
+      "bytes": 1304,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/null-field-followup--claude-field-1.json",
+      "sha256": "b9e54a25e2be6a04b3d65a4490c4c8b3da07a3d8b1df61c46d7cb34e83c32c67",
+      "bytes": 9069,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-2/result.json",
+      "sha256": "4048f8851a69606d2872220c30d57dabcc646534bda2f617bc0420de71b0d732",
+      "bytes": 7650,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-2/agent.log",
+      "sha256": "434d5d98081090e84fd03c963b322338182ec8fbecaaaeeaa88ea31f824d9458",
+      "bytes": 6077,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/claude-field-2/prompt.txt",
+      "sha256": "675dde905564215c0e226bd6033177c84b73c8d3caa4bd79e886c42330061de0",
+      "bytes": 1304,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/null-field-followup--claude-field-2.json",
+      "sha256": "41cec2e81eb6b0d7939b07ce5c4039f3149ae677280d38e27d7cde1e02ca3714",
+      "bytes": 8229,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "null-field-claude/results.json",
+      "sha256": "64b426378143c6a77e2b4c6dd76035c874b52315933a912ea9ec4f7f8edf737c",
+      "bytes": 17190,
+      "publication": "digest_only_source_retained_privately"
+    }
+  ],
+  "declared_plan": {
+    "declared_before_execution": true,
+    "date": "2026-11-07",
+    "purpose": "Verify the corrected request validator with explicit null rejection in the field task and independent acceptance criteria.",
+    "source_and_harness_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+    "product_fix_commit": "00e7be482487b85f1e83038a9497348c5c2ae0fd",
+    "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+    "task": "field",
+    "attempts_per_client": 2,
+    "agent_timeout_seconds": 900,
+    "verification_timeout_seconds": 600,
+    "criteria_changes": [
+      "Prompt explicitly rejects null; omission alone uses default3",
+      "Served POST/PUT contract must declare optional nonnullable integer1..5/default3",
+      "POST/PUT0,6,null must reject without changing item/list state or row count"
+    ],
+    "reporting": "Preserve original scores and contract findings separately. This is a new product/prompt/verifier cohort, not an improvement comparison under identical criteria. Keep every attempt; no extra retries. Runs may overlap other individual tasks; timing is descriptive only.",
+    "clients": [
+      {
+        "client": "Claude Code 2.1.319",
+        "model_requested": "claude-opus-5-5"
+      },
+      {
+        "client": "Codex CLI 0.166.0",
+        "model_requested": "gpt-6-astra",
+        "windows_executor": "MXC with local-tests profile"
+      }
+    ]
+  },
+  "counts": {
+    "planned_attempts": 4,
+    "completed_attempts": 4,
+    "statuses": {
+      "passed": 3,
+      "permission_denied": 1
+    },
+    "review_outcomes": {
+      "accepted": 3,
+      "failed_attempt": 1
+    },
+    "evidence_artifacts": 37
+  },
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

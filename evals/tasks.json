@@ -1,0 +1,26 @@
+[
+  {
+    "id": "bootstrap",
+    "prompt": "Set up this fresh checkout using the documented commands and run the fast check. Do not change application behavior. Report the commands and their outcomes."
+  },
+  {
+    "id": "resource",
+    "prompt": "Add a Note CRUD resource using this repository's supported generator and workflow. Its routes must be /v1/notes and /v1/notes/{id}, exposed in OpenAPI and wired into the running API. Keep reads public. Writes require the notes:write scope; valid tokens without it must receive 403. Use the normal name field, pagination, validation, and response conventions. Include tests."
+  },
+  {
+    "id": "field",
+    "prompt": "Add an optional integer priority input field to widgets. Its valid range is 1 through 5; omitting it on POST or PUT uses 3. Explicit null is invalid; only omission uses the default. Persist it through a new migration, include it in all widget responses including lists, and support changing it through PUT. Existing records must receive priority 3 without losing their other data. Reject out-of-range or null create and update inputs with 400 without changing stored data. Update OpenAPI, SQL, and tests."
+  },
+  {
+    "id": "authorization",
+    "prompt": "Add GET /v1/widgets/count to the contract and running API. Return JSON {\"count\": N} with the current widget count. Require a valid bearer token and the widgets:read scope. Return 401 without a token and 403 for a valid token without permission. Enforce permission in the service before accessing persistence. Preserve the existing widget routes and add tests."
+  },
+  {
+    "id": "repair",
+    "prompt": "A regression lets callers without widgets:write update widgets. Find and fix it, preserve all existing checks, and add a regression test. The HTTP API must return 403 for a valid token without the write permission and must leave the stored widget unchanged."
+  },
+  {
+    "id": "second_resource",
+    "prompt": "This checkout already has a generated Note resource. Add a Label CRUD resource at /v1/labels using the supported workflow. Reads are public; writes require labels:write. Preserve the Note resource and its notes:write policy. Both resources must work in the same running API, appear in OpenAPI, and use normal pagination and validation. Add tests."
+  }
+]

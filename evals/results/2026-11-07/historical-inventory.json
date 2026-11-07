@@ -1,0 +1,783 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "date": "2026-11-07",
+  "scope": "Historical adapter trials only; retained separately from the completed individual and paired cohorts.",
+  "aggregation_policy": "Do not pool cohorts with different source, harness, prompt, executor, or grading rules. Retain all failed/interrupted attempts; report independent grading and agent-session checks separately.",
+  "batches": [
+    {
+      "id": "initial-codex",
+      "purpose": "interrupted_initial_adapter_run",
+      "attempt_directories": 1,
+      "completed_manifests": 0,
+      "aggregate_entries": null,
+      "aggregate_matches_attempt_manifests": null,
+      "coordinator_interventions": [
+        {
+          "kind": "stopped_batch_for_adapter_repair",
+          "timestamp_utc": "2026-11-07T13:15:25.4440288Z",
+          "recorded_status": "interrupted_for_infrastructure_repair",
+          "summary": "Evaluation process tree stopped while an attempt was incomplete; records and logs retained. Windows shell permissions and sandbox startup required investigation.",
+          "actor_type": "coordinator; human intervention is not inferred from the legacy field name"
+        }
+      ]
+    },
+    {
+      "id": "initial-claude",
+      "purpose": "interrupted_initial_adapter_run",
+      "attempt_directories": 4,
+      "completed_manifests": 3,
+      "aggregate_entries": 3,
+      "aggregate_matches_attempt_manifests": true,
+      "coordinator_interventions": [
+        {
+          "kind": "stopped_batch_for_adapter_repair",
+          "timestamp_utc": "2026-11-07T13:15:25.2071174Z",
+          "recorded_status": "interrupted_for_infrastructure_repair",
+          "summary": "Evaluation process tree stopped while an attempt was incomplete; records and logs retained. Windows shell permissions and sandbox startup required investigation.",
+          "actor_type": "coordinator; human intervention is not inferred from the legacy field name"
+        }
+      ]
+    },
+    {
+      "id": "bootstrap-codex-mxc",
+      "purpose": "single_bootstrap_adapter_trial",
+      "attempt_directories": 1,
+      "completed_manifests": 1,
+      "aggregate_entries": 1,
+      "aggregate_matches_attempt_manifests": true,
+      "coordinator_interventions": []
+    },
+    {
+      "id": "bootstrap-claude-native",
+      "purpose": "single_bootstrap_adapter_trial",
+      "attempt_directories": 1,
+      "completed_manifests": 1,
+      "aggregate_entries": 1,
+      "aggregate_matches_attempt_manifests": true,
+      "coordinator_interventions": []
+    }
+  ],
+  "attempts": [
+    {
+      "id": "initial-codex/codex-bootstrap-1",
+      "batch": "initial-codex",
+      "agent": "codex",
+      "task": "bootstrap",
+      "attempt": 1,
+      "record_completeness": "incomplete_interrupted",
+      "source_commit": "648560f8a59d960e38a803864e79f7fd27b4ba6d",
+      "source_commit_evidence": "workspace_origin_metadata",
+      "model_requested": null,
+      "model_names_provider_reported": [],
+      "client_version": null,
+      "environment": null,
+      "go_version": null,
+      "executor": null,
+      "runner_sha256_recorded": null,
+      "verifier_sha256_recorded": null,
+      "prompt_sha256_recorded": null,
+      "prompt_sha256_normalized_utf8": "70afe337bcc48198f4a41020704a316a881103b5878faddf2fbbc71e1472c5f2",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": null,
+      "fixture_tree": null,
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": null,
+      "independent_grading": {
+        "status": "not_run",
+        "scope": "Stopped before independent checks"
+      },
+      "agent_session_checks": {
+        "state": "interrupted",
+        "evidence_level": "session_progress_events",
+        "summary": "Shell probes and documented checks remained pending; no completed command or final result was recorded.",
+        "completed_command_events": 0,
+        "failed_command_events": 0
+      },
+      "human_interventions_recorded": null,
+      "batch_interruption_must_be_read_separately": true,
+      "phase_results": [],
+      "provider_usage_reported": null
+    },
+    {
+      "id": "initial-claude/claude-bootstrap-1",
+      "batch": "initial-claude",
+      "agent": "claude",
+      "task": "bootstrap",
+      "attempt": 1,
+      "record_completeness": "completed_result_manifest",
+      "source_commit": "648560f8a59d960e38a803864e79f7fd27b4ba6d",
+      "source_commit_evidence": "result_manifest",
+      "model_requested": "claude-opus-5-5",
+      "model_names_provider_reported": [
+        "claude-opus-5-5"
+      ],
+      "client_version": "2.1.319 (Claude Code)",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": null,
+      "runner_sha256_recorded": "ceb6d8a422825aaea642edb11b7e79e014df3406f65fdaf37317da5b3051b5df",
+      "verifier_sha256_recorded": "a5639f15e856ddb63d8dc656cf46635edcbdcc666ec121b934c83aeebd3a4cd1",
+      "prompt_sha256_recorded": "70afe337bcc48198f4a41020704a316a881103b5878faddf2fbbc71e1472c5f2",
+      "prompt_sha256_normalized_utf8": "70afe337bcc48198f4a41020704a316a881103b5878faddf2fbbc71e1472c5f2",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": "66f73ec09a0913437c53fc87b8f5b37e7adfe55c",
+      "fixture_tree": "f3565c6d82f903da3611244640b1d03b74306fec",
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": "permission_denied",
+      "independent_grading": {
+        "status": "not_run",
+        "scope": "Stopped before independent checks"
+      },
+      "agent_session_checks": {
+        "state": "reported_pass_after_permission_denial",
+        "evidence_level": "agent_final_summary_and_denial_metadata",
+        "summary": "The agent reported successful bootstrap, fast check, and integration after a denied compound PowerShell call. No per-command transcript was emitted. The harness rejected the attempt for the denial."
+      },
+      "human_interventions_recorded": 0,
+      "batch_interruption_must_be_read_separately": true,
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 32.781
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 19.89
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 110.797
+        }
+      ],
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 18,
+          "cache_creation_input_tokens": 28735,
+          "cache_read_input_tokens": 363668,
+          "output_tokens": 2092
+        },
+        "permission_denials_count": 1
+      }
+    },
+    {
+      "id": "initial-claude/claude-bootstrap-2",
+      "batch": "initial-claude",
+      "agent": "claude",
+      "task": "bootstrap",
+      "attempt": 2,
+      "record_completeness": "completed_result_manifest",
+      "source_commit": "648560f8a59d960e38a803864e79f7fd27b4ba6d",
+      "source_commit_evidence": "result_manifest",
+      "model_requested": "claude-opus-5-5",
+      "model_names_provider_reported": [
+        "claude-opus-5-5"
+      ],
+      "client_version": "2.1.319 (Claude Code)",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": null,
+      "runner_sha256_recorded": "ceb6d8a422825aaea642edb11b7e79e014df3406f65fdaf37317da5b3051b5df",
+      "verifier_sha256_recorded": "a5639f15e856ddb63d8dc656cf46635edcbdcc666ec121b934c83aeebd3a4cd1",
+      "prompt_sha256_recorded": "70afe337bcc48198f4a41020704a316a881103b5878faddf2fbbc71e1472c5f2",
+      "prompt_sha256_normalized_utf8": "70afe337bcc48198f4a41020704a316a881103b5878faddf2fbbc71e1472c5f2",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": "ffa0e075a8f4f3a2233881568611722be90df849",
+      "fixture_tree": "f3565c6d82f903da3611244640b1d03b74306fec",
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": "permission_denied",
+      "independent_grading": {
+        "status": "not_run",
+        "scope": "Stopped before independent checks"
+      },
+      "agent_session_checks": {
+        "state": "reported_pass_after_permission_denials",
+        "evidence_level": "agent_final_summary_and_denial_metadata",
+        "summary": "The agent reported successful bootstrap, fast check, and integration after denied shell calls. No per-command transcript was emitted. The harness rejected the attempt for denials."
+      },
+      "human_interventions_recorded": 0,
+      "batch_interruption_must_be_read_separately": true,
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 30.063
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.812
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 105.391
+        }
+      ],
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 20,
+          "cache_creation_input_tokens": 29205,
+          "cache_read_input_tokens": 408768,
+          "output_tokens": 2389
+        },
+        "permission_denials_count": 3
+      }
+    },
+    {
+      "id": "initial-claude/claude-resource-1",
+      "batch": "initial-claude",
+      "agent": "claude",
+      "task": "resource",
+      "attempt": 1,
+      "record_completeness": "completed_result_manifest",
+      "source_commit": "648560f8a59d960e38a803864e79f7fd27b4ba6d",
+      "source_commit_evidence": "result_manifest",
+      "model_requested": "claude-opus-5-5",
+      "model_names_provider_reported": [
+        "claude-opus-5-5"
+      ],
+      "client_version": "2.1.319 (Claude Code)",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": null,
+      "runner_sha256_recorded": "ceb6d8a422825aaea642edb11b7e79e014df3406f65fdaf37317da5b3051b5df",
+      "verifier_sha256_recorded": "a5639f15e856ddb63d8dc656cf46635edcbdcc666ec121b934c83aeebd3a4cd1",
+      "prompt_sha256_recorded": "91bc01f93fe7b0f739f2fe8d9f1f88c864a252773f5bb5f4b5e75fa2166cd74f",
+      "prompt_sha256_normalized_utf8": "91bc01f93fe7b0f739f2fe8d9f1f88c864a252773f5bb5f4b5e75fa2166cd74f",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": "164353c7b2c0aae0e02695a13f5b26e66b6c27d9",
+      "fixture_tree": "f3565c6d82f903da3611244640b1d03b74306fec",
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": "permission_denied",
+      "independent_grading": {
+        "status": "not_run",
+        "scope": "Stopped before independent checks"
+      },
+      "agent_session_checks": {
+        "state": "blocked",
+        "evidence_level": "agent_final_summary_and_denial_metadata",
+        "summary": "The generator preview was denied. The agent reported no resource changes and no checks run."
+      },
+      "human_interventions_recorded": 0,
+      "batch_interruption_must_be_read_separately": true,
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 20.188
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.641
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.594
+        }
+      ],
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 6,
+          "cache_creation_input_tokens": 27297,
+          "cache_read_input_tokens": 100801,
+          "output_tokens": 1618
+        },
+        "permission_denials_count": 1
+      }
+    },
+    {
+      "id": "initial-claude/claude-resource-2",
+      "batch": "initial-claude",
+      "agent": "claude",
+      "task": "resource",
+      "attempt": 2,
+      "record_completeness": "incomplete_interrupted",
+      "source_commit": "648560f8a59d960e38a803864e79f7fd27b4ba6d",
+      "source_commit_evidence": "workspace_origin_metadata",
+      "model_requested": null,
+      "model_names_provider_reported": [],
+      "client_version": null,
+      "environment": null,
+      "go_version": null,
+      "executor": null,
+      "runner_sha256_recorded": null,
+      "verifier_sha256_recorded": null,
+      "prompt_sha256_recorded": null,
+      "prompt_sha256_normalized_utf8": "91bc01f93fe7b0f739f2fe8d9f1f88c864a252773f5bb5f4b5e75fa2166cd74f",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": null,
+      "fixture_tree": null,
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": null,
+      "independent_grading": {
+        "status": "not_run",
+        "scope": "Stopped before independent checks"
+      },
+      "agent_session_checks": {
+        "state": "not_observed",
+        "evidence_level": "empty_agent_log",
+        "summary": "Preparation logs and prompt exist, but the agent log is empty and no result manifest exists. Model execution is not established."
+      },
+      "human_interventions_recorded": null,
+      "batch_interruption_must_be_read_separately": true,
+      "phase_results": [],
+      "provider_usage_reported": null
+    },
+    {
+      "id": "bootstrap-codex-mxc/codex-bootstrap-1",
+      "batch": "bootstrap-codex-mxc",
+      "agent": "codex",
+      "task": "bootstrap",
+      "attempt": 1,
+      "record_completeness": "completed_result_manifest",
+      "source_commit": "26cc12929462cfb4e62ee12dcccde290e0dfee14",
+      "source_commit_evidence": "result_manifest",
+      "model_requested": "gpt-6-astra",
+      "model_names_provider_reported": [],
+      "client_version": "codex-cli 0.166.0",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex workspace-write / Windows mxc",
+      "runner_sha256_recorded": "b93d5c03da61fcb0b1b7aeb5f10b1474e0f88c088e68bcdd567f27740053dcea",
+      "verifier_sha256_recorded": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256_recorded": "2f24c641bd993e9954bb84db60704d0f49851ea76d29ef8891f02866e5662787",
+      "prompt_sha256_normalized_utf8": "2f24c641bd993e9954bb84db60704d0f49851ea76d29ef8891f02866e5662787",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": "364d31763f605e02f39c348f44e97a60f1c9d0a6",
+      "fixture_tree": "127406af0ef984e33f0042ce8e8c085e54d98ac8",
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": "passed",
+      "independent_grading": {
+        "status": "passed",
+        "scope": "host fast check only; bootstrap has no independent HTTP acceptance phase"
+      },
+      "agent_session_checks": {
+        "state": "blocked",
+        "evidence_level": "command_execution_events_and_final_summary",
+        "summary": "Bootstrap and separate build passed. Fast check exited 1 with temporary Git/file-replacement permission errors and localhost shutdown-test timeouts. Integration exited 1 with unavailable Docker/database access. A tool-module download also failed DNS resolution. The independent host fast check later passed.",
+        "completed_command_events": 24,
+        "failed_command_events": 6
+      },
+      "human_interventions_recorded": 0,
+      "batch_interruption_must_be_read_separately": false,
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.594
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.031
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.531
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 249.984
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.328
+        }
+      ],
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 744289,
+          "cached_input_tokens": 714240,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2650,
+          "reasoning_output_tokens": 876
+        },
+        "permission_denials_count": null
+      }
+    },
+    {
+      "id": "bootstrap-claude-native/claude-bootstrap-1",
+      "batch": "bootstrap-claude-native",
+      "agent": "claude",
+      "task": "bootstrap",
+      "attempt": 1,
+      "record_completeness": "completed_result_manifest",
+      "source_commit": "26cc12929462cfb4e62ee12dcccde290e0dfee14",
+      "source_commit_evidence": "result_manifest",
+      "model_requested": "claude-opus-5-5",
+      "model_names_provider_reported": [
+        "claude-opus-5-5"
+      ],
+      "client_version": "2.1.319 (Claude Code)",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "runner_sha256_recorded": "b93d5c03da61fcb0b1b7aeb5f10b1474e0f88c088e68bcdd567f27740053dcea",
+      "verifier_sha256_recorded": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256_recorded": "2f24c641bd993e9954bb84db60704d0f49851ea76d29ef8891f02866e5662787",
+      "prompt_sha256_normalized_utf8": "2f24c641bd993e9954bb84db60704d0f49851ea76d29ef8891f02866e5662787",
+      "prompt_hash_semantics": "Recorded hash is UTF-8 prompt text with normalized LF newlines; evidence manifest separately hashes saved bytes.",
+      "fixture_commit": "364d31763f605e02f39c348f44e97a60f1c9d0a6",
+      "fixture_tree": "127406af0ef984e33f0042ce8e8c085e54d98ac8",
+      "cache": "shared host Go caches; not a cold-install measurement",
+      "harness_status_recorded": "passed",
+      "independent_grading": {
+        "status": "passed",
+        "scope": "host fast check only; bootstrap has no independent HTTP acceptance phase"
+      },
+      "agent_session_checks": {
+        "state": "reported_pass_after_retry",
+        "evidence_level": "agent_final_summary",
+        "summary": "The agent reported bootstrap and fast check passed. Initial integration failed Docker setup in testutil; a focused retry and full integration rerun reportedly passed. No per-command transcript was emitted. The independent host fast check passed."
+      },
+      "human_interventions_recorded": 0,
+      "batch_interruption_must_be_read_separately": false,
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.594
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.109
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 102.578
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.469
+        }
+      ],
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 20,
+          "cache_creation_input_tokens": 34129,
+          "cache_read_input_tokens": 426684,
+          "output_tokens": 2782
+        },
+        "permission_denials_count": 0
+      }
+    }
+  ],
+  "evidence_manifest": [
+    {
+      "artifact": "initial-codex/interruption.json",
+      "sha256": "61fd3dfea259ef97f9df7a1afa78e36d03274b511fcbd0f097caf26ec23c4d84",
+      "bytes": 436,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-codex/codex-bootstrap-1/agent.log",
+      "sha256": "fd53628528d1fec4c2bcd8b0d14eae25e55c29f4a2aa6d8c9cd55b1dd7ca76e4",
+      "bytes": 1759,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-codex/codex-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-codex/codex-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-codex/codex-bootstrap-1/prompt.txt",
+      "sha256": "216749211593f40a94bd2d1e7d43a02ef7e6cafc41da09d94fcb76755e16a38a",
+      "bytes": 467,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/results.json",
+      "sha256": "30d1bbac7a8f511be992209c18bf89b4904d3dc9b7f3efa9417b6afe7b69afa9",
+      "bytes": 14385,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/interruption.json",
+      "sha256": "244102788bfc1a0ae077bb45f563b6c745230983156b6a6faabfa8fad33dff02",
+      "bytes": 437,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-1/agent.log",
+      "sha256": "69fca440541b2b55a28a8ef0b598c802fcd89b86bc29dae9d11758794c6797cc",
+      "bytes": 4023,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-1/prompt.txt",
+      "sha256": "216749211593f40a94bd2d1e7d43a02ef7e6cafc41da09d94fcb76755e16a38a",
+      "bytes": 467,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-1/result.json",
+      "sha256": "592c7ceab7707bffe50ef7a026ec319a4dc3ee0d086a52adc035693d29687e51",
+      "bytes": 4519,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-2/agent.log",
+      "sha256": "08cbf0147211fe3ef0680fbc8b534869f22b06110f420cb28a921a1a8cd5cedf",
+      "bytes": 4510,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-2/prompt.txt",
+      "sha256": "216749211593f40a94bd2d1e7d43a02ef7e6cafc41da09d94fcb76755e16a38a",
+      "bytes": 467,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-bootstrap-2/result.json",
+      "sha256": "f7acff2221085c5ab8e5c0db598578aba51cbe185bd57701aa7ebaa98fe1aec5",
+      "bytes": 4499,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-1/agent.log",
+      "sha256": "19385e9e614fb17015de4d550ac203e26775db01d87842adfaf42ede34be27d8",
+      "bytes": 4117,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-1/prompt.txt",
+      "sha256": "6c52bdf7c290b2401e3b2bc1b2f19ad57002e403d1f1b19d6b3ade92eb383300",
+      "bytes": 699,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-1/result.json",
+      "sha256": "136628c942a96f64b4c984292431466e28146fa051e3576f75b6b169109b1bf7",
+      "bytes": 4495,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-2/agent.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "initial-claude/claude-resource-2/prompt.txt",
+      "sha256": "6c52bdf7c290b2401e3b2bc1b2f19ad57002e403d1f1b19d6b3ade92eb383300",
+      "bytes": 699,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/results.json",
+      "sha256": "2e047a892940232346e8327f3046699eeb5556ebd97c9055e37092dae5e0b601",
+      "bytes": 4460,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/agent.log",
+      "sha256": "8053c01ab5963bdbe8b42bae4b931eca6831b496dfc648ed67b344534360b79b",
+      "bytes": 84716,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/check.log",
+      "sha256": "bf837a86328f4e2c7cf2c8a0d4d1bab02c4a5faae70e12f731eca554b25df05b",
+      "bytes": 1311,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/prompt.txt",
+      "sha256": "b8399dba034d9e005c3ce70da77997c740de8e6ae50354c7eb0b507e5664f690",
+      "bytes": 674,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/result.json",
+      "sha256": "9c48200e9cbc6d711df2533bc82ffe0fdec5f0b799da52fabeb713b6a01e188d",
+      "bytes": 4186,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-codex-mxc/codex-bootstrap-1/sandbox-preflight.log",
+      "sha256": "19c8456f9a4ac98be63ede3490610013360e00f5ad1339652b25fd33f629c820",
+      "bytes": 26,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/results.json",
+      "sha256": "4f639d882e774386b1b75168d96acbc16ef50bacf4f287fdf42ef111014f3936",
+      "bytes": 5358,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/agent.log",
+      "sha256": "8a3800ab2eb3b4e0a8823b652cfc1adbaa9ecb3cf8fd382bf8c018cefd861c76",
+      "bytes": 4257,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/check.log",
+      "sha256": "656e6b9cad2bec3357adfd41b74dcc0ff135ca84004f069b5ea82fa6fe14a09b",
+      "bytes": 1311,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/prompt.txt",
+      "sha256": "b8399dba034d9e005c3ce70da77997c740de8e6ae50354c7eb0b507e5664f690",
+      "bytes": 674,
+      "publication": "digest_only_raw_file_retained_privately"
+    },
+    {
+      "artifact": "bootstrap-claude-native/claude-bootstrap-1/result.json",
+      "sha256": "1a7b193a0c990e2882bf9baba0d5dfb75a4f4c6653748da5b8dec6cd096b0eb9",
+      "bytes": 5024,
+      "publication": "digest_only_raw_file_retained_privately"
+    }
+  ],
+  "inventory_counts": {
+    "batches": 4,
+    "attempt_directories": 7,
+    "completed_attempt_manifests": 5,
+    "aggregate_result_manifests": 3,
+    "batch_interruption_manifests": 2,
+    "statuses": {
+      "incomplete_interrupted": 2,
+      "permission_denied": 3,
+      "passed": 2
+    },
+    "evidence_artifacts": 41,
+    "artifact_counts_by_name": {
+      "interruption.json": 2,
+      "agent.log": 7,
+      "initialize.log": 7,
+      "prepare.log": 7,
+      "prompt.txt": 7,
+      "results.json": 3,
+      "result.json": 5,
+      "check.log": 2,
+      "sandbox-preflight.log": 1
+    }
+  },
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

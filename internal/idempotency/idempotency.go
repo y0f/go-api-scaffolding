@@ -17,7 +17,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
+	db "github.com/y0f/gophling/internal/gen/db"
 )
 
 // ErrConflict is returned when a key is reused with a different request body,

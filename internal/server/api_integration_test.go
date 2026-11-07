@@ -5,6 +5,7 @@ package server_test
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"io"
 	"log/slog"
 	"net/http"
@@ -13,12 +14,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/server"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/auth"
+	api "github.com/y0f/gophling/internal/gen/api"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/modules/widget"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/server"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 func newTestServer(t *testing.T) (*httptest.Server, string, *auth.DevIssuer) {
@@ -81,6 +83,62 @@ func TestValidationRejectsBadBody(t *testing.T) {
 	}
 	if ct := resp.Header.Get("Content-Type"); ct != "application/problem+json" {
 		t.Errorf("content-type = %q, want application/problem+json", ct)
+	}
+}
+
+func TestOmittedDefaultsAndRejectedNullWrites(t *testing.T) {
+	t.Parallel()
+	srv, token, _ := newTestServer(t)
+	readWidget := func(resp *http.Response, want int) api.Widget {
+		t.Helper()
+		defer resp.Body.Close()
+		if resp.StatusCode != want {
+			t.Fatalf("status = %d, want %d", resp.StatusCode, want)
+		}
+		var result api.Widget
+		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+			t.Fatal(err)
+		}
+		return result
+	}
+	created := readWidget(do(t, srv, http.MethodPost, "/v1/widgets", token, `{"name":"original"}`), http.StatusCreated)
+	if created.Description != "" || created.Status != api.Active {
+		t.Fatalf("omitted create defaults = %#v", created)
+	}
+	path := "/v1/widgets/" + created.Id.String()
+	updated := readWidget(do(t, srv, http.MethodPut, path, token, `{"name":"retained","description":"keep","status":"archived"}`), http.StatusOK)
+	for _, method := range []string{http.MethodPost, http.MethodPut} {
+		for _, body := range []string{`{"name":"changed","description":null}`, `{"name":"changed","status":null}`} {
+			endpoint := path
+			if method == http.MethodPost {
+				endpoint = "/v1/widgets"
+			}
+			resp := do(t, srv, method, endpoint, token, body)
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusBadRequest {
+				t.Fatalf("%s accepted null: status=%d body=%s", method, resp.StatusCode, body)
+			}
+		}
+	}
+	retained := readWidget(do(t, srv, http.MethodGet, path, "", ""), http.StatusOK)
+	if retained != updated {
+		t.Fatalf("rejected writes changed the stored widget: before=%#v after=%#v", updated, retained)
+	}
+	reset := readWidget(do(t, srv, http.MethodPut, path, token, `{"name":"reset"}`), http.StatusOK)
+	if reset.Description != "" || reset.Status != api.Active {
+		t.Fatalf("omitted update defaults = %#v", reset)
+	}
+	resp := do(t, srv, http.MethodGet, "/v1/widgets", "", "")
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("list status = %d", resp.StatusCode)
+	}
+	var list api.WidgetList
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+		t.Fatal(err)
+	}
+	if list.Pagination.Limit != 20 || list.Pagination.Offset != 0 || list.Pagination.Total != 1 || len(list.Items) != 1 || list.Items[0] != reset {
+		t.Fatalf("pagination defaults or rejected-create isolation failed: %#v", list)
 	}
 }
 

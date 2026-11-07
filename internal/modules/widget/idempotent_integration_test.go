@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 // TestCreateReclaimsExpiredIdempotencyKey is a regression test: a key reused

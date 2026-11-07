@@ -18,8 +18,8 @@ func TestNewResourceNaming(t *testing.T) {
 		{"Address", "Address", "address", "addresses"},
 		{"Day", "Day", "day", "days"},
 		{"Box", "Box", "box", "boxes"},
-		{"HTTPRoute", "HttpRoute", "http_route", "http_routes"},
-		{"userID", "UserId", "user_id", "user_ids"},
+		{"HTTPRoute", "HTTPRoute", "http_route", "http_routes"},
+		{"userID", "UserID", "user_id", "user_ids"},
 	}
 	for _, tt := range tests {
 		got := newResource(tt.in)
@@ -47,31 +47,5 @@ func TestNextMigrationVersion(t *testing.T) {
 	}
 	if got != "00008" {
 		t.Fatalf("next version = %s, want 00008", got)
-	}
-}
-
-func TestRegisterQueries(t *testing.T) {
-	t.Chdir(t.TempDir())
-	src := "version: \"2\"\nsql:\n  - engine: postgresql\n    schema: migrations\n    queries:\n      - internal/outbox/queries.sql\n    gen:\n      go:\n        out: internal/gen/db\n"
-	if err := os.WriteFile(sqlcConfig, []byte(src), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := registerQueries("internal/modules/order/queries.sql"); err != nil {
-		t.Fatal(err)
-	}
-	if err := registerQueries("internal/modules/order/queries.sql"); err != nil {
-		t.Fatalf("second registration: %v", err)
-	}
-	got, _ := os.ReadFile(sqlcConfig)
-	want := "version: \"2\"\nsql:\n  - engine: postgresql\n    schema: migrations\n    queries:\n      - internal/modules/order/queries.sql\n      - internal/outbox/queries.sql\n    gen:\n      go:\n        out: internal/gen/db\n"
-	if string(got) != want {
-		t.Fatalf("sqlc.yaml =\n%s\nwant\n%s", got, want)
-	}
-
-	if err := os.WriteFile(sqlcConfig, []byte("version: \"2\"\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	if err := registerQueries("x.sql"); err == nil {
-		t.Error("expected an error when sqlc.yaml has no queries list")
 	}
 }

@@ -1,0 +1,23 @@
+    {{.Pascal}}:
+      type: object
+      required: [id, name, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    {{.Pascal}}Input:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 200 }
+    {{.Pascal}}List:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/{{.Pascal}}"
+        pagination:
+          $ref: "#/components/schemas/Pagination"

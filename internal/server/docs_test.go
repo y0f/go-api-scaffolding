@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	spec "github.com/y0f/go-api-scaffolding/api"
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/server"
+	spec "github.com/y0f/gophling/api"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/server"
 )
 
 // newRouter builds the public handler with no database and no API

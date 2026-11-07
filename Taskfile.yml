@@ -14,43 +14,38 @@ vars:
   PKG: ./cmd/api
   VERSION:
     sh: git describe --tags --always --dirty 2>/dev/null || echo dev
-  LDFLAGS: -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{.VERSION}}
+  LDFLAGS: -s -w -X github.com/y0f/gophling/internal/config.version={{.VERSION}}
 
 tasks:
   default:
     cmds:
-      - task --list
+      - '"{{.TASK_EXE}}" --list'
     silent: true
 
   setup:
     desc: Build the pinned developer toolchain into ./bin
     cmds:
-      - go -C tools build -o ../bin/ tool
-    # Only rebuild when the pinned versions actually change, so the tasks that
-    # depend on this do not shell out to the compiler on every invocation.
-    sources:
-      - tools/go.mod
-      - tools/go.sum
-    generates:
-      - bin/*
+      - go run ./cmd/dev bootstrap
+
+  doctor:
+    desc: Report Go, Git, pinned tools, Docker and race-test prerequisites
+    cmds:
+      - go run ./cmd/dev doctor
+
+  check:
+    desc: Check generation, lint, unit tests and build (no Docker needed)
+    cmds:
+      - go run ./cmd/dev check
 
   generate:
     desc: Regenerate type-safe DB and API code from SQL and the OpenAPI spec
-    deps: [setup]
     cmds:
-      # sqlc refuses to run with no query files, which is the state of a
-      # project until its first `forge add resource`.
-      - cmd: |
-          set -- internal/*/queries.sql internal/modules/*/queries.sql
-          if [ -e "$1" ] || [ -e "$2" ]; then {{.TOOLS}}/sqlc{{.EXT}} generate; fi
-        silent: true
-      - "{{.TOOLS}}/oapi-codegen{{.EXT}} --config api/oapi-codegen.yaml api/openapi.yaml"
+      - go run ./cmd/dev generate
 
   generate:check:
     desc: Fail if generated code is out of date with its sources
     cmds:
-      - task: generate
-      - git diff --exit-code -- internal/gen
+      - go run ./cmd/dev generate-check
 
   fmt:
     desc: Format code with gofumpt and goimports
@@ -83,9 +78,24 @@ tasks:
       - go test -race -shuffle=on ./...
 
   test:integration:
-    desc: Run integration tests against a real Postgres (requires Docker)
+    desc: Run integration tests (Docker or FORGE_TEST_DATABASE_URL)
     cmds:
       - go test -tags integration -count=1 ./...
+
+  # forge:begin example
+  test:e2e:
+    desc: Build and exercise the full API in an isolated Docker Compose project
+    cmds:
+      - go test -tags e2e -count=1 -timeout 15m ./cmd/api
+  # forge:end example
+
+  # forge:begin init
+  test:generator:
+    desc: Exercise initialized projects and multiple generated resources (requires Postgres)
+    deps: [setup]
+    cmds:
+      - go test -tags generator -count=1 ./cmd/forge
+  # forge:end init
 
   build:
     desc: Build api, migrate and forge into ./bin
@@ -107,7 +117,7 @@ tasks:
     desc: Run the service with live reload
     deps: [setup]
     cmds:
-      - "{{.TOOLS}}/air{{.EXT}}"
+      - '{{.TOOLS}}/air{{.EXT}} -build.bin "./tmp/api{{.EXT}}"'
 
   migrate:
     desc: Apply database migrations
@@ -121,7 +131,13 @@ tasks:
       - docker compose up --build -d
 
   down:
-    desc: Stop the docker compose stack and delete the database volume
+    desc: Stop the docker compose stack and preserve the database volume
+    dir: deployments
+    cmds:
+      - docker compose --profile "*" down
+
+  reset:
+    desc: Stop the docker compose stack and DELETE its database volume
     dir: deployments
     cmds:
       - docker compose --profile "*" down -v
@@ -143,11 +159,6 @@ tasks:
       - go -C tools mod tidy
 
   ci:
-    desc: Run the same gates as CI
+    desc: Run all local gates including race, Postgres, vulnerability and container checks
     cmds:
-      - task: lint
-      - task: vuln
-      - task: generate:check
-      - task: test
-      - task: test:integration
-      - task: build
+      - go run ./cmd/dev ci

@@ -1,4 +1,18 @@
 version: 2
+project_name: gophling
+
+release:
+  # forge:begin init
+  header: |
+    Read the [upgrade notes](https://github.com/y0f/gophling/blob/{{ .Tag }}/CHANGELOG.md)
+    before updating an existing project.
+  # forge:end init
+  # The workflow verifies uploaded assets before publishing this draft.
+  draft: true
+  use_existing_draft: true
+  replace_existing_artifacts: true
+  preflight:
+    fail_on_error: true
 
 before:
   hooks:
@@ -13,7 +27,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+      - -s -w -X github.com/y0f/gophling/internal/config.version={{ .Version }}
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
   - id: migrate
@@ -24,7 +38,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+      - -s -w -X github.com/y0f/gophling/internal/config.version={{ .Version }}
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
   - id: forge
@@ -34,6 +48,10 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -trimpath
+    # forge:begin init
+    ldflags:
+      - -s -w -X main.scaffoldVersion={{ .Tag }}
+    # forge:end init
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
 
@@ -72,8 +90,5 @@ changelog:
       regexp: "^fix"
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
-      - "^ci:"
-      - '^build\(deps'
+      - '^(docs|test|chore|ci)(\([^)]+\))?:'
+      - '^build\(deps[^)]*\):'

@@ -21,8 +21,8 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 
-	"github.com/y0f/go-api-scaffolding/internal/config"
-	"github.com/y0f/go-api-scaffolding/migrations"
+	"github.com/y0f/gophling/internal/config"
+	"github.com/y0f/gophling/migrations"
 )
 
 func main() {

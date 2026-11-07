@@ -3,13 +3,29 @@ package widget
 import (
 	"context"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/google/uuid"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
+	"github.com/y0f/gophling/internal/auth"
+	db "github.com/y0f/gophling/internal/gen/db"
 )
+
+func TestReplayChecksPermissionBeforeAccessingStore(t *testing.T) {
+	h := NewHandler(NewService(&fakeRepo{}))
+	// No idempotency store: denied requests must not reach it.
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/v1/widgets", nil)
+	h.createIdempotent(w, r, auth.Principal{Subject: "alice"}, Input{Name: "x"}, []byte(`{"name":"x"}`), "existing-key")
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want 403", w.Code)
+	}
+	if w.Header().Get("Idempotency-Replayed") != "" {
+		t.Fatal("denied request was replayed")
+	}
+}
 
 func (f *fakeRepo) CreateIdempotent(_ context.Context, in Input, _ IdempotencyClaim) (db.Widget, error) {
 	f.createCalled = true

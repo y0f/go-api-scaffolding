@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/y0f/go-api-scaffolding/internal/platform/problem"
+	"github.com/y0f/gophling/internal/platform/problem"
 )
 
 // Middleware authenticates a request from its bearer token and publishes the

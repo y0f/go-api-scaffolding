@@ -7,17 +7,18 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	api "github.com/y0f/go-api-scaffolding/internal/gen/api"
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/platform/problem"
+	"github.com/y0f/gophling/internal/auth"
+	api "github.com/y0f/gophling/internal/gen/api"
+	db "github.com/y0f/gophling/internal/gen/db"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/platform/problem"
 )
 
 // Handler adapts HTTP to the widget service. It implements the generated
 // api.ServerInterface for the widget operations.
 type Handler struct {
-	service *Service
+	api.Unimplemented // Unrelated resource operations are implemented by the composition root.
+	service           *Service
 	//forge:begin idempotency
 	idempotency *idempotency.Store
 	//forge:end idempotency

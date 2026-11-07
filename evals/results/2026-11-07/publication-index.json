@@ -1,0 +1,531 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "date": "2026-11-07",
+  "snapshot_started_utc": "2026-11-07T16:04:40.417215+00:00",
+  "snapshot_finished_utc": "2026-11-07T16:04:40.488986+00:00",
+  "cohorts": [
+    {
+      "id": "baseline-codex",
+      "cohort_group": "baseline",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 12,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "codex-cli 0.166.0"
+        ],
+        "model_requested": [
+          "gpt-6-astra"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "coordinator-context.json",
+        "planned_tasks": 6,
+        "attempts_per_task": 2,
+        "planned_attempts": 12
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 12
+      },
+      "observed_records_per_task": {
+        "authorization": 2,
+        "bootstrap": 2,
+        "field": 2,
+        "repair": 2,
+        "resource": 2,
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 12
+    },
+    {
+      "id": "baseline-claude",
+      "cohort_group": "baseline",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 12,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "coordinator-context.json",
+        "planned_tasks": 6,
+        "attempts_per_task": 2,
+        "planned_attempts": 12
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 8,
+        "permission_denied": 4
+      },
+      "observed_records_per_task": {
+        "authorization": 2,
+        "bootstrap": 2,
+        "field": 2,
+        "repair": 2,
+        "resource": 2,
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 12
+    },
+    {
+      "id": "permission-authorization",
+      "cohort_group": "permission-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "permission-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 2
+      },
+      "observed_records_per_task": {
+        "authorization": 2
+      },
+      "aggregate_entries_observed": 2
+    },
+    {
+      "id": "permission-second-resource",
+      "cohort_group": "permission-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "permission-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "permission_denied": 1,
+        "passed": 1
+      },
+      "observed_records_per_task": {
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 2
+    },
+    {
+      "id": "null-field-codex",
+      "cohort_group": "null-field-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "2717bcec94de8ce35b677bcbacf62f4a92da9849"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+        ],
+        "client_version": [
+          "codex-cli 0.166.0"
+        ],
+        "model_requested": [
+          "gpt-6-astra"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "null-field-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "observed_status_counts": {
+        "passed": 2
+      },
+      "observed_records_per_task": {
+        "field": 2
+      },
+      "aggregate_entries_observed": 2
+    },
+    {
+      "id": "null-field-claude",
+      "cohort_group": "null-field-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "2717bcec94de8ce35b677bcbacf62f4a92da9849"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "null-field-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+      "observed_status_counts": {
+        "passed": 1,
+        "permission_denied": 1
+      },
+      "observed_records_per_task": {
+        "field": 2
+      },
+      "aggregate_entries_observed": 2
+    }
+  ],
+  "current_inventory_counts": {
+    "cohorts": 6,
+    "completed_attempts": 32,
+    "statuses": {
+      "passed": 26,
+      "permission_denied": 6
+    },
+    "active_directories_observed": 0,
+    "evidence_artifacts": 294,
+    "artifact_counts_by_name": {
+      "result.json": 32,
+      "acceptance.log": 22,
+      "agent.log": 32,
+      "check.log": 26,
+      "initialize.log": 32,
+      "integration.log": 22,
+      "prepare.log": 32,
+      "prompt.txt": 32,
+      "sandbox-preflight.log": 14,
+      "codex-authorization-1.json": 1,
+      "codex-authorization-2.json": 1,
+      "codex-bootstrap-1.json": 1,
+      "codex-bootstrap-2.json": 1,
+      "codex-field-1.json": 1,
+      "codex-field-2.json": 1,
+      "codex-repair-1.json": 1,
+      "codex-repair-2.json": 1,
+      "codex-resource-1.json": 1,
+      "codex-resource-2.json": 1,
+      "seed-0.log": 6,
+      "seed-1.log": 6,
+      "codex-second_resource-1.json": 1,
+      "codex-second_resource-2.json": 1,
+      "results.json": 6,
+      "claude-authorization-1.json": 1,
+      "claude-authorization-2.json": 1,
+      "claude-bootstrap-1.json": 1,
+      "claude-bootstrap-2.json": 1,
+      "claude-field-1.json": 1,
+      "claude-field-2.json": 1,
+      "claude-repair-1.json": 1,
+      "claude-repair-2.json": 1,
+      "claude-resource-1.json": 1,
+      "claude-resource-2.json": 1,
+      "claude-second_resource-1.json": 1,
+      "claude-second_resource-2.json": 1,
+      "permission-followup--claude-authorization-1.json": 1,
+      "permission-followup--claude-authorization-2.json": 1,
+      "permission-followup--claude-second_resource-1.json": 1,
+      "permission-followup--claude-second_resource-2.json": 1,
+      "null-field-followup--codex-field-1.json": 1,
+      "null-field-followup--codex-field-2.json": 1,
+      "null-field-followup--claude-field-1.json": 1,
+      "null-field-followup--claude-field-2.json": 1
+    },
+    "post_run_review_outcomes": {
+      "accepted": 22,
+      "accepted_with_contract_finding": 4,
+      "failed_attempt": 6
+    }
+  },
+  "files": [
+    "baseline.json",
+    "capability-probe.json",
+    "coordinator-context.json",
+    "formatting-capability-probe.json",
+    "historical-inventory.json",
+    "null-field-followup-plan.json",
+    "null-field-followup.json",
+    "paired-plan.json",
+    "paired-summary.json",
+    "paired.json",
+    "permission-followup-plan.json",
+    "permission-followup.json",
+    "publication-verification.json"
+  ],
+  "historical_inventory": {
+    "sha256": "663a34f8c8473fc9bb26732b4ad3af3beab07463b7385e7aef50e09d2ad5c8a1",
+    "counts": {
+      "batches": 4,
+      "attempt_directories": 7,
+      "completed_attempt_manifests": 5,
+      "aggregate_result_manifests": 3,
+      "batch_interruption_manifests": 2,
+      "statuses": {
+        "incomplete_interrupted": 2,
+        "permission_denied": 3,
+        "passed": 2
+      },
+      "evidence_artifacts": 41,
+      "artifact_counts_by_name": {
+        "interruption.json": 2,
+        "agent.log": 7,
+        "initialize.log": 7,
+        "prepare.log": 7,
+        "prompt.txt": 7,
+        "results.json": 3,
+        "result.json": 5,
+        "check.log": 2,
+        "sandbox-preflight.log": 1
+      }
+    },
+    "source_curation_sha256": "9e323350b2a246fff144914b29028ce3aaca742da6ded270df27fbda25b4d3ed",
+    "publication_metadata_updated": true,
+    "measured_statuses_counts_timings_and_evidence_hashes_unchanged": true,
+    "environment_fields_normalized_for_privacy": true
+  },
+  "supporting_metadata": [
+    {
+      "artifact": "coordinator-context.json",
+      "sha256": "473dfa8574968882f9957583b2df41c9675d5323feb5ca2efdc4f00aa7042de6",
+      "bytes": 1623
+    },
+    {
+      "artifact": "permission-followup-plan.json",
+      "sha256": "2b6dd3051a00c89de267b56812d518390b7af55d66ad5b73d242cca70e5d3573",
+      "bytes": 986
+    },
+    {
+      "artifact": "null-field-followup-plan.json",
+      "sha256": "7b81cbbbe07690909cf40968e7a9814eebb1a13420b047acba1e05d037563160",
+      "bytes": 1365
+    },
+    {
+      "artifact": "paired-plan.json",
+      "sha256": "6e12459817f5d1f8a54f112531e0f07cd9a37ce01c19d6decb643576566e0fd3",
+      "bytes": 1593
+    }
+  ],
+  "capability_probe_invocations_excluded": 2,
+  "paired_serial_parallel": {
+    "state": "all_planned_records_present",
+    "snapshot_utc": "2026-11-07T16:04:40.356592+00:00",
+    "counts": {
+      "planned_scenarios": 8,
+      "completed_scenarios": 8,
+      "active_directories": 0,
+      "not_started_scenarios": 0,
+      "scenario_statuses": {
+        "passed": 5,
+        "verification_failed": 2,
+        "workers_failed": 1
+      },
+      "workers_recorded": 16,
+      "worker_statuses": {
+        "passed": 15,
+        "permission_denied": 1
+      },
+      "review_outcomes": {
+        "accepted": 5,
+        "failed_attempt": 3
+      },
+      "evidence_artifacts": 136
+    },
+    "cross_provider_comparison_claimed": false,
+    "general_speedup_claimed": false,
+    "within_client_descriptive_timings_reported": true
+  },
+  "privacy_review": {
+    "curation": "explicit field allowlists",
+    "raw_chats_and_prompts": "excluded",
+    "private_paths_accounts_secrets": "excluded",
+    "guard_scan": "passed",
+    "public_environment_reporting": {
+      "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+      "omitted": [
+        "OS build identifiers",
+        "CPU model and topology",
+        "host memory",
+        "Docker CPU and memory allocation"
+      ],
+      "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+      "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+    },
+    "environment_records_normalized": 45,
+    "monetary_fields_omitted": 53,
+    "public_usage_reporting": {
+      "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+      "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+      "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+    }
+  },
+  "interpretation": [
+    "Original external pass statuses remain unchanged when later review finds a contract defect.",
+    "accepted_with_contract_finding is separate from clean accepted.",
+    "Observed Codex command exits differ from Claude final-self-report check evidence.",
+    "No final fractions for cohorts with planned records missing; no cross-provider timing comparison.",
+    "Historical adapter trials, changed-permission reruns, changed-product/criteria reruns and capability probe are separate evidence groups."
+  ],
+  "public_copy_prepared_utc": "2026-11-07T16:10:53.782178+00:00",
+  "post_cohort_formatting_probe": {
+    "artifact": "formatting-capability-probe.json",
+    "invocations": 1,
+    "feature_and_paired_scores_replaced": false
+  },
+  "public_artifacts": [
+    {
+      "artifact": "baseline.json",
+      "sha256": "4b40cf7556b7aa24d83e4ba6631bf2b161e02f4a0c8b70e154fef12a16efeeaf",
+      "bytes": 191840
+    },
+    {
+      "artifact": "capability-probe.json",
+      "sha256": "302cc7947bebea8d758f965c3d5dfecf7833cf6a792403c09a4858852e7dc012",
+      "bytes": 2640
+    },
+    {
+      "artifact": "coordinator-context.json",
+      "sha256": "473dfa8574968882f9957583b2df41c9675d5323feb5ca2efdc4f00aa7042de6",
+      "bytes": 1623
+    },
+    {
+      "artifact": "formatting-capability-probe.json",
+      "sha256": "959eab2c5f8fab6a6a8133d76c1c7d5c35802e4077195355feb8ba1a23989295",
+      "bytes": 1951
+    },
+    {
+      "artifact": "historical-inventory.json",
+      "sha256": "663a34f8c8473fc9bb26732b4ad3af3beab07463b7385e7aef50e09d2ad5c8a1",
+      "bytes": 32065
+    },
+    {
+      "artifact": "null-field-followup-plan.json",
+      "sha256": "7b81cbbbe07690909cf40968e7a9814eebb1a13420b047acba1e05d037563160",
+      "bytes": 1365
+    },
+    {
+      "artifact": "null-field-followup.json",
+      "sha256": "282f09a0bf5bd246a88684e59731abed0abc1ca8eaa70275cbe68fdbd303d328",
+      "bytes": 38331
+    },
+    {
+      "artifact": "paired-plan.json",
+      "sha256": "6e12459817f5d1f8a54f112531e0f07cd9a37ce01c19d6decb643576566e0fd3",
+      "bytes": 1593
+    },
+    {
+      "artifact": "paired-summary.json",
+      "sha256": "4ef2dbedd2791662beafd6d38af2dde98ce6f06069e7ff4fb1716d74e54a8d7b",
+      "bytes": 7726
+    },
+    {
+      "artifact": "paired.json",
+      "sha256": "8f80e01fce07f314ec63758572f08bd0c419f6a85043ea0139207e13fc7f1953",
+      "bytes": 111774
+    },
+    {
+      "artifact": "permission-followup-plan.json",
+      "sha256": "2b6dd3051a00c89de267b56812d518390b7af55d66ad5b73d242cca70e5d3573",
+      "bytes": 986
+    },
+    {
+      "artifact": "permission-followup.json",
+      "sha256": "60b87e6ddb5d69073604c4d1a4cdd75800c2afb616715a0856342aba9428b59f",
+      "bytes": 35373
+    },
+    {
+      "artifact": "publication-verification.json",
+      "sha256": "b807cf4cdb705e7ce0d0fe0b120be275823cfde3876439f9a476399a6fd60558",
+      "bytes": 2061
+    }
+  ],
+  "artifact_hash_scope": "Public JSON payload bytes; index and editable prose are excluded to avoid self-reference and stale narrative digests."
+}

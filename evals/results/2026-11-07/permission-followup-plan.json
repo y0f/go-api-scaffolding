@@ -1,0 +1,26 @@
+{
+  "declared_before_execution": true,
+  "date": "2026-11-07",
+  "purpose": "Test the repaired Claude adapter separately from the frozen original cohort.",
+  "adapter_commit": "9619269331e4c2c2343fc1b82a81b44e32f54563",
+  "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+  "client": "Claude Code 2.1.319",
+  "model_requested": "claude-opus-5-5",
+  "tasks": [
+    "authorization",
+    "second_resource"
+  ],
+  "attempts_per_task": 2,
+  "agent_timeout_seconds": 900,
+  "verification_timeout_seconds": 600,
+  "changes": [
+    "Read-only module-cache file-tool grant",
+    "Read-only git ls-files, including exact-workspace -C"
+  ],
+  "unchanged": [
+    "Original acceptance verifier",
+    "Permission denials fail attempts",
+    "No stash or compound-command grant"
+  ],
+  "reporting": "Keep all original results and these follow-ups separate. No replacements or extra retries. Individual-task runs can overlap the original Codex batch; no cross-provider timing comparison."
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -35,6 +37,7 @@ var slices = []slice{
 		Title: "Example resource: the spec-first widget module with its OpenAPI paths, migration and tests",
 		Paths: []string{
 			"internal/modules/widget",
+			"cmd/api/docker_test.go",
 			"internal/server/api_integration_test.go",
 			"internal/server/idempotency_integration_test.go",
 			"migrations/00001_widgets.sql",
@@ -93,7 +96,14 @@ var derived = []struct {
 // The installer removes itself: these paths and every "init" block go on
 // every run, so the project keeps no trace of the scaffold's machinery. The
 // changelog goes too: it describes the scaffold's releases, not the project's.
-var initPaths = []string{"cmd/forge/init.go", "cmd/forge/init_test.go", "docs/assets/logo.webp", "CHANGELOG.md"}
+var initPaths = []string{
+	"cmd/forge/init.go", "cmd/forge/init_test.go", "cmd/forge/init_project.go", "cmd/forge/init_project_test.go",
+	"cmd/forge/init_recovery.go", "cmd/forge/init_recovery_test.go", "cmd/forge/generator_test.go",
+	"cmd/forge/templates/journey_test.go.tmpl", "CHANGELOG.md", "evals",
+	"docs/choosing.md", "docs/_config.yml", "docs/_layouts", "docs/assets/site.css",
+	"docs/demo.md", "docs/assets/demo.js", "docs/assets/demo.css", "docs/assets/demo.cast",
+	"docs/assets/demo.txt", "docs/assets/demo.json", "docs/assets/gophling.png",
+}
 
 func init() {
 	usage = "usage: forge new <dir> | forge init | forge add resource <Name>"
@@ -103,47 +113,7 @@ func init() {
 // starts from one command: go run <scaffold module>/cmd/forge@latest new dir.
 // Flags after dir are init's.
 func runNew(args []string) error {
-	if len(args) == 0 || strings.HasPrefix(args[0], "-") {
-		return errors.New("usage: forge new <dir> [-source git-url-or-path] [init flags]")
-	}
-	dir, rest := args[0], args[1:]
-	source := "https://" + moduleName
-	if len(rest) >= 2 && rest[0] == "-source" {
-		source, rest = rest[1], rest[2:]
-	}
-	if _, err := os.Stat(dir); err == nil { //#nosec G703 -- dir is the directory the user asked for
-		return fmt.Errorf("%s already exists", dir)
-	}
-	for _, step := range [][]string{
-		{"git", "clone", "--quiet", source, dir},
-	} {
-		if err := execStep(step...); err != nil {
-			return err
-		}
-	}
-	// The clone's history is the scaffold's, not the project's.
-	if err := os.RemoveAll(filepath.Join(dir, ".git")); err != nil { //#nosec G703 -- inside the clone just made
-		return err
-	}
-	if err := os.Chdir(dir); err != nil {
-		return err
-	}
-	// init works from git's file list, so the fresh repository stages
-	// everything first; the first commit is the user's.
-	for _, step := range [][]string{
-		{"git", "init", "--quiet"},
-		{"git", "add", "--all"},
-	} {
-		if err := execStep(step...); err != nil {
-			return err
-		}
-	}
-	viaNew = true
-	if err := runInit(rest); err != nil {
-		return err
-	}
-	fmt.Printf("\nNext: cd %s && git commit -m 'Initial commit' && task up\n", dir)
-	return nil
+	return newProject(args)
 }
 
 func execStep(argv ...string) error {
@@ -162,8 +132,29 @@ func runInit(args []string) error {
 	module := fs.String("module", "", "module path for the project, for example github.com/you/app")
 	drop := fs.String("drop", "", "comma-separated slices to remove: "+strings.Join(sliceNames(), ","))
 	yes := fs.Bool("yes", false, "do not prompt (requires -module)")
+	recoverRequested := fs.Bool("recover", false, "restore the pre-init files after an interrupted publication")
 	if err := fs.Parse(args); err != nil {
 		return err
+	}
+	if fs.NArg() != 0 {
+		return errors.New("forge init accepts flags only")
+	}
+	if *recoverRequested {
+		if *module != "" || *drop != "" || *yes {
+			return errors.New("-recover cannot be combined with initialization options")
+		}
+		root, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if err := recoverProject(root); err != nil {
+			return err
+		}
+		fmt.Println("Initialization recovery completed. Your Git index and unrelated local files were preserved; review git diff before retrying init.")
+		return nil
+	}
+	if _, err := os.Lstat(recoveryDirectory); !errors.Is(err, os.ErrNotExist) {
+		return errors.New("unfinished init recovery exists; run forge init -recover before starting again")
 	}
 	if _, err := os.Stat(initPaths[0]); err != nil {
 		return errors.New("run from the repository root of an uninitialised scaffold")
@@ -197,7 +188,7 @@ func runInit(args []string) error {
 		return err
 	}
 	if !viaNew {
-		fmt.Println("\nReview with git diff, commit, then `task up`.")
+		fmt.Printf("\nReview with git diff and commit. Run go run ./cmd/dev bootstrap, then %s up.\n", localTaskCommand())
 	}
 	return nil
 }
@@ -283,13 +274,10 @@ func validateModule(module string) error {
 	return nil
 }
 
-// apply performs the whole transformation in dependency order: the file
-// rewrite first, then the toolchain steps that prove the result builds.
+// apply verifies the transformed tree in a separate directory before changing
+// the project. Tool failures leave the original files and index intact.
 func apply(module string, dropped map[string]bool) error {
-	if err := rewriteTree(module, dropped); err != nil {
-		return err
-	}
-	return runToolchain(module, dropped)
+	return prepareProject(module, dropped, runToolchain)
 }
 
 // rewriteTree edits and deletes the tracked files: text first, so a failure
@@ -319,6 +307,7 @@ func rewriteTree(module string, dropped map[string]bool) error {
 	if err != nil {
 		return err
 	}
+	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
 	for _, file := range files {
 		if underAny(file, removed) {
 			continue
@@ -334,8 +323,19 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
-		out = strings.ReplaceAll(out, moduleName, module)
-		out = strings.ReplaceAll(out, path.Base(moduleName), path.Base(module))
+		switch file {
+		case ".goreleaser.yaml", ".goreleaser.yml":
+			out = rewriteReleaseConfig(out, module)
+		case "deployments/docker-compose.yml":
+			out = rewriteComposeConfig(out, module)
+		default:
+			// Replace once: a requested module may itself contain the scaffold name.
+			out = names.Replace(out)
+		}
+		if file == "README.md" && strings.HasPrefix(out, "# ") {
+			_, body, _ := strings.Cut(out, "\n")
+			out = "# " + path.Base(module) + "\n" + body
+		}
 		if out != string(src) {
 			if err := os.WriteFile(file, []byte(out), 0o600); err != nil {
 				return err
@@ -353,17 +353,65 @@ func rewriteTree(module string, dropped map[string]bool) error {
 	return renumberMigrations("migrations")
 }
 
+// composeProjectName follows the module identity, so moving a checkout keeps
+// its database while unrelated applications with the same basename stay apart.
+func composeProjectName(module string) string {
+	slug := regexp.MustCompile(`[^a-z0-9_-]+`).ReplaceAllString(strings.ToLower(path.Base(module)), "-")
+	slug = strings.Trim(slug, "-_")
+	if len(slug) > 24 {
+		slug = strings.TrimRight(slug[:24], "-_")
+	}
+	if slug == "" {
+		slug = "app"
+	}
+	digest := sha256.Sum256([]byte(module))
+	return fmt.Sprintf("%s-%x", slug, digest[:6])
+}
+
+// Only the scaffold's default top-level name is replaced. Preserve custom
+// project names and YAML formatting, including comments and quoted values.
+func rewriteComposeConfig(src, module string) string {
+	name := regexp.MustCompile(`^(name:[ \t]*)(?:forge|"forge"|'forge')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
+	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
+	var out strings.Builder
+	for _, line := range strings.SplitAfter(src, "\n") {
+		if strings.HasPrefix(line, "name:") {
+			if match := name.FindStringSubmatch(line); match != nil {
+				line = match[1] + strconv.Quote(composeProjectName(module)) + match[2]
+			}
+		} else {
+			line = names.Replace(line)
+		}
+		out.WriteString(line)
+	}
+	return out.String()
+}
+
+// Only the default release name belongs to the scaffold. Preserve custom names
+// and YAML formatting while updating module paths used by linker flags.
+func rewriteReleaseConfig(src, module string) string {
+	defaultName := regexp.QuoteMeta(path.Base(moduleName))
+	name := regexp.MustCompile(`^(project_name:[ \t]*)(?:` + defaultName + `|"` + defaultName + `"|'` + defaultName + `')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
+	var out strings.Builder
+	for _, line := range strings.SplitAfter(src, "\n") {
+		if strings.HasPrefix(line, "project_name:") {
+			if match := name.FindStringSubmatch(line); match != nil {
+				line = match[1] + strconv.Quote(path.Base(module)) + match[2]
+			}
+		} else {
+			line = strings.ReplaceAll(line, moduleName, module)
+		}
+		out.WriteString(line)
+	}
+	return out.String()
+}
+
 // runToolchain regenerates code and proves the rewritten project builds.
 func runToolchain(module string, dropped map[string]bool) error {
 	// goimports runs before tidy: a dropped block can leave an import of a
 	// package that no longer exists, and tidy would go looking for it.
 	steps := [][]string{
-		{
-			"go", "-C", "tools", "build", "-o", "../bin/",
-			"github.com/sqlc-dev/sqlc/cmd/sqlc",
-			"github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen",
-			"golang.org/x/tools/cmd/goimports",
-		},
+		{"go", "run", "./cmd/dev", "bootstrap"},
 		{bin("goimports"), "-w", "cmd", "internal"},
 		{"go", "mod", "tidy"},
 		{"go", "-C", "tools", "mod", "tidy"},
@@ -437,12 +485,11 @@ func strip(src string, dropped map[string]bool) (string, error) {
 	return strings.TrimLeft(collapseBlankLines(out.String()), "\n"), nil
 }
 
-var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} .+$`)
+var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} [^\r\n]+`)
 
-// rewriteLicense makes the copyright line the project's: the current year and
-// the owner segment of the module path, since the scaffold's author holds no
-// copyright on what is generated from it. A LICENSE without that line is left
-// alone.
+// rewriteLicense preserves the existing copyright and permission notices,
+// adding the module owner's notice for the new project. A custom LICENSE
+// without a recognized copyright line is left alone.
 func rewriteLicense(path, module string, year int) error {
 	src, err := os.ReadFile(path) //#nosec G304 -- fixed relative path
 	if errors.Is(err, os.ErrNotExist) {
@@ -455,10 +502,23 @@ func rewriteLicense(path, module string, year int) error {
 	if _, rest, ok := strings.Cut(module, "/"); ok {
 		owner, _, _ = strings.Cut(rest, "/")
 	}
-	out := copyrightRe.ReplaceAllLiteralString(string(src), fmt.Sprintf("Copyright (c) %d %s", year, owner))
-	if out == string(src) {
+	text := string(src)
+	notice := fmt.Sprintf("Copyright (c) %d %s", year, owner)
+	notices := copyrightRe.FindAllStringIndex(text, -1)
+	if len(notices) == 0 {
 		return nil
 	}
+	for _, existing := range notices {
+		if text[existing[0]:existing[1]] == notice {
+			return nil
+		}
+	}
+	end := notices[len(notices)-1][1]
+	newline := "\n"
+	if strings.HasPrefix(text[end:], "\r\n") {
+		newline = "\r\n"
+	}
+	out := text[:end] + newline + notice + text[end:]
 	return os.WriteFile(path, []byte(out), 0o600) //#nosec G703 -- same fixed relative path that was just read
 }
 

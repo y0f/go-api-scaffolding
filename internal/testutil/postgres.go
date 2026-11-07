@@ -5,22 +5,25 @@ package testutil
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
-	"net/url"
+	"os"
+	"strings"
 	"sync"
-	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/jackc/pgx/v5/stdlib" // Register database/sql support for goose migrations.
 	"github.com/pressly/goose/v3"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
-	"github.com/y0f/go-api-scaffolding/migrations"
+	"github.com/y0f/gophling/internal/platform/database"
+	"github.com/y0f/gophling/migrations"
 )
 
 const templateDB = "forge_template"
@@ -29,22 +32,15 @@ var (
 	startOnce sync.Once
 	baseDSN   string
 	startErr  error
-	dbCounter atomic.Int64
 )
 
-// start launches one Postgres container per test binary, applies migrations to
-// a template database, and records the admin DSN. Each test then clones the
-// template into its own database, which makes the integration tests safe to run
-// in parallel at full speed.
+// start launches one Postgres container per test binary and migrates a template
+// database. Testcontainers removes the container when the test process exits.
 func start(ctx context.Context) {
-	// The same major as deployments/docker-compose.yml, so the tests exercise
-	// the Postgres the service is developed and shipped against.
-	container, err := postgres.Run(ctx, "postgres:18-alpine",
+	container, err := postgres.Run(ctx, "postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395",
 		postgres.WithDatabase("postgres"),
 		postgres.WithUsername("forge"),
 		postgres.WithPassword("forge"),
-		// Postgres opens its port before it accepts connections and logs the
-		// readiness line twice (once during init), so wait for the second.
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
@@ -55,82 +51,112 @@ func start(ctx context.Context) {
 		startErr = fmt.Errorf("start postgres container: %w", err)
 		return
 	}
-	dsn, err := container.ConnectionString(ctx, "sslmode=disable")
+	baseDSN, err = container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
 		startErr = fmt.Errorf("connection string: %w", err)
 		return
 	}
-	baseDSN = dsn
-
-	admin, err := sql.Open("pgx", dsn)
+	admin, err := sql.Open("pgx", baseDSN)
 	if err != nil {
 		startErr = err
 		return
 	}
-	defer admin.Close()
+	defer func() { _ = admin.Close() }()
 	if _, err := admin.ExecContext(ctx, "CREATE DATABASE "+templateDB); err != nil {
 		startErr = fmt.Errorf("create template database: %w", err)
 		return
 	}
-
-	templateConn, err := sql.Open("pgx", withDatabase(dsn, templateDB))
-	if err != nil {
-		startErr = err
-		return
-	}
-	defer templateConn.Close()
-	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		startErr = err
-		return
-	}
-	if err := goose.UpContext(ctx, templateConn, "."); err != nil {
-		startErr = fmt.Errorf("migrate template database: %w", err)
-	}
+	startErr = migrateDatabase(ctx, baseDSN, templateDB)
 }
 
-// NewDB returns a connection pool to a fresh database cloned from the migrated
-// template. The database is dropped when the test finishes.
+func migrateDatabase(ctx context.Context, dsn, name string) error {
+	dsn, err := databaseURL(dsn, name)
+	if err != nil {
+		return err
+	}
+	conn, err := sql.Open("pgx", dsn)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = conn.Close() }()
+	// A separate provider avoids goose's package-global mutable configuration,
+	// so external databases can be migrated concurrently by parallel tests.
+	provider, err := goose.NewProvider(goose.DialectPostgres, conn, migrations.FS)
+	if errors.Is(err, goose.ErrNoMigrations) {
+		return nil // A minimal initialized project has no migrations yet.
+	}
+	if err != nil {
+		return err
+	}
+	if _, err := provider.Up(ctx); err != nil {
+		return fmt.Errorf("migrate test database: %w", err)
+	}
+	return nil
+}
+
+// NewDB returns an isolated migrated database and drops it when the test ends.
+// FORGE_TEST_DATABASE_URL selects an existing Postgres server instead of Docker.
+// It must name a dedicated test server/user with CREATEDB permission. External
+// databases are migrated individually so no shared template is left behind.
 func NewDB(t *testing.T) *pgxpool.Pool {
 	t.Helper()
-	ctx := context.Background()
-	startOnce.Do(func() { start(ctx) })
-	if startErr != nil {
-		t.Fatalf("postgres setup: %v", startErr)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	defer cancel()
+	dsn := os.Getenv("FORGE_TEST_DATABASE_URL")
+	external := dsn != ""
+	if external {
+		if _, err := databaseURL(dsn, "postgres"); err != nil {
+			t.Fatalf("FORGE_TEST_DATABASE_URL: %v", err)
+		}
+	} else {
+		startOnce.Do(func() { start(ctx) })
+		if startErr != nil {
+			t.Fatalf("postgres setup: %v", startErr)
+		}
+		dsn = baseDSN
 	}
-
-	name := fmt.Sprintf("test_%d", dbCounter.Add(1))
-	admin, err := sql.Open("pgx", baseDSN)
+	name := "forge_test_" + strings.ReplaceAll(uuid.NewString(), "-", "")
+	admin, err := sql.Open("pgx", dsn)
 	if err != nil {
-		t.Fatalf("open admin connection: %v", err)
+		t.Fatal("open test admin connection: invalid database configuration")
 	}
-	if _, err := admin.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s TEMPLATE %s", name, templateDB)); err != nil {
-		admin.Close()
-		t.Fatalf("clone template database: %v", err)
+	defer func() { _ = admin.Close() }()
+	statement := "CREATE DATABASE " + pgx.Identifier{name}.Sanitize() //#nosec G202 -- generated UUID identifier, quoted by pgx
+	if !external {
+		statement += " TEMPLATE " + templateDB
 	}
-	admin.Close()
-
-	pool, err := database.NewPool(ctx, database.Config{URL: withDatabase(baseDSN, name)})
-	if err != nil {
-		t.Fatalf("connect to test database: %v", err)
+	if _, err := admin.ExecContext(ctx, statement); err != nil {
+		t.Fatalf("create isolated test database (check connectivity and CREATEDB permission): %v", err)
 	}
+	var pool *pgxpool.Pool
 	t.Cleanup(func() {
-		pool.Close()
-		cleanup, err := sql.Open("pgx", baseDSN)
+		if pool != nil {
+			pool.Close()
+		}
+		cleanup, err := sql.Open("pgx", dsn)
 		if err != nil {
+			t.Error("open cleanup connection: invalid database configuration")
 			return
 		}
-		defer cleanup.Close()
-		_, _ = cleanup.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s WITH (FORCE)", name))
+		defer func() { _ = cleanup.Close() }()
+		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cleanupCancel()
+		if _, err := cleanup.ExecContext(cleanupCtx, "DROP DATABASE IF EXISTS "+pgx.Identifier{name}.Sanitize()+" WITH (FORCE)"); err != nil {
+			t.Errorf("drop isolated test database %s: %v", name, err)
+		}
 	})
-	return pool
-}
-
-func withDatabase(dsn, name string) string {
-	u, err := url.Parse(dsn)
-	if err != nil {
-		return dsn
+	if external {
+		if err := migrateDatabase(ctx, dsn, name); err != nil {
+			t.Fatal(err)
+		}
 	}
-	u.Path = "/" + name
-	return u.String()
+	testDSN, err := databaseURL(dsn, name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pool, err = database.NewPool(ctx, database.Config{URL: testDSN})
+	if err != nil {
+		t.Fatalf("connect to isolated test database: %v", err)
+	}
+	return pool
 }

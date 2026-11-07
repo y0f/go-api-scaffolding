@@ -1,0 +1,471 @@
+//go:build integration
+
+package evalverify
+
+import (
+	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"database/sql"
+	"encoding/json"
+	"encoding/pem"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"reflect"
+	"runtime"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/pressly/goose/v3"
+	"github.com/y0f/gophling/internal/testutil"
+	"github.com/y0f/gophling/migrations"
+)
+
+type application struct {
+	base   string
+	key    *rsa.PrivateKey
+	client *http.Client
+	legacy string
+}
+
+// Rebuild only this test's isolated database from the frozen pre-agent
+// migrations. A row inserted before the new migration proves real backfill.
+func prepareLegacyWidget(t *testing.T, pool *pgxpool.Pool) string {
+	t.Helper()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	connection, err := sql.Open("pgx", pool.Config().ConnString())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer connection.Close()
+	if _, err := connection.ExecContext(ctx, "DROP SCHEMA public CASCADE; CREATE SCHEMA public"); err != nil {
+		t.Fatal(err)
+	}
+	baseline, err := goose.NewProvider(goose.DialectPostgres, connection, os.DirFS("baseline"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := baseline.Up(ctx); err != nil {
+		t.Fatalf("apply frozen baseline migrations: %v", err)
+	}
+	var id string
+	if err := pool.QueryRow(ctx, "INSERT INTO widgets (name) VALUES ('before migration') RETURNING id::text").Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	updated, err := goose.NewProvider(goose.DialectPostgres, connection, migrations.FS)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := updated.Up(ctx); err != nil {
+		t.Fatalf("migrate a database containing existing widgets: %v", err)
+	}
+	return id
+}
+
+func startApplication(t *testing.T) *application {
+	t.Helper()
+	pool := testutil.NewDB(t)
+	legacy := ""
+	if os.Getenv("FORGE_EVAL_TASK") == "field" {
+		legacy = prepareLegacyWidget(t, pool)
+	}
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatal(err)
+	}
+	der, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	directory := t.TempDir()
+	publicKey := filepath.Join(directory, "public.pem")
+	if err := os.WriteFile(publicKey, pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}), 0600); err != nil {
+		t.Fatal(err)
+	}
+	root, err := filepath.Abs(filepath.Join("..", ".."))
+	if err != nil {
+		t.Fatal(err)
+	}
+	binary := filepath.Join(directory, "api")
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	build := exec.Command("go", "build", "-o", binary, "./cmd/api")
+	build.Dir = root
+	if output, err := build.CombinedOutput(); err != nil {
+		t.Fatalf("build: %v\n%s", err, output)
+	}
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	logPath := filepath.Join(directory, "api.log")
+	log, err := os.Create(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	command := exec.Command(binary)
+	command.Dir = root
+	for _, variable := range os.Environ() {
+		if !strings.HasPrefix(variable, "FORGE_") {
+			command.Env = append(command.Env, variable)
+		}
+	}
+	command.Env = append(command.Env,
+		"FORGE_ENV=production", "FORGE_DB_URL="+pool.Config().ConnString(),
+		"FORGE_HTTP_HOST=127.0.0.1", "FORGE_HTTP_PORT="+strconv.Itoa(port),
+		"FORGE_HTTP_DRAIN_DELAY=0s", "FORGE_AUTH_PUBLIC_KEY_PATH="+publicKey,
+		"FORGE_AUTH_ISSUER=eval", "FORGE_AUTH_AUDIENCE=eval",
+		"FORGE_HTTP_RATE_LIMIT_PER_SECOND=10000", "FORGE_HTTP_RATE_LIMIT_BURST=10000")
+	command.Stdout, command.Stderr = log, log
+	if err := command.Start(); err != nil {
+		log.Close()
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_ = command.Process.Kill()
+		_ = command.Wait()
+		_ = log.Close()
+		if t.Failed() {
+			output, _ := os.ReadFile(logPath)
+			t.Logf("API log:\n%s", output)
+		}
+	})
+	app := &application{base: fmt.Sprintf("http://127.0.0.1:%d", port), key: key,
+		client: &http.Client{Timeout: 5 * time.Second}, legacy: legacy}
+	deadline := time.Now().Add(30 * time.Second)
+	for time.Now().Before(deadline) {
+		response, err := app.client.Get(app.base + "/readyz")
+		if err == nil {
+			response.Body.Close()
+			if response.StatusCode == 200 {
+				return app
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	t.Fatal("API did not become ready")
+	return nil
+}
+
+func (app *application) token(t *testing.T, scopes string) string {
+	t.Helper()
+	claims := jwt.MapClaims{
+		"sub": "evaluation-user", "iss": "eval", "aud": []string{"eval"},
+		"exp": time.Now().Add(time.Hour).Unix(), "scope": scopes,
+	}
+	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(app.key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return token
+}
+
+func (app *application) request(t *testing.T, method, path, token, body string, status int) map[string]any {
+	t.Helper()
+	request, err := http.NewRequestWithContext(context.Background(), method, app.base+path, strings.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if body != "" {
+		request.Header.Set("Content-Type", "application/json")
+	}
+	if token != "" {
+		request.Header.Set("Authorization", "Bearer "+token)
+	}
+	response, err := app.client.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	data, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response.StatusCode != status {
+		t.Fatalf("%s %s: status %d, want %d: %s", method, path, response.StatusCode, status, data)
+	}
+	if status == 204 {
+		return nil
+	}
+	var result map[string]any
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("%s %s JSON object: %v: %s", method, path, err, data)
+	}
+	if status >= 400 && !strings.HasPrefix(response.Header.Get("Content-Type"), "application/problem+json") {
+		t.Fatalf("error content type = %q", response.Header.Get("Content-Type"))
+	}
+	return result
+}
+
+func (app *application) contractContains(t *testing.T, path string) *openapi3.T {
+	t.Helper()
+	response, err := app.client.Get(app.base + "/openapi.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	data, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contract, err := openapi3.NewLoader().LoadFromData(data)
+	if err != nil {
+		t.Fatalf("served OpenAPI is invalid: %v", err)
+	}
+	if response.StatusCode != 200 || contract.Paths == nil || contract.Paths.Value(path) == nil {
+		t.Fatalf("served OpenAPI missing %s", path)
+	}
+	return contract
+}
+
+func checkFieldContract(t *testing.T, app *application) {
+	t.Helper()
+	contract := app.contractContains(t, "/v1/widgets")
+	if err := contract.Validate(t.Context()); err != nil {
+		t.Fatalf("served field contract is invalid: %v", err)
+	}
+	for _, route := range []struct{ method, path string }{{"POST", "/v1/widgets"}, {"PUT", "/v1/widgets/{id}"}} {
+		path := contract.Paths.Value(route.path)
+		if path == nil {
+			t.Fatalf("served field contract missing %s", route.path)
+		}
+		operation := path.Operations()[route.method]
+		if operation == nil || operation.RequestBody == nil || operation.RequestBody.Value == nil {
+			t.Fatalf("served field contract missing %s request body", route.method)
+		}
+		content := operation.RequestBody.Value.Content["application/json"]
+		if content == nil || content.Schema == nil || content.Schema.Value == nil {
+			t.Fatalf("served field contract missing %s JSON schema", route.method)
+		}
+		input := content.Schema.Value
+		for _, required := range input.Required {
+			if required == "priority" {
+				t.Fatalf("%s priority must remain optional", route.method)
+			}
+		}
+		ref := input.Properties["priority"]
+		if ref == nil || ref.Value == nil {
+			t.Fatalf("served field contract missing %s priority", route.method)
+		}
+		priority := ref.Value
+		defaultJSON, err := json.Marshal(priority.Default)
+		if err != nil || !priority.Type.Is("integer") || priority.Nullable ||
+			priority.Min == nil || *priority.Min != 1 || priority.Max == nil || *priority.Max != 5 ||
+			string(defaultJSON) != "3" {
+			t.Fatalf("%s priority must be nonnullable integer 1..5 with default3: %+v", route.method, priority)
+		}
+	}
+}
+
+func checkCRUD(t *testing.T, app *application, resource string) {
+	t.Helper()
+	path := "/v1/" + resource
+	app.contractContains(t, path)
+	app.contractContains(t, path+"/{id}")
+	writer, viewer := app.token(t, resource+":write"), app.token(t, "")
+	app.request(t, "POST", path, "", `{"name":"first"}`, 401)
+	app.request(t, "POST", path, viewer, `{"name":"first"}`, 403)
+	app.request(t, "POST", path, writer, `{"name":""}`, 400)
+	item := app.request(t, "POST", path, writer, `{"name":"first"}`, 201)
+	id, ok := item["id"].(string)
+	if !ok || id == "" {
+		t.Fatal("create response has no id")
+	}
+	if item["name"] != "first" {
+		t.Fatalf("create name = %v", item["name"])
+	}
+	page := app.request(t, "GET", path+"?limit=1&offset=0", "", "", 200)
+	items, ok := page["items"].([]any)
+	if !ok || len(items) != 1 {
+		t.Fatalf("list items = %v", page["items"])
+	}
+	pagination, ok := page["pagination"].(map[string]any)
+	if !ok || pagination["total"] != float64(1) {
+		t.Fatalf("pagination = %v", page["pagination"])
+	}
+	app.request(t, "GET", path+"?offset=2147483648", "", "", 400)
+	app.request(t, "GET", path+"?limit=101", "", "", 400)
+	app.request(t, "PUT", path+"/"+id, viewer, `{"name":"denied"}`, 403)
+	updated := app.request(t, "PUT", path+"/"+id, writer, `{"name":"updated"}`, 200)
+	if updated["name"] != "updated" {
+		t.Fatalf("update = %v", updated)
+	}
+	read := app.request(t, "GET", path+"/"+id, "", "", 200)
+	if read["name"] != "updated" {
+		t.Fatalf("read = %v", read)
+	}
+	app.request(t, "DELETE", path+"/"+id, viewer, "", 403)
+	app.request(t, "DELETE", path+"/"+id, writer, "", 204)
+	app.request(t, "GET", path+"/"+id, "", "", 404)
+}
+
+func checkNameValidation(t *testing.T, app *application, resource string) {
+	t.Helper()
+	path := "/v1/" + resource
+	writer := app.token(t, resource+":write")
+	body := func(name string) string {
+		payload, err := json.Marshal(map[string]string{"name": name})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(payload)
+	}
+	const original = "  ordinary name\t"
+	item := app.request(t, "POST", path, writer, body(original), 201)
+	if item["name"] != original {
+		t.Fatalf("create changed nonblank name: %v", item)
+	}
+	itemPath := path + "/" + item["id"].(string)
+	for _, blank := range []string{"   ", "\t\n\r", "\u00a0\u2003"} {
+		app.request(t, "POST", path, writer, body(blank), 400)
+		app.request(t, "PUT", itemPath, writer, body(blank), 400)
+		read := app.request(t, "GET", itemPath, "", "", 200)
+		if read["name"] != original {
+			t.Fatalf("rejected update changed name: %v", read)
+		}
+	}
+	page := app.request(t, "GET", path, "", "", 200)
+	pagination, ok := page["pagination"].(map[string]any)
+	if !ok || pagination["total"] != float64(1) {
+		t.Fatalf("rejected create changed total: %v", page)
+	}
+	const updated = "\tupdated name \n"
+	app.request(t, "PUT", itemPath, writer, body(updated), 200)
+	read := app.request(t, "GET", itemPath, "", "", 200)
+	if read["name"] != updated {
+		t.Fatalf("update changed nonblank name: %v", read)
+	}
+	app.request(t, "DELETE", itemPath, writer, "", 204)
+}
+
+func checkPriorities(t *testing.T, app *application, expected map[string]float64) {
+	t.Helper()
+	page := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+	items, ok := page["items"].([]any)
+	if !ok || len(items) != len(expected) {
+		t.Fatalf("list must contain the preserved and newly created widgets: %v", page)
+	}
+	seen := make(map[string]bool, len(items))
+	for _, entry := range items {
+		item, ok := entry.(map[string]any)
+		if !ok {
+			t.Fatalf("list item = %v", entry)
+		}
+		id, ok := item["id"].(string)
+		want, exists := expected[id]
+		if !ok || !exists || seen[id] || item["priority"] != want {
+			t.Fatalf("list priority for %v = %v, want %v", item["id"], item["priority"], expected)
+		}
+		seen[id] = true
+	}
+}
+
+func TestAcceptance(t *testing.T) {
+	app := startApplication(t)
+	writer := app.token(t, "widgets:write")
+	switch os.Getenv("FORGE_EVAL_TASK") {
+	case "resource":
+		checkCRUD(t, app, "notes")
+	case "second_resource":
+		checkCRUD(t, app, "notes")
+		checkCRUD(t, app, "labels")
+	case "parallel_validation":
+		for _, resource := range []string{"notes", "labels"} {
+			checkCRUD(t, app, resource)
+			checkNameValidation(t, app, resource)
+		}
+	case "field":
+		checkFieldContract(t, app)
+		legacy := app.request(t, "GET", "/v1/widgets/"+app.legacy, "", "", 200)
+		if legacy["priority"] != float64(3) || legacy["name"] != "before migration" {
+			t.Fatalf("existing widget was not preserved with the default priority: %v", legacy)
+		}
+		first := app.request(t, "POST", "/v1/widgets", writer, `{"name":"default"}`, 201)
+		if first["priority"] != float64(3) {
+			t.Fatalf("default priority = %v", first["priority"])
+		}
+		item := app.request(t, "POST", "/v1/widgets", writer, `{"name":"custom","priority":5}`, 201)
+		if item["priority"] != float64(5) {
+			t.Fatalf("create priority = %v", item["priority"])
+		}
+		id := item["id"].(string)
+		read := app.request(t, "GET", "/v1/widgets/"+id, "", "", 200)
+		if read["priority"] != float64(5) {
+			t.Fatalf("persisted priority = %v", read["priority"])
+		}
+		checkPriorities(t, app, map[string]float64{app.legacy: 3, first["id"].(string): 3, id: 5})
+		updated := app.request(t, "PUT", "/v1/widgets/"+id, writer, `{"name":"custom","priority":1}`, 200)
+		if updated["priority"] != float64(1) {
+			t.Fatalf("update response priority = %v", updated["priority"])
+		}
+		read = app.request(t, "GET", "/v1/widgets/"+id, "", "", 200)
+		if read["priority"] != float64(1) {
+			t.Fatalf("updated priority = %v", read["priority"])
+		}
+		beforeItem := read
+		beforePage := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+		for _, value := range []string{"0", "6", "null"} {
+			for _, method := range []string{"POST", "PUT"} {
+				t.Run("invalid-priority/"+method+"/"+value, func(t *testing.T) {
+					path := "/v1/widgets"
+					if method == "PUT" {
+						path += "/" + id
+					}
+					app.request(t, method, path, writer, fmt.Sprintf(`{"name":"invalid","priority":%s}`, value), 400)
+					afterItem := app.request(t, "GET", "/v1/widgets/"+id, "", "", 200)
+					if !reflect.DeepEqual(afterItem, beforeItem) {
+						t.Fatalf("rejected %s changed stored widget: before=%v after=%v", method, beforeItem, afterItem)
+					}
+					afterPage := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+					if !reflect.DeepEqual(afterPage, beforePage) {
+						t.Fatalf("rejected %s changed stored rows or count: before=%v after=%v", method, beforePage, afterPage)
+					}
+				})
+			}
+		}
+		updated = app.request(t, "PUT", "/v1/widgets/"+id, writer, `{"name":"omitted"}`, 200)
+		if updated["priority"] != float64(3) {
+			t.Fatalf("omitted update priority = %v", updated["priority"])
+		}
+		checkPriorities(t, app, map[string]float64{app.legacy: 3, first["id"].(string): 3, id: 3})
+	case "authorization":
+		app.contractContains(t, "/v1/widgets/count")
+		app.request(t, "GET", "/v1/widgets/count", "", "", 401)
+		app.request(t, "GET", "/v1/widgets/count", writer, "", 403)
+		reader := app.token(t, "widgets:read")
+		before := app.request(t, "GET", "/v1/widgets/count", reader, "", 200)
+		if before["count"] != float64(0) {
+			t.Fatalf("initial count = %v", before["count"])
+		}
+		app.request(t, "POST", "/v1/widgets", writer, `{"name":"counted"}`, 201)
+		after := app.request(t, "GET", "/v1/widgets/count", reader, "", 200)
+		if after["count"] != float64(1) {
+			t.Fatalf("count after insert = %v", after["count"])
+		}
+	case "repair":
+		item := app.request(t, "POST", "/v1/widgets", writer, `{"name":"original"}`, 201)
+		path := "/v1/widgets/" + item["id"].(string)
+		app.request(t, "PUT", path, app.token(t, ""), `{"name":"denied"}`, 403)
+		read := app.request(t, "GET", path, "", "", 200)
+		if read["name"] != "original" {
+			t.Fatalf("denied update changed data: %v", read)
+		}
+	default:
+		t.Fatal("unknown FORGE_EVAL_TASK")
+	}
+}

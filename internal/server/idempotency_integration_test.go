@@ -47,6 +47,28 @@ func TestCreateAndIdempotentReplay(t *testing.T) {
 	}
 }
 
+func TestIdempotentReplayRequiresCurrentWritePermission(t *testing.T) {
+	t.Parallel()
+	srv, writer, issuer := newTestServer(t)
+	first := doIdempotent(t, srv, writer, "permission-change", `{"name":"alpha"}`)
+	defer first.Body.Close()
+	if first.StatusCode != http.StatusCreated {
+		t.Fatalf("create status = %d, want 201", first.StatusCode)
+	}
+	reader, err := issuer.Mint("tester", nil, time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	retry := doIdempotent(t, srv, reader, "permission-change", `{"name":"alpha"}`)
+	defer retry.Body.Close()
+	if retry.StatusCode != http.StatusForbidden {
+		t.Fatalf("retry after permission removal = %d, want 403", retry.StatusCode)
+	}
+	if retry.Header.Get("Idempotency-Replayed") != "" {
+		t.Fatal("stored response was replayed without write permission")
+	}
+}
+
 func TestIdempotencyKeyConflictOnDifferentBody(t *testing.T) {
 	t.Parallel()
 	srv, token, _ := newTestServer(t)

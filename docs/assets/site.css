@@ -1,0 +1,51 @@
+:root {
+  color-scheme: light;
+  --ink: #162a36;
+  --muted: #526570;
+  --link: #006c78;
+  --border: #d7e2e7;
+  font: 17px/1.7 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: #f8fafb;
+}
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { color: var(--link); text-underline-offset: .2em; }
+a:hover { text-decoration-thickness: 2px; }
+a:focus-visible { outline: 3px solid #00a5b7; outline-offset: 4px; }
+header { border-bottom: 1px solid var(--border); background: #fff; }
+nav, main, footer { max-width: 980px; margin: auto; padding: 1.5rem 2rem; }
+nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.brand { display: inline-flex; align-items: center; gap: .5rem; color: var(--ink); font-size: 1.1rem; font-weight: 750; text-decoration: none; }
+.links { display: flex; gap: 1.5rem; font-size: .9rem; }
+main { min-height: 65vh; padding-top: 3rem; padding-bottom: 4rem; }
+h1, h2, h3 { line-height: 1.25; letter-spacing: -.025em; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); margin: 0 0 1.25rem; }
+h2 { margin-top: 2.5rem; font-size: 1.45rem; }
+h3 { margin-top: 2rem; font-size: 1.15rem; }
+p, ul, ol { max-width: 78ch; }
+li + li { margin-top: .35rem; }
+code { font: .88em/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+:not(pre) > code { background: #eaf0f3; border-radius: 4px; padding: .12em .3em; overflow-wrap: anywhere; }
+pre { overflow-x: auto; padding: 1.2rem 1.4rem; border: 1px solid var(--border); border-radius: 8px; background: #edf3f6; }
+blockquote { margin-left: 0; padding: .1rem 1.2rem; border-left: 3px solid #008b99; color: var(--muted); }
+table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5rem 0; font-size: .92rem; }
+th, td { padding: .8rem 1rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+th { background: #edf3f6; font-weight: 650; }
+img { max-width: 100%; }
+footer { display: flex; justify-content: space-between; gap: 1rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+.skip { position: absolute; left: 1rem; top: -5rem; background: #fff; padding: .5rem 1rem; }
+.skip:focus { top: 1rem; }
+@media (max-width: 600px) {
+  nav, main, footer { padding-left: 1.15rem; padding-right: 1.15rem; }
+  nav { align-items: flex-start; flex-direction: column; }
+  .links { gap: 1.2rem; }
+  main { padding-top: 2rem; }
+  th, td { padding: .6rem; }
+}
+@media print {
+  header, footer, .skip { display: none; }
+  :root { background: #fff; font-size: 11pt; }
+  main { max-width: none; padding: 0; }
+  pre, table { overflow: visible; }
+}

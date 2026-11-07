@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/y0f/go-api-scaffolding/migrations"
+	"github.com/y0f/gophling/migrations"
 )
 
 // widgets already holds rows when a deployment upgrades, so the list-index

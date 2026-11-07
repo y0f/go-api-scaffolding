@@ -1,0 +1,29 @@
+{
+  "declared_before_execution": true,
+  "date": "2026-11-07",
+  "purpose": "Verify the corrected request validator with explicit null rejection in the field task and independent acceptance criteria.",
+  "source_and_harness_commit": "2717bcec94de8ce35b677bcbacf62f4a92da9849",
+  "product_fix_commit": "00e7be482487b85f1e83038a9497348c5c2ae0fd",
+  "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+  "clients": [
+    {
+      "client": "Claude Code 2.1.319",
+      "model_requested": "claude-opus-5-5"
+    },
+    {
+      "client": "Codex CLI 0.166.0",
+      "model_requested": "gpt-6-astra",
+      "windows_executor": "MXC with local-tests profile"
+    }
+  ],
+  "task": "field",
+  "attempts_per_client": 2,
+  "agent_timeout_seconds": 900,
+  "verification_timeout_seconds": 600,
+  "criteria_changes": [
+    "Prompt explicitly rejects null; omission alone uses default3",
+    "Served POST/PUT contract must declare optional nonnullable integer1..5/default3",
+    "POST/PUT0,6,null must reject without changing item/list state or row count"
+  ],
+  "reporting": "Preserve original scores and contract findings separately. This is a new product/prompt/verifier cohort, not an improvement comparison under identical criteria. Keep every attempt; no extra retries. Runs may overlap other individual tasks; timing is descriptive only."
+}

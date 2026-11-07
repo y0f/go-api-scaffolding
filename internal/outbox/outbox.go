@@ -14,11 +14,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
+	"github.com/y0f/gophling/internal/platform/database"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
+	db "github.com/y0f/gophling/internal/gen/db"
 )
 
 // Message is a domain event awaiting publication.

@@ -1,211 +1,179 @@
-<!-- forge:begin init -->
-<p align="center">
-  <img src="docs/assets/logo.webp" alt="Go" width="160">
-</p>
-<!-- forge:end init -->
-
-<h1 align="center">go-api-scaffolding</h1>
+# gophling
 
 <!-- forge:begin init -->
-<p align="center">
-  A Go API service to clone, rename and build on. The production concerns are
-  wired and tested; none of it is a framework.
-</p>
-<!-- forge:end init -->
+<img src="docs/assets/gophling.png" alt="gophling mascot" width="128" height="128" align="right">
 
-<p align="center">
-  <a href="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml"><img src="https://github.com/y0f/go-api-scaffolding/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://pkg.go.dev/github.com/y0f/go-api-scaffolding"><img src="https://pkg.go.dev/badge/github.com/y0f/go-api-scaffolding.svg" alt="Go Reference"></a>
-  <img src="https://img.shields.io/badge/go-1.26+-00ADD8?logo=go&logoColor=white" alt="Go 1.26+">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
-</p>
+Go REST API scaffold for parallel coding agents, with PostgreSQL,
+OpenAPI, sqlc, and reproducible checks. Each resource is an ordinary Go package.
 
-## What you get
+[![CI](https://github.com/y0f/gophling/actions/workflows/ci.yml/badge.svg)](https://github.com/y0f/gophling/actions/workflows/ci.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-- **HTTP.** `net/http` and chi. Requests are validated against `api/openapi.yaml`,
-  the typed server interface is generated from it, and CI fails on drift. Errors
-  are RFC 9457 `problem+json` carrying the trace ID. Per-client rate limiting
-  that keys on the forwarded client behind the proxies in
-  `FORGE_HTTP_TRUSTED_PROXIES`, grouping IPv6 clients by /64. Readiness-first graceful drain.
-- **Data.** pgx/v5, sqlc-generated queries checked against the real schema,
-  goose migrations embedded in the binary and applied as a deploy step.
-- **Auth.** Bearer tokens verified against JWKS (OIDC) or an RSA key. RBAC in
-  the service layer. `FORGE_ENV` defaults to `production`, which refuses to
-  start without a verifier; with `FORGE_ENV=development` (set by `.env.example`
-  and the compose file) a token is minted and logged at startup.
-- **Docs.** The spec served verbatim at `/openapi.yaml` and an interactive
-  reference at `/docs`.
-- **Observability.** Prometheus `/metrics`; slog with `trace_id` and `span_id`
-  on every line and secret redaction.
-<!-- forge:begin otlp -->
-- **Tracing.** OpenTelemetry spans exported over OTLP, with a Collector, Tempo,
-  Prometheus and Grafana compose profile.
-<!-- forge:end otlp -->
-<!-- forge:begin outbox -->
-- **Outbox.** Events written in the same transaction as the state change,
-  relayed at-least-once by a poller. A message the publisher rejects is retried
-  with backoff and never blocks the ones behind it.
-<!-- forge:end outbox -->
-<!-- forge:begin idempotency -->
-- **Idempotency.** An `Idempotency-Key` header on create requests: the response
-  is stored with the write and replayed on retry (`Idempotency-Replayed: true`),
-  scoped to the caller. Reusing a key for a different body is a 409.
-<!-- forge:end idempotency -->
-<!-- forge:begin admin -->
-- **Admin.** pprof and expvar on a separate token-gated port.
-<!-- forge:end admin -->
-- **Testing.** Unit tests without a database. Integration tests on a real
-  Postgres via testcontainers, each test on its own clone of a migrated
-  template database.
-- **Supply chain.** SHA-pinned Actions, govulncheck and CodeQL, distroless
-  non-root image, cosign-signed releases with an SBOM.
-- **Growth.** `forge add resource <Name>` stamps a new vertical slice.
-
-<!-- forge:begin init -->
 ## Start a project
 
-Needs Go, git, Docker and [Task](https://taskfile.dev).
+Use a patched supported Go release (minimum 1.26.10) and Git. Bootstrap uses
+the pinned Go 1.27.3 toolchain, downloading it if needed. Docker runs the local
+database.
 
-```bash
-go run github.com/y0f/go-api-scaffolding/cmd/forge@latest new myapp
+```sh
+go run github.com/y0f/gophling/cmd/forge@latest new myapp
 cd myapp
-task up
+go run ./cmd/dev bootstrap
 ```
 
-`new` clones the scaffold into `myapp`, asks for your module path and which
-optional slices to keep (example resource, outbox, idempotency keys, OTLP
-export with the Grafana stack, admin listener), deletes the rest, removes the
-installer, and regenerates and builds the result. In a clone you already have,
-run `go run ./cmd/forge init` instead. Non-interactive:
+The installer asks for a module path and the optional components to keep.
+For automation, pass `-yes -module github.com/you/myapp`. Use `-ref <tag-or-SHA>`
+to select the scaffold revision; `.forge.json` records the resolved revision.
+For repeatable setup, pin the launcher version (`cmd/forge@<release>`) and use a
+full commit SHA for `-ref` when selecting older or custom source.
 
-```bash
-go run ./cmd/forge init -yes -module github.com/you/app -drop outbox,admin
+If in-place initialization is interrupted while publishing files, recover from
+the project root before making manual changes:
+
+```sh
+go run github.com/y0f/gophling/cmd/forge@<release> init -recover
 ```
 
-The `FORGE_` environment prefix and the `forge` command name stay; both are
-independent of the module path. The rest of this file describes the scaffold
-with everything kept.
+Use the release that performed initialization. Recovery restores the saved
+tracked files and preserves unrelated untracked files. Earlier tool or
+generation failures leave the original project untouched.
 <!-- forge:end init -->
 
-## Quickstart
+## Run and verify
 
-Needs Docker and [Task](https://taskfile.dev).
-
-```bash
-git clone https://github.com/y0f/go-api-scaffolding
-cd go-api-scaffolding
-task up          # Postgres, migrations, API on :8080
+```sh
+go run ./cmd/dev doctor
+go run ./cmd/dev check
+./bin/task up
 ```
 
-The API logs a development bearer token at startup; `task up` runs detached,
-so read it from the container log:
+The fast check runs without a database. `task up` starts the API and Postgres.
+On PowerShell use `./bin/task.exe`; if Task is on PATH, `task` also works.
 
-```bash
-docker compose -f deployments/docker-compose.yml logs api | grep "bearer token"
+The API is at `http://localhost:8080`, the reference at `/docs`, and the
+contract at `/openapi.yaml`. Read the development bearer token from the API log:
+
+```sh
+docker compose -f deployments/docker-compose.yml logs api
 ```
 
-The API reference is at `http://localhost:8080/docs`.
-<!-- forge:begin example -->
+`task down` stops the stack and keeps data. `task reset` also deletes the
+database volume.
 
-```bash
-export TOKEN="<bearer token from the api log>"
+## Add a feature
 
-curl -s localhost:8080/v1/widgets
-
-curl -s -X POST localhost:8080/v1/widgets \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"first"}'
+```sh
+go run ./cmd/forge add resource Note
+./bin/task generate
+go run ./cmd/dev check
 ```
+
+The generator adds a module, migration, SQL queries, OpenAPI operations, tests,
+and route wiring. Reads are public; writes require `notes:write` or an explicit
+role grant. The logged development token has the `admin` role, which gets no
+automatic grant for new resources. Apply the migration before serving the routes.
+
+Alternatively, ask your coding agent to perform the same change:
+
+> Add a Note resource. Keep reads public and require notes:write for writes.
+> Test invalid input and denied writes. Regenerate the bindings, then run the
+> fast and integration checks.
+
+[Agent setup](docs/agents.md) covers Claude Code, Codex, Gemini CLI, Copilot,
+and Cursor instruction loading.
+[Parallel work](docs/workflows/parallel.md) assigns modules to separate
+worktrees and shared changes to one coordinator.
+[The resource guide](docs/workflows/resource.md) gives the complete workflow.
+
+## Included
+
+| Area | Implementation |
+| --- | --- |
+| HTTP | `net/http`, chi, OpenAPI validation, generated interfaces, RFC 9457 errors |
+| Data | PostgreSQL, pgx, sqlc, embedded goose migrations |
+| Auth | OIDC/JWKS or RSA verification; service-level permissions |
+| Operations | Structured logs, Prometheus metrics, health probes, graceful drain |
+| Tests | Unit tests and isolated real-Postgres integration tests |
+| Releases | Pinned tools and Actions, vulnerability checks, non-root image, signed checksums and SBOMs |
+
+<!-- forge:begin outbox -->
+Optional outbox: commit events with state changes and retry failed deliveries.
+The example publisher only logs event metadata; replace it for external delivery.
+<!-- forge:end outbox -->
 <!-- forge:begin idempotency -->
-
-Add `-H "Idempotency-Key: $(uuidgen)"` to the POST and a retry replays the
-stored response instead of creating a second widget.
+Optional idempotency: replay create requests with the same caller, key, and
+body; reject a changed body with 409.
 <!-- forge:end idempotency -->
-<!-- forge:end example -->
-
-`task down` stops the stack and deletes the database volume.
-
-To run the binary outside Docker against any Postgres, copy `.env.example` to
-`.env` (Task loads it), then:
-
-```bash
-task setup       # build the pinned toolchain from tools/go.mod into ./bin
-task migrate
-task run
-```
-
-## Add a resource
-
-```bash
-go run ./cmd/forge add resource Order
-```
-
-This writes `internal/modules/order` (domain, store, service, handler, test,
-queries) and a migration, registers the queries with sqlc, and prints the
-remaining steps: `task generate`, append the handler to `RouterDeps.Mounts`,
-grant the write permission, `task migrate`. It pins the sqlc model name to the
-resource name, and imports use the module path in your `go.mod`.
-
-Generated modules are plain chi handlers with authentication, authorization,
-validation and `problem+json` errors. Make one spec-first by adding its paths
-to `api/openapi.yaml` and implementing the generated interface.
-<!-- forge:begin example -->
-The `widget` module is that spec-first form of the same slice.
-<!-- forge:end example -->
-
-## Tasks
-
-```bash
-task generate          # regenerate sqlc and OpenAPI code
-task lint              # golangci-lint
-task test              # unit tests with coverage
-task test:race         # unit tests under the race detector (needs a C toolchain)
-task test:integration  # integration tests on real Postgres (needs Docker)
-task vuln              # govulncheck
-task ci                # lint, vuln, generate:check, test, test:integration, build
-task build             # api, migrate and forge into ./bin
-```
 <!-- forge:begin otlp -->
-
-`task observe` starts the full stack with the OpenTelemetry Collector, Tempo,
-Prometheus and Grafana. Grafana is at `http://localhost:3000` with both data
-sources provisioned; traces flow from the API through the Collector into Tempo.
+Optional tracing: OTLP export with a local Collector, Tempo, and Grafana stack.
 <!-- forge:end otlp -->
+<!-- forge:begin admin -->
+Optional admin listener: token-protected pprof and expvar on a separate port.
+<!-- forge:end admin -->
 
-CI also runs the tests under `-race`, builds the Docker image, checks the
-compose files and `forge init` presets, and validates the release config.
+Production mode requires a token verifier. The local Compose stack explicitly
+enables development mode and its temporary signing key.
 
-The toolchain (linter, generators, scanner, live reload) is pinned in
-`tools/go.mod`, a module of its own so none of it enters the application's
-dependency graph. CI builds the same versions from the same file.
+## Documentation
 
-## Layout
-
-```
-api/           the OpenAPI contract
-cmd/           api (composition root), migrate, forge
-internal/      config, server, auth, observability, platform, modules, gen
-migrations/    versioned SQL, embedded into the binaries
-deployments/   Dockerfile, docker compose
-docs/          architecture and ADRs
-tools/         pinned developer toolchain
-```
-
-The package-level tree, the request flow and the reasoning behind the design
-are in [`docs/architecture.md`](docs/architecture.md) and
-[`docs/adr`](docs/adr). Conventions: [`.github/CONTRIBUTING.md`](.github/CONTRIBUTING.md).
+- [Setup and commands](docs/agents.md)
+- [Parallel worktrees](docs/workflows/parallel.md)
+- [Architecture and decisions](docs/architecture.md)
+- [Schema changes](docs/workflows/schema.md)
+- [Authorization](docs/workflows/authorization.md)
+- [Testing](docs/workflows/testing.md)
+<!-- forge:begin init -->
+- [Fit and alternatives](docs/choosing.md)
+- [Agent evaluation results and method](evals/README.md)
+- [Recorded resource workflow](https://y0f.github.io/gophling/demo.html)
+<!-- forge:end init -->
+- [Contributing](.github/CONTRIBUTING.md)
 
 ## Verify a release
 
-```bash
-cosign verify-blob \
-  --bundle checksums.txt.bundle \
-  --certificate-identity-regexp 'https://github.com/y0f/go-api-scaffolding' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  checksums.txt
+Replace `TAG` with the downloaded release tag (for example, `v1.3.0`) and
+`OWNER/REPOSITORY` with the GitHub repository that published it.
+<!-- forge:begin init -->
+For gophling releases, the repository is `y0f/gophling`.
+<!-- forge:end init -->
+
+```sh
+cosign verify-blob --bundle checksums.txt.bundle \
+  --certificate-identity 'https://github.com/OWNER/REPOSITORY/.github/workflows/release.yml@refs/tags/TAG' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
 ```
 
-## License
+Then compare the SHA-256 hash of your downloaded archive with its entry in the
+verified `checksums.txt` before extracting it.
+
+For public GitHub.com releases, also verify the archive's build provenance.
+Replace `ARCHIVE` with the downloaded filename.
+
+```sh
+gh attestation verify ARCHIVE --repo OWNER/REPOSITORY \
+  --signer-workflow OWNER/REPOSITORY/.github/workflows/release.yml \
+  --source-ref refs/tags/TAG
+```
+
+This verifies the artifact's association with the release workflow and source
+tag. The workflow skips GitHub attestations for private repositories;
+enabling them there requires a
+supported GitHub Enterprise Cloud plan. See GitHub's
+[attestation guide](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
+and [verification options](https://cli.github.com/manual/gh_attestation_verify).
+
+When the release is marked **Immutable**, verify GitHub's release attestation
+and the downloaded asset as well:
+
+```sh
+gh release verify TAG --repo OWNER/REPOSITORY
+gh release verify-asset TAG ARCHIVE --repo OWNER/REPOSITORY
+```
+
+This applies to uploaded release assets, not GitHub's automatically generated
+source ZIP/tarballs. Immutability must be enabled for each repository and applies
+to future releases; it does not protect older releases or custom branch refs.
+See [release operations](.github/RELEASING.md) and GitHub's
+[release verification guide](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/verify-release-integrity).
 
 MIT. See [LICENSE](LICENSE).

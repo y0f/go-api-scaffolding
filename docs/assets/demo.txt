@@ -1,0 +1,80 @@
+$ go run ./cmd/forge add resource Note
+updated internal\modules\note\note.go
+updated internal\modules\note\store.go
+updated internal\modules\note\service.go
+updated internal\modules\note\handler.go
+updated internal\modules\note\service_test.go
+updated internal\modules\note\queries.sql
+updated migrations\00007_create_notes.sql
+updated internal\modules\note\idempotent.go
+updated internal\modules\note\idempotent_test.go
+updated sqlc.yaml
+updated api/openapi.yaml
+updated cmd/api/resources.go
+
+Registered /v1/notes in api/openapi.yaml and cmd/api/resources.go.
+Next steps:
+  1. go run ./cmd/dev generate
+  2. Grant "notes:write" to the roles that may write in internal/auth/principal.go,
+     or issue a token carrying that scope. Writes remain denied otherwise.
+  3. go run ./cmd/migrate up
+  4. go run ./cmd/dev check
+[exit 0; 1.563s]
+
+$ go run ./cmd/dev generate
+$ bin\sqlc.exe generate
+$ bin\oapi-codegen.exe --config api/oapi-codegen.yaml api/openapi.yaml
+[exit 0; 2.656s]
+
+$ go run ./cmd/dev check
+$ bin\sqlc.exe generate
+$ bin\oapi-codegen.exe --config api/oapi-codegen.yaml api/openapi.yaml
+$ bin\golangci-lint.exe run ./...
+0 issues.
+$ go test -shuffle=on ./...
+?   	example.com/demo/app/api	[no test files]
+?   	example.com/demo/app/cmd/api	[no test files]
+ok  	example.com/demo/app/cmd/dev	1.106s
+ok  	example.com/demo/app/cmd/forge	1.139s
+ok  	example.com/demo/app/cmd/migrate	0.760s
+ok  	example.com/demo/app/internal/auth	1.871s
+ok  	example.com/demo/app/internal/config	0.470s
+?   	example.com/demo/app/internal/gen/api	[no test files]
+?   	example.com/demo/app/internal/gen/db	[no test files]
+ok  	example.com/demo/app/internal/idempotency	0.575s
+ok  	example.com/demo/app/internal/maintenance	0.734s
+ok  	example.com/demo/app/internal/modules/note	1.622s
+ok  	example.com/demo/app/internal/modules/widget	1.617s
+ok  	example.com/demo/app/internal/observability	0.612s
+?   	example.com/demo/app/internal/outbox	[no test files]
+?   	example.com/demo/app/internal/platform/database	[no test files]
+ok  	example.com/demo/app/internal/platform/problem	0.672s
+ok  	example.com/demo/app/internal/server	1.098s
+ok  	example.com/demo/app/internal/testutil	0.480s
+?   	example.com/demo/app/migrations	[no test files]
+$ go build ./...
+Fast checks passed. Integration, race, vulnerabilities and containers were not checked; run go run ./cmd/dev ci for those gates.
+[exit 0; 14.156s]
+
+$ git add -N .
+[exit 0; 0.078s]
+
+$ git diff --stat
+ api/openapi.yaml                         | 122 ++++++++++++
+ cmd/api/resources.go                     |  24 +++
+ internal/gen/api/api.gen.go              | 311 ++++++++++++++++++++++++++++---
+ internal/gen/db/models.go                |   7 +
+ internal/gen/db/querier.go               |   6 +
+ internal/gen/db/queries.sql.go           | 108 +++++++++++
+ internal/modules/note/handler.go         | 172 +++++++++++++++++
+ internal/modules/note/idempotent.go      | 173 +++++++++++++++++
+ internal/modules/note/idempotent_test.go |  66 +++++++
+ internal/modules/note/note.go            |  26 +++
+ internal/modules/note/queries.sql        |  25 +++
+ internal/modules/note/service.go         |  68 +++++++
+ internal/modules/note/service_test.go    |  86 +++++++++
+ internal/modules/note/store.go           | 147 +++++++++++++++
+ migrations/00007_create_notes.sql        |  15 ++
+ sqlc.yaml                                |   5 +
+ 16 files changed, 1334 insertions(+), 27 deletions(-)
+[exit 0; 0.063s]

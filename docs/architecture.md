@@ -7,46 +7,31 @@ cmd/
   api/        composition root: load config, wire dependencies, serve
   migrate/    apply migrations as an explicit deploy step
   forge/      day-2 generator: go run ./cmd/forge add resource <Name>
+  dev/        pinned tool bootstrap and verification commands
 internal/
   config/         typed, validated environment configuration
   observability/  slog (trace correlation + redaction), OpenTelemetry, Prometheus
   platform/
     database/   pgx pool and transaction helper
     problem/    RFC 9457 problem+json responses
-  server/         http.Server, middleware, router, health, graceful drain, admin
+  server/         http.Server, middleware, router, health, graceful drain
   auth/           JWKS/RSA verification, RBAC, OpenAPI authenticator
-  idempotency/    Idempotency-Key store and replay for create requests
-  outbox/         transactional outbox and relay
-  maintenance/    periodic reaper for expired keys and published events
-  modules/
-    widget/     example vertical slice (sql, store, service, handler)
+  modules/        one package per resource (SQL, store, service, handler)
   gen/            generated code (sqlc + oapi-codegen), committed
-  testutil/       Postgres testcontainer with per-test template cloning
+  testutil/       isolated Postgres databases, Docker or an external test server
 api/openapi.yaml  the API contract, source of truth
 migrations/       versioned SQL, embedded into the binaries
-deployments/      Dockerfile, docker compose, observability configs
+deployments/      Dockerfile and Docker Compose configuration
 ```
 
-Not every project keeps every package: `forge init` removes the slices you do
-not select.
+<!-- forge:begin init -->
+`forge init` removes unselected components and its own installer.
+<!-- forge:end init -->
 
 ## Request flow
 
-```mermaid
-flowchart LR
-    client[Client] --> mw[Middleware:
-    real ip, request id, otel, log, recover, CORS, rate limit]
-    mw --> val[OpenAPI validator
-    + authentication]
-    val --> h[Handler]
-    h --> svc[Service: RBAC + rules]
-    svc --> repo[Repository]
-    repo --> pg[(Postgres via pgx/sqlc)]
-    %% forge:begin outbox
-    repo -. same tx .-> ob[(outbox_messages)]
-    ob --> relay[Outbox relay] --> pub[Publisher]
-    %% forge:end outbox
-```
+Client → middleware → OpenAPI validation and authentication → handler →
+service authorization and rules → repository → PostgreSQL.
 
 A request passes global middleware, then the OpenAPI validator checks it against
 `api/openapi.yaml` and runs the bearer authentication function for protected
@@ -59,6 +44,10 @@ full, keeps draining within a tick. A message the publisher rejects records the
 attempt and error and backs off (up to an hour between tries) without holding
 up the rest, so delivery order is not guaranteed and consumers must be
 idempotent.
+
+The default `outbox.LogPublisher` logs event metadata and treats delivery as
+successful. Replace it in `cmd/api/main.go` with a broker or webhook `Publisher`
+when the application needs external delivery.
 <!-- forge:end outbox -->
 
 ## Boundaries
@@ -69,7 +58,11 @@ idempotent.
 - `internal/gen` is generated and never edited by hand. CI fails if it drifts
   from `migrations/`, the query files, or `api/openapi.yaml`.
 - Each resource is one package (a vertical slice), which keeps blast radius small
-  and lets the generator add a feature by writing one directory.
+  for domain changes. The generator also updates the shared contract, SQL
+  registration, and explicit handler composition in `cmd/api`.
+- Resource operations use the same OpenAPI validation path. The composition
+  layer delegates each operation to its module's handler; it contains wiring,
+  not business rules.
 
 ## Observability
 

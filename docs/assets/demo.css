@@ -1,0 +1,6 @@
+.demo-player { margin: 1.5rem 0; border: 1px solid #7c8792; border-radius: .5rem; overflow: hidden; }
+.demo-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .75rem; }
+.demo-controls button, .demo-controls select { font: inherit; padding: .3rem .6rem; }
+.demo-controls :focus-visible, .demo-terminal:focus-visible { outline: 3px solid #287fc0; outline-offset: 2px; }
+.demo-player .demo-terminal { margin: 0; padding: 1rem; max-height: 32rem; min-height: 12rem; overflow: auto; background: #14222e; color: #eef5fa; border-radius: 0; }
+.demo-terminal code { white-space: pre; background: transparent; color: inherit; font-size: .85rem; }

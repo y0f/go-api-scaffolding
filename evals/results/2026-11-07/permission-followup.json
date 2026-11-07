@@ -1,0 +1,850 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "snapshot_started_utc": "2026-11-07T16:04:40.417215+00:00",
+  "snapshot_finished_utc": "2026-11-07T16:04:40.488986+00:00",
+  "cohort_boundaries": "Never pool baseline, adapter followup, corrected product/prompt/verifier followup, historical trials, or capability probe.",
+  "cohort_group": "permission-followup",
+  "cohorts": [
+    {
+      "id": "permission-authorization",
+      "cohort_group": "permission-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "permission-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 2
+      },
+      "observed_records_per_task": {
+        "authorization": 2
+      },
+      "aggregate_entries_observed": 2
+    },
+    {
+      "id": "permission-second-resource",
+      "cohort_group": "permission-followup",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 2,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "permission-followup-plan.json",
+        "planned_tasks": 1,
+        "attempts_per_task": 2,
+        "planned_attempts": 2
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "permission_denied": 1,
+        "passed": 1
+      },
+      "observed_records_per_task": {
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 2
+    }
+  ],
+  "attempts": [
+    {
+      "task": "authorization",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "b2bc00e323a628069f314a9de2b57e0d307492a8f1751a69727f18a42641c218",
+      "fixture_commit": "06fab10d34dd44fd5d49fd159bc1a027370fbf15",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "permission-authorization/claude-authorization-1",
+      "cohort_group": "permission-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 22.39
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.875
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 315.969
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.906
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.547
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.531
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 60,
+          "cache_creation_input_tokens": 84044,
+          "cache_read_input_tokens": 2390691,
+          "output_tokens": 17395
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual permission-followup authorization feature, new tests and external acceptance review",
+        "findings": [],
+        "notes": [
+          "Exact widgets:read permission is checked in service before optional Counter assertion/query; Postgres implements real count, missing capability fails closed. Typed composition and served contract retain existing routes.",
+          "DevIssuer.MintWithScopes is additive; old Mint delegates with nil scopes and tests preserve existing no-scope behavior. No protected tests or policy files weakened.",
+          "New unit/live router tests cover denied calls before persistence, correct scope, role/write-scope denial and changing count; route coexistence and scope issuer tests pass.",
+          "External fast/full integration/independent compiled-API grader pass with zero reported permission denials. Agent-side checks are final JSON self-reports only; this does not establish that a specific new permission rule was exercised.",
+          "Separate declared permission follow-up at original46800b1 product with repaired adapter; original cohort denominator/results untouched."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "authorization",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "b2bc00e323a628069f314a9de2b57e0d307492a8f1751a69727f18a42641c218",
+      "fixture_commit": "66b463d6ca67e4b66f1262ff89b585baa45e753e",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "permission-authorization/claude-authorization-2",
+      "cohort_group": "permission-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.703
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.422
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 219.359
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.281
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.188
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.156
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 11,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 50,
+          "cache_creation_input_tokens": 75666,
+          "cache_read_input_tokens": 1835673,
+          "output_tokens": 17126
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual permission-followup authorization feature, new tests and external acceptance review",
+        "findings": [],
+        "notes": [
+          "Exact widgets:read permission is checked in service before optional Counter assertion/query; Postgres implements real count, missing capability fails closed. Typed composition and served contract retain existing routes.",
+          "DevIssuer.MintWithScopes is additive; old Mint delegates with nil scopes and tests preserve existing no-scope behavior. No protected tests or policy files weakened.",
+          "New unit/live router tests cover denied calls before persistence, correct scope, role/write-scope denial and changing count; route coexistence and scope issuer tests pass.",
+          "External fast/full integration/independent compiled-API grader pass with zero reported permission denials. Agent-side checks are final JSON self-reports only; this does not establish that a specific new permission rule was exercised.",
+          "Separate declared permission follow-up at original46800b1 product with repaired adapter; original cohort denominator/results untouched."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "second_resource",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "5b1a4d63c9b30bd0b4b9f995e4c501747940b0e46bb4f79e37a4f35b9ee70511",
+      "fixture_commit": "e31110ac228c0c4ae48f81ec4a9a98cd67ce0298",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "permission-second-resource/claude-second_resource-1",
+      "cohort_group": "permission-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.969
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.047
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.453
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 3.937
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 227.203
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 5,
+      "changed_paths_count": 11,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 50,
+          "cache_creation_input_tokens": 92256,
+          "cache_read_input_tokens": 2026062,
+          "output_tokens": 18981
+        },
+        "permission_denials_count": 1,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "provider denial and final self-report only; no external feature grading",
+        "findings": [
+          "Read targeted Taskfile.yml in the attempt parent directory instead of owned workspace; expected outside-workspace permission boundary denied incorrect path."
+        ],
+        "notes": [
+          "Agent final JSON explicitly reports wrong-path read denial and successful corrected-path fallback, with fast/full integration self-reported passed.",
+          "No evidence this was a cache/Git adapter omission; do not broaden parent-directory access to accommodate incorrect paths. Original permission-denial-as-failure retained.",
+          "Feature correctness not inferred from final self-report and no external grade performed. Separate declared permission follow-up cohort retained."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "second_resource",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "5b1a4d63c9b30bd0b4b9f995e4c501747940b0e46bb4f79e37a4f35b9ee70511",
+      "fixture_commit": "4715b8cb8b7a6f26b9a1d21d1898e10190c0082a",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "permission-second-resource/claude-second_resource-2",
+      "cohort_group": "permission-followup",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": true,
+        "read_only_cache_roots_count": 1,
+        "read_only_cache_purpose": "dependency-source file tools",
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.219
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.109
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.453
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.469
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 178.86
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.593
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.172
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.172
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 48,
+          "cache_creation_input_tokens": 61807,
+          "cache_read_input_tokens": 1449484,
+          "output_tokens": 12818
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual generated Label slice, preserved Note composition/policy, new integration tests and external grading",
+        "findings": [],
+        "notes": [
+          "All Label production sources match seeded Note after name substitution; new00008 migration, OpenAPI/sqlc registration and typed composition correct, existing Note/tests unchanged.",
+          "New composite-router real-DB tests cover public CRUD, pagination, validation, separate scoped write policies and denied updates/deletes preserving both resources. Test verifier is a scope stub; external grader uses real signed JWTs and compiled API.",
+          "External fast/full integration/compiled API acceptance passed with zero reporteddenials. Agent check success is final self-report only. Separate permission-followup cohort retained."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    }
+  ],
+  "evidence_manifest": [
+    {
+      "artifact": "permission-authorization/claude-authorization-1/result.json",
+      "sha256": "6d6005d218f6041ee2d7c6520c207b5348a3ee6a068ad9a2b5980a4642ca1fa8",
+      "bytes": 8662,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/acceptance.log",
+      "sha256": "99f5c1c8d6078bee9b9fb772aafa0ec7e68d74f6d782e08fdc24a3a4b6f9f91b",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/agent.log",
+      "sha256": "af06a18d0dae0ea9f4eba3674e02c34dd5f207990dc2cdaacec76cd73dbccea4",
+      "bytes": 4951,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/check.log",
+      "sha256": "b9bc097d6f5374b53b0ad2f0182846106089f370a0d12d55e5c61ce5e0d6a832",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/integration.log",
+      "sha256": "c6ac9ae58cb320c88ba71fc510d4fc083542efc68a301ecefae1222fd37b02e4",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-1/prompt.txt",
+      "sha256": "30959bebfcf7a2946fcdcf3c74e03205979af864346aa751120f11891e3067e8",
+      "bytes": 1159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/permission-followup--claude-authorization-1.json",
+      "sha256": "6cacda49e7018da726154e05ba643645695e05406b316500914f6ff16e8dce89",
+      "bytes": 9422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/result.json",
+      "sha256": "3fa735c1156aed27aafa885788b3ef2923c4b0ea9fb77a93b29fa4a791e242dd",
+      "bytes": 8743,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/acceptance.log",
+      "sha256": "1d86f890938373e80829134031e16aa96788efb7eaafc46be53b254448e45a77",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/agent.log",
+      "sha256": "7ed20c3a1e09f04af8ec1822a4cdf5cc8fd4f39f62891ffeeae86025c73c1d9e",
+      "bytes": 4809,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/check.log",
+      "sha256": "fb6ad4220051624b8fe2f244858afd97c7880280e3e1b085a3efc2c31aea616b",
+      "bytes": 1302,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/integration.log",
+      "sha256": "a81115ebf3124bc46754e24ef3b09fed140361147bc77a174e394e07af82e7e0",
+      "bytes": 980,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/claude-authorization-2/prompt.txt",
+      "sha256": "30959bebfcf7a2946fcdcf3c74e03205979af864346aa751120f11891e3067e8",
+      "bytes": 1159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/permission-followup--claude-authorization-2.json",
+      "sha256": "402ed2a0affd3d9690fd05d4509d135f37de064febd1c5824fc7188a1e6d0f91",
+      "bytes": 9282,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-authorization/results.json",
+      "sha256": "cb061546f12cf6e8607e87b254571b9898fd47b8782fd7419d32374738f0a76d",
+      "bytes": 18352,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/result.json",
+      "sha256": "8c37340fe712e05117cab59974b33947b1f7082c7a6711fcb6610ca2faeb5599",
+      "bytes": 8668,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/agent.log",
+      "sha256": "53a1524eac431a4e6832294c678fe1a4db30b28b821c1f57f950ff53c100bd7d",
+      "bytes": 5481,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/prompt.txt",
+      "sha256": "fe5203a9ce63ab50a67a59629c6605c0624569eeec67a0103343d112daab9379",
+      "bytes": 1146,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-1/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/permission-followup--claude-second_resource-1.json",
+      "sha256": "21a7059358c1c5888a441b9dfbecede6aa661759462802b39158d5fefb0d701b",
+      "bytes": 9201,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/result.json",
+      "sha256": "4837a1945e7841098db1b9f448a07a1f3e54b080edbd8ecabef6144fd4217877",
+      "bytes": 9413,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/acceptance.log",
+      "sha256": "779ed35d1665ca1033d71adea18340dcb8ceafaec834250a0307cb8fdd5e1dc6",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/agent.log",
+      "sha256": "4e91285a53d302d4fd9d5a0493fd97aba998786fbcd7bf18cadf1a84d5ed469a",
+      "bytes": 4568,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/check.log",
+      "sha256": "a7dec4bf946c18e6a74cd2751940b11c89dcdca5dc32c51fd83fa0a88fa316c1",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/integration.log",
+      "sha256": "2114a29a9b22c31dd9de6ad605377d572674acddea9c83d6c3b3400261fd7450",
+      "bytes": 1091,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/prompt.txt",
+      "sha256": "fe5203a9ce63ab50a67a59629c6605c0624569eeec67a0103343d112daab9379",
+      "bytes": 1146,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/claude-second_resource-2/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/permission-followup--claude-second_resource-2.json",
+      "sha256": "15f768c01238b0f32183f280fc645b90d2f3d0df31f5dff6bbb784854613da7a",
+      "bytes": 9357,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "permission-second-resource/results.json",
+      "sha256": "427ffd37fd1690095957e713b3c3d9e15a5641d718fedc44f524f17020fccbee",
+      "bytes": 19044,
+      "publication": "digest_only_source_retained_privately"
+    }
+  ],
+  "declared_plan": {
+    "declared_before_execution": true,
+    "date": "2026-11-07",
+    "purpose": "Test the repaired Claude adapter separately from the frozen original cohort.",
+    "adapter_commit": "9619269331e4c2c2343fc1b82a81b44e32f54563",
+    "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+    "client": "Claude Code 2.1.319",
+    "model_requested": "claude-opus-5-5",
+    "tasks": [
+      "authorization",
+      "second_resource"
+    ],
+    "attempts_per_task": 2,
+    "agent_timeout_seconds": 900,
+    "verification_timeout_seconds": 600,
+    "changes": [
+      "Read-only module-cache file-tool grant",
+      "Read-only git ls-files, including exact-workspace -C"
+    ],
+    "unchanged": [
+      "Original acceptance verifier",
+      "Permission denials fail attempts",
+      "No stash or compound-command grant"
+    ],
+    "reporting": "Keep all original results and these follow-ups separate. No replacements or extra retries. Individual-task runs can overlap the original Codex batch; no cross-provider timing comparison."
+  },
+  "counts": {
+    "planned_attempts": 4,
+    "completed_attempts": 4,
+    "statuses": {
+      "passed": 3,
+      "permission_denied": 1
+    },
+    "review_outcomes": {
+      "accepted": 3,
+      "failed_attempt": 1
+    },
+    "evidence_artifacts": 39
+  },
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

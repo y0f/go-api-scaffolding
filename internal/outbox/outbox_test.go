@@ -15,9 +15,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	db "github.com/y0f/gophling/internal/gen/db"
+	"github.com/y0f/gophling/internal/platform/database"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 type capturePublisher struct {

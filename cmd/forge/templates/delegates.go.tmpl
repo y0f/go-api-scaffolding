@@ -1,0 +1,19 @@
+func (a *applicationAPI) List{{.Plural}}(w http.ResponseWriter, r *http.Request, params api.List{{.Plural}}Params) {
+	a.{{.Camel}}.List{{.Plural}}(w, r, params)
+}
+
+func (a *applicationAPI) Create{{.Pascal}}(w http.ResponseWriter, r *http.Request) {
+	a.{{.Camel}}.Create{{.Pascal}}(w, r)
+}
+
+func (a *applicationAPI) Get{{.Pascal}}(w http.ResponseWriter, r *http.Request, id api.{{.Pascal}}ID) {
+	a.{{.Camel}}.Get{{.Pascal}}(w, r, id)
+}
+
+func (a *applicationAPI) Update{{.Pascal}}(w http.ResponseWriter, r *http.Request, id api.{{.Pascal}}ID) {
+	a.{{.Camel}}.Update{{.Pascal}}(w, r, id)
+}
+
+func (a *applicationAPI) Delete{{.Pascal}}(w http.ResponseWriter, r *http.Request, id api.{{.Pascal}}ID) {
+	a.{{.Camel}}.Delete{{.Pascal}}(w, r, id)
+}
