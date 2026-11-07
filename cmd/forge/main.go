@@ -6,10 +6,8 @@
 // workflow as the example. Writes require explicit per-resource permissions.
 // SQL, migrations, contract operations and composition are added together.
 //
-// Usage:
+// Add a resource:
 //
-//	forge new <dir>             # clone the scaffold into dir and set it up there
-//	forge init                  # set up this clone: pick a module path and the slices to keep
 //	forge add resource <Name>
 //
 // After adding a resource, run `task generate` and apply its migration.
