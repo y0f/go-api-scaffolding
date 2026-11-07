@@ -13,7 +13,9 @@ func TestResourceDomainFilenamesDoNotCollideOrSelectPlatforms(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			resourceFixture(t)
 			res := newResource(name)
+			//forge:begin idempotency
 			res.Idempotency = true
+			//forge:end idempotency
 			if err := addResource(res, false); err != nil {
 				t.Fatal(err)
 			}
