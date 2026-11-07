@@ -66,6 +66,40 @@ func TestRedactingHandlerResolvesLogValuer(t *testing.T) {
 	}
 }
 
+func TestRedactingHandlerRedactsSensitiveGroups(t *testing.T) {
+	tests := []struct {
+		name string
+		log  func(*slog.Logger)
+	}{
+		{"record group", func(logger *slog.Logger) {
+			logger.Info("request", slog.Group("authorization", slog.String("value", "private-credential")))
+		}},
+		{"bound group", func(logger *slog.Logger) {
+			logger.With(slog.Group("secrets", slog.String("value", "private-credential"))).Info("request")
+		}},
+		{"inherited group", func(logger *slog.Logger) {
+			logger.WithGroup("authorization").Info("request", slog.String("value", "private-credential"))
+		}},
+		{"nested inherited group", func(logger *slog.Logger) {
+			logger.WithGroup("secrets").WithGroup("nested").With(slog.String("value", "private-credential")).Info("request")
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			logger := slog.New(NewRedactingHandler(slog.NewJSONHandler(&buf, nil)))
+			tt.log(logger.With(slog.String("user", "alice")))
+			out := buf.String()
+			if strings.Contains(out, "private-credential") || !strings.Contains(out, redactedValue) {
+				t.Fatalf("sensitive group leaked its value: %s", out)
+			}
+			if !strings.Contains(out, `"user":"alice"`) {
+				t.Fatalf("non-sensitive parent attribute was lost: %s", out)
+			}
+		})
+	}
+}
+
 func TestNeedsRedaction(t *testing.T) {
 	tests := []struct {
 		attr slog.Attr
@@ -75,6 +109,7 @@ func TestNeedsRedaction(t *testing.T) {
 		{slog.String("Authorization", "Bearer x"), true},
 		{slog.Group("req", slog.String("path", "/")), false},
 		{slog.Group("req", slog.Group("hdr", slog.String("cookie", "c"))), true},
+		{slog.Group("authorization", slog.String("value", "private-credential")), true},
 		{slog.Any("user", loginUser{}), true},
 	}
 	for _, tt := range tests {

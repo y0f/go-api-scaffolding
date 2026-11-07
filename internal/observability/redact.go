@@ -21,7 +21,8 @@ const redactedValue = "REDACTED"
 // (which resolve to groups). It guards against logging
 // credentials by accident, which is the most common log-hygiene failure.
 type RedactingHandler struct {
-	next slog.Handler
+	next      slog.Handler
+	redactAll bool // A sensitive WithGroup name applies to every nested attribute.
 }
 
 func NewRedactingHandler(next slog.Handler) *RedactingHandler {
@@ -35,17 +36,19 @@ func (h *RedactingHandler) Enabled(ctx context.Context, level slog.Level) bool {
 func (h *RedactingHandler) Handle(ctx context.Context, r slog.Record) error {
 	// Most records carry nothing to redact; pass those through rather than
 	// copying every attr into a new record on the hot path.
-	clean := true
-	r.Attrs(func(a slog.Attr) bool {
-		clean = !needsRedaction(a)
-		return clean
-	})
+	clean := !h.redactAll
+	if clean {
+		r.Attrs(func(a slog.Attr) bool {
+			clean = !needsRedaction(a)
+			return clean
+		})
+	}
 	if clean {
 		return h.next.Handle(ctx, r)
 	}
 	clone := slog.NewRecord(r.Time, r.Level, r.Message, r.PC)
 	r.Attrs(func(a slog.Attr) bool {
-		clone.AddAttrs(redactAttr(a))
+		clone.AddAttrs(h.redact(a))
 		return true
 	})
 	return h.next.Handle(ctx, clone)
@@ -54,18 +57,28 @@ func (h *RedactingHandler) Handle(ctx context.Context, r slog.Record) error {
 func (h *RedactingHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	out := make([]slog.Attr, len(attrs))
 	for i, a := range attrs {
-		out[i] = redactAttr(a)
+		out[i] = h.redact(a)
 	}
-	return &RedactingHandler{next: h.next.WithAttrs(out)}
+	return &RedactingHandler{next: h.next.WithAttrs(out), redactAll: h.redactAll}
 }
 
 func (h *RedactingHandler) WithGroup(name string) slog.Handler {
-	return &RedactingHandler{next: h.next.WithGroup(name)}
+	return &RedactingHandler{next: h.next.WithGroup(name), redactAll: h.redactAll || isSensitive(name)}
+}
+
+func (h *RedactingHandler) redact(a slog.Attr) slog.Attr {
+	if h.redactAll {
+		return slog.String(a.Key, redactedValue)
+	}
+	return redactAttr(a)
 }
 
 // needsRedaction reports whether redactAttr could change a. LogValuers are
 // not resolved here, so they always count.
 func needsRedaction(a slog.Attr) bool {
+	if isSensitive(a.Key) {
+		return true
+	}
 	switch a.Value.Kind() {
 	case slog.KindLogValuer:
 		return true
@@ -77,11 +90,14 @@ func needsRedaction(a slog.Attr) bool {
 		}
 		return false
 	default:
-		return isSensitive(a.Key)
+		return false
 	}
 }
 
 func redactAttr(a slog.Attr) slog.Attr {
+	if isSensitive(a.Key) {
+		return slog.String(a.Key, redactedValue)
+	}
 	// A LogValuer (such as a struct with a LogValue method) may resolve to a
 	// group holding sensitive keys, so resolve it before inspecting it.
 	a.Value = a.Value.Resolve()
@@ -92,9 +108,6 @@ func redactAttr(a slog.Attr) slog.Attr {
 			out[i] = redactAttr(ga)
 		}
 		return slog.Attr{Key: a.Key, Value: slog.GroupValue(out...)}
-	}
-	if isSensitive(a.Key) {
-		return slog.String(a.Key, redactedValue)
 	}
 	return a
 }
