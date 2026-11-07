@@ -420,12 +420,11 @@ func strip(src string, dropped map[string]bool) (string, error) {
 	return strings.TrimLeft(collapseBlankLines(out.String()), "\n"), nil
 }
 
-var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} .+$`)
+var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} [^\r\n]+`)
 
-// rewriteLicense makes the copyright line the project's: the current year and
-// the owner segment of the module path, since the scaffold's author holds no
-// copyright on what is generated from it. A LICENSE without that line is left
-// alone.
+// rewriteLicense preserves the existing copyright and permission notices,
+// adding the module owner's notice for the new project. A custom LICENSE
+// without a recognized copyright line is left alone.
 func rewriteLicense(path, module string, year int) error {
 	src, err := os.ReadFile(path) //#nosec G304 -- fixed relative path
 	if errors.Is(err, os.ErrNotExist) {
@@ -438,10 +437,23 @@ func rewriteLicense(path, module string, year int) error {
 	if _, rest, ok := strings.Cut(module, "/"); ok {
 		owner, _, _ = strings.Cut(rest, "/")
 	}
-	out := copyrightRe.ReplaceAllLiteralString(string(src), fmt.Sprintf("Copyright (c) %d %s", year, owner))
-	if out == string(src) {
+	text := string(src)
+	notice := fmt.Sprintf("Copyright (c) %d %s", year, owner)
+	notices := copyrightRe.FindAllStringIndex(text, -1)
+	if len(notices) == 0 {
 		return nil
 	}
+	for _, existing := range notices {
+		if text[existing[0]:existing[1]] == notice {
+			return nil
+		}
+	}
+	end := notices[len(notices)-1][1]
+	newline := "\n"
+	if strings.HasPrefix(text[end:], "\r\n") {
+		newline = "\r\n"
+	}
+	out := text[:end] + newline + notice + text[end:]
 	return os.WriteFile(path, []byte(out), 0o600) //#nosec G703 -- same fixed relative path that was just read
 }
 

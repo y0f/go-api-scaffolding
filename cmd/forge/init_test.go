@@ -110,7 +110,7 @@ func TestScaffoldMarkers(t *testing.T) {
 func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	root := repoRoot(t)
 	dir := t.TempDir()
-	for _, p := range append([]string{"README.md", "CHANGELOG.md"}, initPaths...) {
+	for _, p := range append([]string{"README.md", "CHANGELOG.md", "LICENSE"}, initPaths...) {
 		if p == "evals" || p == "docs/_layouts" {
 			if err := os.MkdirAll(filepath.Join(dir, p), 0o750); err != nil {
 				t.Fatal(err)
@@ -161,9 +161,26 @@ func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	if !strings.HasPrefix(string(readme), "# app\n") {
 		t.Error("README.md must use the initialized project's name as its title")
 	}
+	license, err := os.ReadFile("LICENSE")
+	if err != nil {
+		t.Fatal(err)
+	}
+	originalLicense, err := os.ReadFile(filepath.Join(root, "LICENSE"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, notice := range copyrightRe.FindAllString(string(originalLicense), -1) {
+		if !strings.Contains(string(license), notice) {
+			t.Errorf("initialized license removed original notice %q", notice)
+		}
+	}
+	notices := copyrightRe.FindAllString(string(license), -1)
+	if len(notices) == 0 || !strings.HasSuffix(notices[len(notices)-1], " you") {
+		t.Fatalf("initialized license lacks new module owner's notice: %s", license)
+	}
 }
 
-func TestRewriteLicenseUsesModuleOwnerAndYear(t *testing.T) {
+func TestRewriteLicensePreservesNoticesAndAddsModuleOwner(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "LICENSE")
 	src := "MIT License\n\nCopyright (c) 2020 someone\n\nPermission is hereby granted"
 	if err := os.WriteFile(path, []byte(src), 0o600); err != nil {
@@ -176,9 +193,16 @@ func TestRewriteLicenseUsesModuleOwnerAndYear(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "MIT License\n\nCopyright (c) 2031 you\n\nPermission is hereby granted"
+	want := "MIT License\n\nCopyright (c) 2020 someone\nCopyright (c) 2031 you\n\nPermission is hereby granted"
 	if string(got) != want {
 		t.Fatalf("LICENSE =\n%q\nwant\n%q", got, want)
+	}
+	if err := rewriteLicense(path, "github.com/you/app", 2031); err != nil {
+		t.Fatal(err)
+	}
+	got, err = os.ReadFile(path)
+	if err != nil || string(got) != want {
+		t.Fatalf("repeated rewrite changed existing notices: %q, %v", got, err)
 	}
 	if err := rewriteLicense(filepath.Join(t.TempDir(), "missing"), "github.com/you/app", 2031); err != nil {
 		t.Fatalf("missing LICENSE should be skipped, got %v", err)
@@ -192,6 +216,43 @@ func TestRewriteLicenseUsesModuleOwnerAndYear(t *testing.T) {
 	got, _ = os.ReadFile(path)
 	if !strings.Contains(string(got), "Copyright (c) 2031 app") {
 		t.Fatalf("a module path without a slash should use the whole path as owner, got %q", got)
+	}
+}
+
+func TestRewriteLicenseKeepsAllOriginalNoticesAndLineEndings(t *testing.T) {
+	for _, newline := range []string{"\n", "\r\n"} {
+		path := filepath.Join(t.TempDir(), "LICENSE")
+		src := strings.Join([]string{
+			"MIT License", "", "Copyright (c) 2020 original", "Copyright (c) 2022 contributor",
+			"", "Permission notice and terms remain unchanged.", "",
+		}, newline)
+		if err := os.WriteFile(path, []byte(src), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if err := rewriteLicense(path, "example.com/new-owner/app", 2031); err != nil {
+			t.Fatal(err)
+		}
+		got, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		added := newline + "Copyright (c) 2031 new-owner"
+		if strings.Count(string(got), added) != 1 || strings.Replace(string(got), added, "", 1) != src {
+			t.Fatalf("original license changed for newline %q: %q", newline, got)
+		}
+	}
+
+	path := filepath.Join(t.TempDir(), "LICENSE")
+	const custom = "Custom license with no recognized copyright line.\n"
+	if err := os.WriteFile(path, []byte(custom), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := rewriteLicense(path, "example.com/new-owner/app", 2031); err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(path)
+	if err != nil || string(got) != custom {
+		t.Fatalf("custom license changed: %q, %v", got, err)
 	}
 }
 
