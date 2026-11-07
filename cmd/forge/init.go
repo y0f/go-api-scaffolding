@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"errors"
 	"flag"
 	"fmt"
@@ -322,9 +323,12 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
-		if file == ".goreleaser.yaml" || file == ".goreleaser.yml" {
+		switch file {
+		case ".goreleaser.yaml", ".goreleaser.yml":
 			out = rewriteReleaseConfig(out, module)
-		} else {
+		case "deployments/docker-compose.yml":
+			out = rewriteComposeConfig(out, module)
+		default:
 			// Replace once: a requested module may itself contain the scaffold name.
 			out = names.Replace(out)
 		}
@@ -347,6 +351,40 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		}
 	}
 	return renumberMigrations("migrations")
+}
+
+// composeProjectName follows the module identity, so moving a checkout keeps
+// its database while unrelated applications with the same basename stay apart.
+func composeProjectName(module string) string {
+	slug := regexp.MustCompile(`[^a-z0-9_-]+`).ReplaceAllString(strings.ToLower(path.Base(module)), "-")
+	slug = strings.Trim(slug, "-_")
+	if len(slug) > 24 {
+		slug = strings.TrimRight(slug[:24], "-_")
+	}
+	if slug == "" {
+		slug = "app"
+	}
+	digest := sha256.Sum256([]byte(module))
+	return fmt.Sprintf("%s-%x", slug, digest[:6])
+}
+
+// Only the scaffold's default top-level name is replaced. Preserve custom
+// project names and YAML formatting, including comments and quoted values.
+func rewriteComposeConfig(src, module string) string {
+	name := regexp.MustCompile(`^(name:[ \t]*)(?:forge|"forge"|'forge')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
+	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
+	var out strings.Builder
+	for _, line := range strings.SplitAfter(src, "\n") {
+		if strings.HasPrefix(line, "name:") {
+			if match := name.FindStringSubmatch(line); match != nil {
+				line = match[1] + strconv.Quote(composeProjectName(module)) + match[2]
+			}
+		} else {
+			line = names.Replace(line)
+		}
+		out.WriteString(line)
+	}
+	return out.String()
 }
 
 // Only the default release name belongs to the scaffold. Preserve custom names

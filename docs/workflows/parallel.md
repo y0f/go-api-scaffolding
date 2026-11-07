@@ -43,10 +43,29 @@ caches can remain shared. Workers can now implement the two modules in parallel.
 If contract changes are needed, the coordinator updates the common branch and
 workers incorporate that commit before continuing dependent work.
 
+## Local stacks
+
+By default, initialization derives a stable Compose project name from the full
+Go module path. Moving a checkout keeps that name; worktrees of the same app share it.
+Prefer one coordinator-owned development stack while workers use isolated test
+databases. A simultaneous worker stack needs a unique `COMPOSE_PROJECT_NAME` and
+different `FORGE_DEV_API_PORT` and `FORGE_DEV_DB_PORT` values in its untracked
+`.env`; Task loads them. If running `task migrate` on the host, also match
+`FORGE_DB_URL` to that database port.
+<!-- forge:begin otlp -->
+For simultaneous observability stacks, also choose different
+`FORGE_DEV_OTLP_PORT`, `FORGE_DEV_COLLECTOR_METRICS_PORT`,
+`FORGE_DEV_PROMETHEUS_PORT`, and `FORGE_DEV_GRAFANA_PORT` values.
+<!-- forge:end otlp -->
+Keep each project's name stable to retain its local database. Changing the name
+selects a different volume; it does not move or delete existing data.
+
 ## Integrate and verify
 
-1. Each worker runs its package tests and hands off the diff, exact test outcomes,
-   shared-file requests, and unresolved decisions.
+1. Each worker runs `go fmt ./internal/modules/<name>` and its package tests,
+   then hands off the diff, exact test outcomes, shared-file requests, and
+   unresolved decisions. The coordinator's full lint still checks gofumpt and
+   goimports formatting.
 2. The coordinator reviews each change and integrates sources one at a time.
    Only renumber migrations that have never been applied. Resolve duplicate
    versions before running migrations or generating SQL bindings.

@@ -4,8 +4,8 @@ This scaffold fits HTTP JSON APIs backed by PostgreSQL, with explicit
 authorization and an OpenAPI contract. Modules give parallel workers separate
 areas to edit; one coordinator owns the shared contract and wiring. The
 generated project owns its Go code.
-Keep the reference resource while learning; add optional operational components
-when the service needs them.
+Keep the reference resource while learning; select optional operational components
+during setup based on the service's needs.
 
 | Project | Useful when |
 | --- | --- |

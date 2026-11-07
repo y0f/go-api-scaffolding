@@ -70,7 +70,8 @@ go run ./cmd/dev check
 
 The generator adds a module, migration, SQL queries, OpenAPI operations, tests,
 and route wiring. Reads are public; writes require `notes:write` or an explicit
-role grant. Apply the migration before serving the new routes.
+role grant. The logged development token has the `admin` role, which gets no
+automatic grant for new resources. Apply the migration before serving the routes.
 
 Alternatively, ask your coding agent to perform the same change:
 
@@ -97,6 +98,7 @@ worktrees and shared changes to one coordinator.
 
 <!-- forge:begin outbox -->
 Optional outbox: commit events with state changes and retry failed deliveries.
+The example publisher only logs event metadata; replace it for external delivery.
 <!-- forge:end outbox -->
 <!-- forge:begin idempotency -->
 Optional idempotency: replay create requests with the same caller, key, and

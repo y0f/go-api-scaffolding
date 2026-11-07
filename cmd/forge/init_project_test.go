@@ -109,6 +109,68 @@ func TestRewriteTreeGoReleaserProjectName(t *testing.T) {
 	}
 }
 
+func TestRewriteTreeComposeProjectName(t *testing.T) {
+	const defaultModule = "example.com/gophling-team/gophling-app"
+	const defaultName = `"gophling-app-d4435954f0bb"`
+	for _, tc := range []struct {
+		name, module, projectName, wantName, newline string
+		minimal                                      bool
+	}{
+		{name: "default", projectName: "forge", wantName: defaultName},
+		{name: "minimal", projectName: "forge", wantName: defaultName, minimal: true},
+		{name: "single_quoted", projectName: "'forge'", wantName: defaultName},
+		{name: "quoted_comment", projectName: `"forge" # local stack`, wantName: defaultName + " # local stack"},
+		{name: "crlf", projectName: "forge", wantName: defaultName, newline: "\r\n"},
+		{name: "custom", projectName: "my-service", wantName: "my-service"},
+		{name: "custom_contains_scaffold", projectName: "my-gophling-service", wantName: "my-gophling-service"},
+		{name: "custom_quoted", projectName: `'my-gophling-service' # keep`, wantName: `'my-gophling-service' # keep`},
+		{name: "custom_interpolation", projectName: "${COMPOSE_PROJECT_NAME:-gophling}", wantName: "${COMPOSE_PROJECT_NAME:-gophling}"},
+		{name: "same_basename_a", module: "example.com/a/service", projectName: "forge", wantName: `"service-54a849a809fc"`},
+		{name: "same_basename_b", module: "example.com/b/service", projectName: "forge", wantName: `"service-ed8936a78631"`},
+		{name: "same_module_another_directory", module: "example.com/a/service", projectName: "forge", wantName: `"service-54a849a809fc"`},
+		{name: "normalize", module: "example.com/team/Gophling.App", projectName: "forge", wantName: `"gophling-app-d329ab7e8c3b"`},
+		{name: "empty_slug", module: "example.com/team/___", projectName: "forge", wantName: `"app-cd82f8be7368"`},
+		{name: "long_slug", module: "example.com/team/" + strings.Repeat("a", 80), projectName: "forge", wantName: `"aaaaaaaaaaaaaaaaaaaaaaaa-a95029724095"`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := fixtureRepository(t)
+			t.Chdir(dir)
+			module := tc.module
+			if module == "" {
+				module = defaultModule
+			}
+			newline := tc.newline
+			if newline == "" {
+				newline = "\n"
+			}
+			const file = "deployments/docker-compose.yml"
+			if err := os.MkdirAll("deployments", 0o750); err != nil {
+				t.Fatal(err)
+			}
+			body := "\nservices:\n  api:\n    build: ..\n    labels:\n      module: " + moduleName + "\nvolumes:\n  pgdata:\n"
+			src := strings.ReplaceAll("name: "+tc.projectName+body, "\n", newline)
+			if err := os.WriteFile(file, []byte(src), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			fixtureGit(t, dir, "add", file)
+			dropped := map[string]bool{}
+			if tc.minimal {
+				for _, name := range sliceNames() {
+					dropped[name] = true
+				}
+			}
+			if err := rewriteTree(module, dropped); err != nil {
+				t.Fatal(err)
+			}
+			want := strings.ReplaceAll("name: "+tc.wantName+strings.ReplaceAll(body, moduleName, module), "\n", newline)
+			got, err := os.ReadFile(file)
+			if err != nil || string(got) != want {
+				t.Fatalf("compose config = %q, %v; want %q", got, err, want)
+			}
+		})
+	}
+}
+
 func TestCreateProjectPinsSourceAndStagesFinalTree(t *testing.T) {
 	source := fixtureRepository(t)
 	revision := fixtureGit(t, source, "rev-parse", "HEAD")

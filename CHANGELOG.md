@@ -12,8 +12,9 @@
   new module path. Releases through v1.2.0 retain the former module path.
 - `forge new` selects the launcher's release by default and records the exact
   scaffold revision in `.forge.json`. `-ref` selects another tag or commit.
-  Initialization verifies a staged copy before publishing. If publication is
-  interrupted, use the same launcher's `init -recover` command before editing.
+  Initialization verifies a staged copy before publishing and preserves file
+  permissions through staging and recovery. If publication is interrupted, use
+  the same launcher's `init -recover` command before editing.
 - Generated resources now extend OpenAPI, SQL, migrations, tests, and explicit
   application wiring together. Run `go run ./cmd/dev generate` and apply the
   migration before serving a new resource.
@@ -33,6 +34,12 @@
   do not blindly retry an existing operation with a new key.
 - `task down` retains the development database; use `task reset` to delete it.
   Development ports bind to loopback by default.
+- Fresh projects derive their Compose project name from the full module path,
+  separating applications with the same basename. Existing initialized projects
+  and volumes are unchanged. A different project name selects a different volume;
+  migrate any data deliberately and keep the original volume until verified.
+  Worktrees sharing a module need explicit project-name and port overrides for
+  simultaneous development stacks.
 - Shared agent instructions, worktree guidance, evaluation runners, and a
   recorded resource workflow document the development process. Compatibility
   guidance and measured client results are reported separately.

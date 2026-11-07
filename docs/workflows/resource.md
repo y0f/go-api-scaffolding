@@ -33,6 +33,11 @@ before retrying. Separate worktrees avoid sharing that lock.
 `task migrate` requires `FORGE_DB_URL`. For local development, copy `.env.example`
 to `.env` and set the database URL there; Task loads this file.
 
+The logged development token has the `admin` role. For local Note writes, add
+`notes:write` to that role's existing grants in `internal/auth/principal.go`
+(create the entry if absent), then rebuild/restart the API. New resources receive
+no automatic role grants. See [authorization](authorization.md) for other policies.
+
 Do not edit `internal/gen`. Module files outside that directory are ordinary
 application code. The route must appear in `/openapi.yaml` and work through
 the public router before the feature is complete.

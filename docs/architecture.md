@@ -57,6 +57,10 @@ full, keeps draining within a tick. A message the publisher rejects records the
 attempt and error and backs off (up to an hour between tries) without holding
 up the rest, so delivery order is not guaranteed and consumers must be
 idempotent.
+
+The default `outbox.LogPublisher` logs event metadata and treats delivery as
+successful. Replace it in `cmd/api/main.go` with a broker or webhook `Publisher`
+when the application needs external delivery.
 <!-- forge:end outbox -->
 
 ## Boundaries
