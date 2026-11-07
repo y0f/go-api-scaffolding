@@ -3,7 +3,7 @@
 <!-- forge:begin init -->
 <img src="docs/assets/gophling.png" alt="gophling mascot" width="128" height="128" align="right">
 
-Go REST API scaffold for efficient agent orchestration, with PostgreSQL,
+Go REST API scaffold for parallel coding agents, with PostgreSQL,
 OpenAPI, sqlc, and reproducible checks. Each resource is an ordinary Go package.
 
 [![CI](https://github.com/y0f/gophling/actions/workflows/ci.yml/badge.svg)](https://github.com/y0f/gophling/actions/workflows/ci.yml)
@@ -72,7 +72,7 @@ The generator adds a module, migration, SQL queries, OpenAPI operations, tests,
 and route wiring. Reads are public; writes require `notes:write` or an explicit
 role grant. Apply the migration before serving the new routes.
 
-Open the project in your coding agent and try:
+Alternatively, ask your coding agent to perform the same change:
 
 > Add a Note resource. Keep reads public and require notes:write for writes.
 > Test invalid input and denied writes. Regenerate the bindings, then run the
