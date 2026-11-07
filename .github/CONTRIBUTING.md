@@ -3,9 +3,9 @@
 ## Getting started
 
 ```bash
-task setup     # build the pinned toolchain from tools/go.mod into ./bin
-task up        # start Postgres and the service via docker compose
-task test      # unit tests
+go run ./cmd/dev bootstrap
+go run ./cmd/dev doctor
+go run ./cmd/dev check
 ```
 
 The generators are built on the Go release pinned by `toolchain` in
@@ -15,16 +15,16 @@ that built the generator. `task setup` handles it; never run the generators off
 
 ## Before opening a pull request
 
-Run the local gates:
+Run the full local gate when Docker and a C compiler are available:
 
 ```bash
-task ci
+go run ./cmd/dev ci
 ```
 
-That is lint, govulncheck, the generated-code drift gate, unit tests,
-integration tests (requires Docker) and a build. CI also runs the unit tests
-under the race detector (run `task test:race` yourself if you have a C
-toolchain), builds the Docker image and checks the `forge init` presets.
+This includes the fast check, vulnerability scan, race and integration tests,
+generated-project tests, and container checks. CI also runs its platform and
+Go-version matrices, initialized presets, and release-config validation.
+See [testing](../docs/workflows/testing.md) for prerequisites and focused checks.
 
 If you change SQL or the OpenAPI spec, run `task generate` and commit the
 output. CI fails if `internal/gen` is out of date with its sources.
@@ -39,8 +39,8 @@ output. CI fails if `internal/gen` is out of date with its sources.
 - Edit `api/openapi.yaml` and the `*.sql` files, then run `task generate`. Never
   edit anything under `internal/gen`; it is generated and CI fails on drift.
 - Handlers are plain `http.Handler`. Authorization lives in the service layer.
-- Add a test with every change. Repository code is covered by integration tests
-  against a real Postgres; business logic is covered by unit tests.
+- Add tests for changed behavior. Persistence uses real-Postgres integration
+  tests; service rules use unit tests.
 
 Install the git hooks with `pre-commit install` so formatting and linting run
 before each commit. The hooks run the task pinned in `tools/go.mod` through
@@ -56,4 +56,9 @@ it can, and where it must touch a shared file its lines sit between
 keep its markers whole: `go test ./cmd/forge` fails on an unbalanced marker,
 and the `init` CI job runs every preset through lint, build and the test
 suites.
+
+Before changing agent-facing workflows, run the relevant tasks in
+[`evals`](../evals/README.md). Record failed attempts as well as successful ones.
+Review generated projects: their instructions and documentation must reference
+only the components they retain.
 <!-- forge:end init -->
