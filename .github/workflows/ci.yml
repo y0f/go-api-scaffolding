@@ -256,10 +256,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # release.yml only runs on a tag, so a broken .goreleaser.yaml would first
       # surface during a release. Validate it here with the same action and
-      # version range the release itself uses.
+      # pinned version the release itself uses.
       - uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
         with:
-          version: "~> v2"
+          version: v2.20.0
           args: check
 
   vuln:
