@@ -285,6 +285,31 @@ def claude_git_read_rules(workspace):
     return [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
 
 
+def claude_format_read_rules(workspace):
+    """Allow only read-only formatting inspection of existing local modules."""
+    root = workspace.resolve()
+    modules = root / "internal" / "modules"
+    if (not modules.is_dir() or modules.resolve() != modules or
+            (root / "internal").is_symlink() or modules.is_symlink()):
+        return []
+    rules = []
+    for directory in sorted(modules.iterdir()):
+        name = directory.name
+        # Literal package paths only: no globs, shell operators or traversal.
+        if (not name.isascii() or not (name[0].isalpha() or name[0] == "_") or
+                not all(character.isalnum() or character == "_" for character in name) or
+                not directory.is_dir() or directory.is_symlink() or directory.resolve() != directory):
+            continue
+        relative = "internal/modules/" + name
+        for shell in ("Bash", "PowerShell"):
+            paths = [relative, "./" + relative]
+            if shell == "PowerShell":
+                native = relative.replace("/", "\\")
+                paths.extend([native, ".\\" + native])
+            rules.extend(f"{shell}(gofmt -l {path})" for path in paths)
+    return rules
+
+
 def agent_command(agent, executable, model, workspace, writable_caches=(), windows_sandbox=None, scratch=None):
     if agent == "codex":
         command = [executable]
@@ -305,6 +330,7 @@ def agent_command(agent, executable, model, workspace, writable_caches=(), windo
     permissions = [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
     permissions.append(r"PowerShell(.\bin\task.exe *)")
     permissions.extend(claude_git_read_rules(workspace))
+    permissions.extend(claude_format_read_rules(workspace))
     permissions.extend(claude_read_rule(path) for path in read_only_caches(agent, writable_caches))
     return [executable, "--print", "--model", model, "--permission-mode", "acceptEdits",
             "--permission-prompts", "none", "--output-format", "json", "--no-session-persistence",

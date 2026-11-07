@@ -42,7 +42,9 @@ neither the runner nor the agent pushes anything.
 Agent sessions retain normal permission checks. Claude permits edits and the
 documented Go/Task and read-only Git commands through Bash or native PowerShell;
 `git ls-files` can inspect the current workspace, including an explicit `-C`
-that names that exact workspace. Claude receives a path-scoped
+that names that exact workspace. Exact `gofmt -l` commands can inspect safe local
+module directories present when the session starts. These rules grant no `-w`,
+`-r`, extra operands, root-wide paths, or shell pipelines. Claude receives a path-scoped
 [`Read` rule](https://code.claude.com/docs/en/permissions#read-and-edit) for Go's
 module cache, so file reads and searches can inspect dependency sources without
 granting edits there. This changes no saved settings and does not override

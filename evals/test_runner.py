@@ -222,6 +222,57 @@ class EvaluationTests(unittest.TestCase):
         standard = runner.agent_command("codex", "codex", "model", Path("workspace"))
         self.assertFalse(any(argument.startswith("windows.sandbox=") for argument in standard))
 
+    def test_claude_format_inspection_uses_exact_existing_module_paths(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            modules = workspace / "internal/modules"
+            modules.mkdir(parents=True)
+            for name in ("label", "note", "snake_case", "bad;command", "with spaces", "dot.name", "hyphen-name", "é"):
+                (modules / name).mkdir()
+            (modules / "plain_file").write_text("not a module", encoding="utf-8")
+            expected = []
+            for name in ("label", "note", "snake_case"):
+                relative = "internal/modules/" + name
+                for shell in ("Bash", "PowerShell"):
+                    paths = [relative, "./" + relative]
+                    if shell == "PowerShell":
+                        native = relative.replace("/", "\\")
+                        paths.extend([native, ".\\" + native])
+                    expected.extend(f"{shell}(gofmt -l {path})" for path in paths)
+            command = runner.agent_command("claude", "claude", "model", workspace)
+            actual = [rule for rule in command if "gofmt" in rule]
+            self.assertEqual(actual, expected)
+            self.assertIn("PowerShell(gofmt -l internal/modules/label)", actual)
+            for rule in actual:
+                self.assertNotIn("*", rule)
+                self.assertNotIn(" -w", rule)
+                self.assertNotIn(" -r", rule)
+                self.assertNotIn(";", rule)
+            # No root-wide inspection, extra operands, commands or options.
+            for operand in (".", "internal/modules", "../outside", "internal/modules/future",
+                            "internal/modules/label ../outside", "internal/modules/label -w",
+                            "internal/modules/label; git stash", "internal/modules/label | other"):
+                for shell in ("Bash", "PowerShell"):
+                    self.assertNotIn(f"{shell}(gofmt -l {operand})", actual)
+
+    def test_claude_format_inspection_skips_missing_or_linked_directories(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.assertEqual(runner.claude_format_read_rules(root / "missing"), [])
+            outside = root / "outside"
+            (outside / "modules/label").mkdir(parents=True)
+            for linked in ("internal", "internal/modules", "internal/modules/label"):
+                workspace = root / linked.replace("/", "-")
+                link = workspace / linked
+                link.parent.mkdir(parents=True)
+                target = {"internal": outside, "internal/modules": outside / "modules",
+                          "internal/modules/label": outside / "modules/label"}[linked]
+                try:
+                    link.symlink_to(target, target_is_directory=True)
+                except (OSError, NotImplementedError) as error:
+                    self.skipTest(f"directory symlinks unavailable: {error}")
+                self.assertEqual(runner.claude_format_read_rules(workspace), [], linked)
+
     def test_native_sandbox_preflight_is_bounded_and_does_not_call_a_model(self):
         with tempfile.TemporaryDirectory() as temporary:
             workspace = Path(temporary)
