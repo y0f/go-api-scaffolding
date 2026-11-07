@@ -93,6 +93,9 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 	validator := nethttpmiddleware.OapiRequestValidatorWithOptions(swagger, &nethttpmiddleware.Options{
 		Options: openapi3filter.Options{
 			AuthenticationFunc: deps.Authenticator.Authenticate,
+			// Apply omitted-value defaults in handlers. Validator default injection
+			// also replaces explicit null, masking non-nullable schema violations.
+			SkipSettingDefaults: true,
 			// Keep the schema and the offending value out of error messages, so
 			// the problem detail is one line and never echoes the spec back.
 			SchemaValidationOptions: []openapi3.SchemaValidationOption{openapi3.DisableSchemaErrorDetails()},
@@ -110,7 +113,7 @@ func NewRouter(deps RouterDeps) (http.Handler, error) {
 		deps.API = api.Unimplemented{}
 	}
 	// The generated wrapper applies Middlewares last-to-first, so the
-	// single-document check sees the raw body before the validator re-encodes it.
+	// complete-document check runs before schema validation.
 	api.HandlerWithOptions(deps.API, api.ChiServerOptions{
 		BaseRouter:       r,
 		Middlewares:      []api.MiddlewareFunc{validator, SingleJSONDocument},

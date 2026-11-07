@@ -71,6 +71,28 @@ func TestHostHeaderDoesNotCreateMetricSeries(t *testing.T) {
 
 //forge:begin example
 
+func TestDefaultedFieldsRejectExplicitNull(t *testing.T) {
+	router, token := regressionRouter(t, 1<<20)
+	for _, path := range []struct{ method, path string }{
+		{http.MethodPost, "/v1/widgets"},
+		{http.MethodPut, "/v1/widgets/00000000-0000-0000-0000-000000000001"},
+	} {
+		for _, field := range []string{"description", "status"} {
+			t.Run(path.method+"/"+field, func(t *testing.T) {
+				body := fmt.Sprintf(`{"name":"unchanged","%s":null}`, field)
+				req := httptest.NewRequest(path.method, path.path, strings.NewReader(body))
+				req.Header.Set("Content-Type", "application/json")
+				req.Header.Set("Authorization", "Bearer "+token)
+				rec := httptest.NewRecorder()
+				router.ServeHTTP(rec, req)
+				if rec.Code != http.StatusBadRequest {
+					t.Fatalf("explicit null passed validation: status=%d body=%s", rec.Code, rec.Body.String())
+				}
+			})
+		}
+	}
+}
+
 // An oversized chunked body on a secured operation is a 413, not a 401 from
 // the security check that buffers the body.
 func TestChunkedOversizeBodyIs413(t *testing.T) {

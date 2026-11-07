@@ -25,6 +25,12 @@
   generated-project, and container checks.
 - Idempotent write replays recheck current permissions. Shutdown deadlines now
   cancel unfinished HTTP requests. Sensitive parent log groups are redacted.
+- Request validation rejects explicit `null` for non-nullable fields, including
+  fields with defaults. Handlers still apply defaults when a value is omitted.
+  Validation no longer rewrites request bodies to inject defaults. When applying
+  this change to an existing service, retries against idempotency entries hashed
+  from the older normalized body can return 409 until those entries expire;
+  do not blindly retry an existing operation with a new key.
 - `task down` retains the development database; use `task reset` to delete it.
   Development ports bind to loopback by default.
 - Shared agent instructions, worktree guidance, evaluation runners, and a

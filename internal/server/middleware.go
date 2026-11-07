@@ -141,9 +141,8 @@ func CORS(allowed []string, reflectAnyWhenEmpty bool) func(http.Handler) http.Ha
 }
 
 // SingleJSONDocument rejects a JSON request body that is not exactly one JSON
-// document (a second value or trailing bytes after the first). It runs before
-// the OpenAPI validator, which decodes the body and hands the handler a
-// re-encoded copy, so trailing data would otherwise be silently dropped.
+// document (a second value or trailing bytes after the first). It checks the
+// complete body before the OpenAPI validator and handler decode its value.
 func SingleJSONDocument(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ct := strings.ToLower(r.Header.Get("Content-Type"))
