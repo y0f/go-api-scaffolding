@@ -121,7 +121,7 @@ enables development mode and its temporary signing key.
 <!-- forge:begin init -->
 - [Fit and alternatives](docs/choosing.md)
 - [Agent evaluation method](evals/README.md)
-- [Recorded resource workflow](docs/demo.md)
+- [Recorded resource workflow](https://y0f.github.io/gophling/demo.html)
 <!-- forge:end init -->
 - [Contributing](.github/CONTRIBUTING.md)
 
