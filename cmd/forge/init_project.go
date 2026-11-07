@@ -358,6 +358,10 @@ func writeProjectFiles(root string, files map[string]projectFile) error {
 		if err := directory.WriteFile(localPath, file.Data, file.Mode); err != nil {
 			return err
 		}
+		// Preserve source modes in staging and publication despite umask.
+		if err := directory.Chmod(localPath, file.Mode); err != nil {
+			return err
+		}
 	}
 	return nil
 }

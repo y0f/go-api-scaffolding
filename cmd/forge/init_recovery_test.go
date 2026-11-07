@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -239,5 +241,143 @@ func TestRecoveryDirectoriesAreIgnoredButProvenanceIsTracked(t *testing.T) {
 	}
 	if err := exec.Command("git", "-C", dir, "check-ignore", "-q", ".forge.json").Run(); err == nil {
 		t.Fatal("project provenance must remain committable")
+	}
+}
+
+func TestProjectModesSurviveRestrictiveUmask(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX creation permissions and umask do not apply on Windows")
+	}
+	for _, scenario := range []string{"publication", "recovery"} {
+		t.Run(scenario, func(t *testing.T) {
+			root := fixtureRepository(t)
+			for name, file := range projectModeFixtures() {
+				path := filepath.Join(root, filepath.FromSlash(name))
+				if err := os.WriteFile(path, file.Data, 0o600); err != nil {
+					t.Fatal(err)
+				}
+				// Make setup independent of the parent process's own umask.
+				if err := os.Chmod(path, file.Mode); err != nil {
+					t.Fatal(err)
+				}
+			}
+			fixtureGit(t, root, "add", "--all")
+			index := fixtureGit(t, root, "ls-files", "--stage")
+			t.Chdir(root)
+			paths, err := trackedFiles()
+			if err != nil {
+				t.Fatal(err)
+			}
+			before, err := readProjectFiles(root, paths)
+			if err != nil {
+				t.Fatal(err)
+			}
+			// Only the child changes its umask. The test process and any other
+			// tests retain their original creation permissions.
+			child := exec.Command("/bin/sh", "-c", `umask 077; exec "$@"`, "sh", os.Args[0], "-test.run=^TestProjectModeProcessHelper$")
+			child.Env = append(os.Environ(), "FORGE_MODE_FIXTURE="+root, "FORGE_MODE_SCENARIO="+scenario)
+			out, err := child.CombinedOutput()
+			if scenario == "recovery" {
+				var exit *exec.ExitError
+				if !errors.As(err, &exit) || exit.ExitCode() != 23 {
+					t.Fatalf("expected interruption after publication: %v\n%s", err, out)
+				}
+				if err := recoverProject(root); err != nil {
+					t.Fatal(err)
+				}
+				assertProjectModes(t, root, before)
+			} else {
+				if err != nil {
+					t.Fatalf("initialize under restrictive umask: %v\n%s", err, out)
+				}
+				assertProjectModes(t, root, publishedModeFixtures())
+			}
+			if current := fixtureGit(t, root, "ls-files", "--stage"); current != index {
+				t.Error("initialization or recovery changed the original index")
+			}
+			if _, err := os.Stat(filepath.Join(root, recoveryDirectory)); !errors.Is(err, os.ErrNotExist) {
+				t.Errorf("completed operation left an active journal: %v", err)
+			}
+		})
+	}
+}
+
+func TestProjectModeProcessHelper(t *testing.T) {
+	root := os.Getenv("FORGE_MODE_FIXTURE")
+	if root == "" {
+		return
+	}
+	t.Chdir(root)
+	if os.Getenv("FORGE_MODE_SCENARIO") == "publication" {
+		if err := prepareProject("example.com/team/app", nil, func(_ string, _ map[string]bool) error {
+			// Verify actual transformed staging, including a newly named
+			// migration whose publication cannot inherit an existing mode.
+			assertProjectModes(t, ".", publishedModeFixtures())
+			return nil
+		}); err != nil {
+			t.Fatal(err)
+		}
+		return
+	}
+	paths, err := trackedFiles()
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := readProjectFiles(root, paths)
+	if err != nil {
+		t.Fatal(err)
+	}
+	after := make(map[string]projectFile, len(before))
+	for name, file := range before {
+		after[name] = file
+	}
+	after["readable.txt"] = projectFile{Data: []byte("partial initialization"), Mode: 0o600}
+	delete(after, "script.sh")
+	if err := saveProjectRecovery(root, before, after); err != nil {
+		t.Fatal(err)
+	}
+	if err := activateProjectRecovery(root); err != nil {
+		t.Fatal(err)
+	}
+	if err := writeProjectFiles(root, after); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove("script.sh"); err != nil {
+		t.Fatal(err)
+	}
+	// Bypass defers so recovery must use the persisted originals, not memory.
+	os.Exit(23)
+}
+
+func projectModeFixtures() map[string]projectFile {
+	return map[string]projectFile{
+		"readable.txt":               {Data: []byte("shared source\n"), Mode: 0o644},
+		"script.sh":                  {Data: []byte("#!/bin/sh\nexit 0\n"), Mode: 0o755},
+		"migrations/00002_modes.sql": {Data: []byte("-- source migration\n"), Mode: 0o644},
+	}
+}
+
+func publishedModeFixtures() map[string]projectFile {
+	files := projectModeFixtures()
+	files["migrations/00001_modes.sql"] = files["migrations/00002_modes.sql"]
+	delete(files, "migrations/00002_modes.sql")
+	return files
+}
+
+func assertProjectModes(t *testing.T, root string, want map[string]projectFile) {
+	// Compare actual bytes and modes instead of just invoking the writer again.
+	t.Helper()
+	for name, expected := range want {
+		path := filepath.Join(root, filepath.FromSlash(name))
+		data, err := os.ReadFile(path)
+		if err != nil || !bytes.Equal(data, expected.Data) {
+			t.Errorf("%s: bytes = %q, error = %v; want %q", name, data, err, expected.Data)
+		}
+		info, err := os.Stat(path)
+		if err != nil {
+			t.Error(err)
+		} else if info.Mode().Perm() != expected.Mode {
+			t.Errorf("%s: mode = %04o, want %04o", name, info.Mode().Perm(), expected.Mode)
+		}
 	}
 }

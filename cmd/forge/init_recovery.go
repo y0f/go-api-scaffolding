@@ -97,6 +97,10 @@ func persistRecoveryFile(path string, data []byte, mode os.FileMode) (result err
 	if _, err := file.Write(data); err != nil {
 		return err
 	}
+	// Creation applies umask; the journal must retain the original mode.
+	if err := file.Chmod(mode); err != nil {
+		return err
+	}
 	return file.Sync()
 }
 
