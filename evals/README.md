@@ -111,6 +111,14 @@ specific behavior: CRUD and pagination; priority create/update/default/bounds
 and list responses, including a row inserted before the new migration;
 protected count; denied update preserving data; or both resources together.
 
+The field verifier now also rejects explicit `null` on POST and PUT because
+priority's integer schema is nonnullable. After each invalid request it compares
+the complete widget and list responses, including the row count, with the prior
+state. The field prompt states this requirement explicitly. This extends the
+earlier 0/6 range checks. Reports must identify the new prompt and verifier
+hashes and keep runs using the earlier criteria separate; an earlier
+external pass does not prove null rejection.
+
 ## Parallel worktrees
 
 The paired scenario prepares Note and Label on a common initialized baseline,
