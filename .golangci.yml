@@ -2,6 +2,8 @@ version: "2"
 
 run:
   timeout: 5m
+  # Worktrees can verify independent changes at the same time.
+  allow-parallel-runners: true
 
 linters:
   default: standard
