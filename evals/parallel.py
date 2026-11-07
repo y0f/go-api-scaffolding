@@ -77,7 +77,7 @@ def seed_validation(workspace, resource):
     path.write_text(source.replace(needle, f'({needle} && in.Name == "")'), encoding="utf-8", newline="\n")
 
 
-def worker(args, resource, workspace, fixture, caches):
+def worker(args, resource, workspace, fixture, caches, scratch=None):
     started = time.monotonic()
     frozen = runner.protected_files(workspace)
     prompt = (f"Fix the whitespace-only name validation regression in {resource}. "
@@ -86,12 +86,18 @@ def worker(args, resource, workspace, fixture, caches):
               "Do not edit existing tests or any other paths, contracts, migrations, generated bindings, or instructions. "
               "Another worker owns the other broken module; do not repair it or run the whole suite. "
               f"Read AGENTS.md and run go test ./internal/modules/{resource}. Do not commit or push. "
-              "Report the files changed and check outcomes. ") + runner.SHELL_GUIDANCE
+              "Report the files changed and failed, blocked or unrun checks. ") + runner.shell_guidance(scratch)
     (args.output / f"{resource}-prompt.txt").write_text(prompt, encoding="utf-8")
     record = {"resource": resource, "status": "error", "human_interventions": 0,
+              "verification_scope": "trusted coordinator after agent exit",
+              "agent_session_checks": {"status": "unreviewed", "log": f"{resource}-agent.log"},
+              "sandbox_temp": str(scratch) if scratch else None,
               "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()}
+    if scratch is not None:
+        record["permission_profile"] = runner.local_profile(scratch, caches)[0]
+        record["network_allowlist"] = ["localhost", "127.0.0.1"]
     command = runner.agent_command(args.agent, args.executable, args.model, workspace, caches,
-                                   getattr(args, "codex_windows_sandbox", None))
+                                   getattr(args, "codex_windows_sandbox", None), scratch)
     agent = runner.run(command, workspace, args.output / f"{resource}-agent.log", args.timeout, prompt=prompt)
     record["agent"] = agent
     record["reported_usage"] = runner.reported_usage(args.output / f"{resource}-agent.log")
@@ -123,6 +129,7 @@ def scenario(args):
               "agent": args.agent, "model_requested": args.model, "human_interventions": 0,
               "environment": platform.platform(),
               "executor": runner.executor_name(args),
+              "verification_scope": "trusted coordinator after agent exit",
               "runner_sha256": runner.file_digest(runner.HERE / "run.py"),
               "scenario_sha256": runner.file_digest(Path(__file__)),
               "cache": "shared host Go caches; per-worktree tool binaries", "status": "error", "steps": []}
@@ -163,16 +170,23 @@ def scenario(args):
                            fixture, args.verify_timeout)
             shutil.copytree(fixture / "bin", path / "bin")
             workspaces[name] = path
-        preflight = runner.executor_preflight(args, workspaces["coordinator"], args.output / "sandbox-preflight.log")
-        if preflight is not None:
-            record["steps"].append(preflight)
-            if not preflight["ready"]:
-                record["status"] = "preparation_failed"
-                record["error"] = "native Windows sandbox preflight failed; review sandbox-preflight.log before retrying"
-                return record
+        scratches = {name: runner.prepare_scratch(args, args.output, f"{name}-sandbox-temp") for name in RESOURCES}
+        # Every worker gets its own scratch grant; none can write the other's
+        # worktree or temp files. Verify both before starting either model call.
+        probe_names = RESOURCES if any(scratches.values()) else ("coordinator",)
+        for name in probe_names:
+            preflight = runner.executor_preflight(args, workspaces[name], args.output / f"{name}-sandbox-preflight.log",
+                                                  caches, scratches.get(name))
+            if preflight is not None:
+                record["steps"].append(preflight)
+                if not preflight["ready"]:
+                    record["status"] = "preparation_failed"
+                    record["error"] = f"native Windows sandbox preflight failed; review {preflight['log']} before retrying"
+                    return record
         record["preparation_seconds"] = round(time.monotonic() - started, 3)
         phase_start = time.monotonic()
-        jobs = [(name, lambda name=name: worker(args, name, workspaces[name], record["fixture_commit"], caches)) for name in RESOURCES]
+        jobs = [(name, lambda name=name: worker(args, name, workspaces[name], record["fixture_commit"], caches,
+                                               scratches[name])) for name in RESOURCES]
         record["workers"] = run_jobs(jobs, serial=args.serial)
         record["workers_wall_seconds"] = round(time.monotonic() - phase_start, 3)
         if any(result["status"] != "passed" for result in record["workers"]):

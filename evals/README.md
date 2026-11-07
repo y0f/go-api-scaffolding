@@ -56,6 +56,26 @@ the failure is recorded as preparation, with no agent call. Linux behavior is
 unchanged. Keep interrupted or permission-blocked attempts in reports when
 repairing an adapter, and identify the repair before reporting fresh attempts.
 
+For native Windows tests that need localhost and reliable temporary files, opt in:
+
+```sh
+python evals/run.py --agent codex --model MODEL --ref COMMIT --codex-windows-sandbox mxc --codex-windows-local-tests --output ../codex-local-results
+```
+
+Both runners support this option. It selects a per-attempt [permission profile](https://learn.chatgpt.com/docs/permissions)
+extending `:workspace`, enables the managed network proxy with only `localhost`
+and `127.0.0.1` allowed, and grants an owned scratch directory outside the app.
+Each parallel worker gets separate scratch. The prompt supplies a quoted
+PowerShell `TEMP`/`TMP` prefix for Go/Task calls because MXC replaces inherited
+values. Exact guidance is included in the saved prompt and its hash.
+Saved configuration stays unchanged; other runs keep their existing defaults.
+Legacy `sandbox_mode` settings can override named profiles. A bounded non-model
+inspection rejects unexpected write scopes, then a 90-second preflight runs the
+actual Git-fixture, file-replacement, and localhost tests before calling a model.
+Docker access and uncached dependency downloads remain separate requirements.
+For integration tests, a coordinator may provide `FORGE_TEST_DATABASE_URL` for a
+disposable local Postgres instance; never point evaluations at production data.
+
 ## What counts as success
 
 - The agent exits before the time limit and adds tests for feature tasks.
@@ -64,7 +84,7 @@ repairing an adapter, and identify the repair before reporting fresh attempts.
   are allowed; new verification machinery is rejected.
 - The agent neither commits changes nor adds a Git remote. Reported permission
   denials and provider errors fail the attempt even if the CLI exits with zero.
-- The repository's fast check passes.
+- The coordinator's repository fast check passes after the agent exits.
 - The existing and added integration tests pass for feature tasks.
 - The independent HTTP verifier passes against a fresh Postgres database.
 
@@ -73,6 +93,11 @@ starts the compiled application with its own RSA key and checks the served
 contract, persistence, request validation, and allowed/denied token scopes.
 The source is public; this is a reproducibility tool, not an adversarially secure
 benchmark. Review the resulting diff for hardcoded behavior or weakened policy.
+`status: passed` describes this external grading. It does not establish that the
+agent's own checks succeeded. `agent_session_checks` starts as `unreviewed`;
+inspect the agent log and report its checks as passed, failed, blocked, or unrun
+separately. An external pass with agent-side checks blocked is not a complete
+end-to-end session success.
 
 The bootstrap task uses the fast check only. Other tasks also require their
 specific behavior: CRUD and pagination; priority create/update/default/bounds

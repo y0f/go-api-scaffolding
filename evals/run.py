@@ -15,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import xml.etree.ElementTree as ET
 
 
 HERE = Path(__file__).resolve().parent
@@ -157,15 +158,94 @@ def application_snapshot(root):
     return result
 
 
-def agent_command(agent, executable, model, workspace, writable_caches=(), windows_sandbox=None):
+def local_profile(scratch, writable_caches=()):
+    """Use a per-attempt name so unrelated saved profiles cannot add grants."""
+    name = "gophling-eval-" + hashlib.sha256(str(scratch).encode()).hexdigest()[:12]
+    roots = "{" + ",".join(json.dumps(str(path)) + "=true" for path in writable_caches) + "}"
+    settings = [f'default_permissions="{name}"', "features.network_proxy=true",
+                f'permissions.{name}.extends=":workspace"',
+                f"permissions.{name}.workspace_roots={roots}",
+                f'permissions.{name}.filesystem={{{json.dumps(str(scratch))}="write"}}',
+                f"permissions.{name}.network.enabled=true",
+                f"permissions.{name}.network.allow_local_binding=true",
+                f'permissions.{name}.network.domains={{localhost="allow","127.0.0.1"="allow"}}']
+    return name, [argument for setting in settings for argument in ("-c", setting)]
+
+
+def scratch_prefix(scratch):
+    # PowerShell single-quoted literals do not evaluate $() or backticks.
+    literal = "'" + str(scratch).replace("'", "''") + "'"
+    return f"$env:TEMP={literal}; $env:TMP=$env:TEMP; "
+
+
+def shell_guidance(scratch=None):
+    if scratch is None:
+        return SHELL_GUIDANCE
+    return SHELL_GUIDANCE + (
+        "For this Windows MXC run only, prefix each Go or Task command in the same PowerShell call with "
+        f"`{scratch_prefix(scratch)}`. This temp assignment is the only exception to separate commands; "
+        "MXC replaces inherited TEMP/TMP. The runner owns this scratch directory outside the application. "
+        "Only localhost networking is enabled; report unavailable external dependencies or Docker access. ")
+
+
+def prepare_scratch(args, directory, name="sandbox-temp"):
+    if not getattr(args, "codex_windows_local_tests", False):
+        return None
+    scratch = (directory / name).resolve()
+    scratch.mkdir(exist_ok=False)
+    return scratch
+
+
+def check_local_permissions(executable, workspace, caches, scratch):
+    """Fail closed if saved legacy settings override the requested boundary."""
+    _, settings = local_profile(scratch, caches)
+    output = capture([executable, "-c", "windows.sandbox=mxc", *settings, "debug", "prompt-input"],
+                     workspace, timeout=30)
+    messages = json.loads(output)
+    contexts = [item.get("text", "") for message in messages if isinstance(message, dict)
+                for item in message.get("content", []) if isinstance(item, dict)
+                and item.get("text", "").startswith("<environment_context>")]
+    if len(contexts) != 1:
+        raise ValueError("cannot verify the effective Codex workspace boundary; no model call made")
+    try:
+        filesystem = ET.fromstring(contexts[0]).find("filesystem/permission_profile/file_system")
+    except ET.ParseError as error:
+        raise ValueError("cannot parse effective Codex permissions; no model call made") from error
+    if filesystem is None or filesystem.get("type") != "restricted":
+        raise ValueError("Codex resolved unrestricted filesystem permissions; no model call made")
+    canonical = lambda path: os.path.normcase(os.path.realpath(path))
+    allowed = {canonical(path) for path in (workspace, scratch, *caches)}
+    actual = set()
+    for entry in filesystem.findall("entry"):
+        if entry.get("access") != "write":
+            continue
+        if entry.find("special") is not None:
+            if entry.findtext("special") not in (":slash_tmp", ":tmpdir"):
+                raise ValueError("unexpected Codex writable filesystem scope; no model call made")
+        elif entry.find("path") is not None:
+            actual.add(canonical(entry.findtext("path")))
+        else:
+            raise ValueError("unknown Codex writable filesystem rule; no model call made")
+    if actual != allowed:
+        raise ValueError("Codex effective write roots differ from workspace, caches and owned scratch; no model call made")
+    return {"filesystem": "restricted", "write_roots": sorted(actual), "inspection": "no-model prompt-input"}
+
+
+def agent_command(agent, executable, model, workspace, writable_caches=(), windows_sandbox=None, scratch=None):
     if agent == "codex":
         command = [executable]
         if windows_sandbox:
             command.extend(["-c", "windows.sandbox=" + windows_sandbox])
-        command.extend(["exec", "--model", model, "--sandbox", "workspace-write",
-                        "--json", "--ephemeral", "--cd", str(workspace)])
-        for directory in writable_caches:
-            command.extend(["--add-dir", str(directory)])
+        if scratch is not None:
+            if windows_sandbox != "mxc":
+                raise ValueError("local test permissions require the MXC executor")
+            _, settings = local_profile(scratch, writable_caches)
+            command.extend(settings)
+        command.extend(["exec", "--model", model, "--json", "--ephemeral", "--cd", str(workspace)])
+        if scratch is None:
+            command.extend(["--sandbox", "workspace-write"])
+            for directory in writable_caches:
+                command.extend(["--add-dir", str(directory)])
         return command + ["-"]
     commands = ("go *", "./bin/task *", "./bin/task.exe *", "git status *", "git diff *")
     permissions = [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
@@ -179,12 +259,14 @@ def executor_name(args):
     if args.agent == "codex":
         if os.name == "nt":
             implementation = getattr(args, "codex_windows_sandbox", None) or "host-config"
+            if getattr(args, "codex_windows_local_tests", False):
+                return "codex :workspace profile / Windows MXC / localhost and owned temp"
             return "codex workspace-write / Windows " + implementation
         return "codex workspace-write"
     return "claude acceptEdits / named shell permissions"
 
 
-def executor_preflight(args, workspace, log):
+def executor_preflight(args, workspace, log, writable_caches=(), scratch=None):
     """Check native Windows sandbox startup before spending a model call."""
     if args.agent != "codex" or os.name != "nt":
         return None
@@ -193,9 +275,28 @@ def executor_preflight(args, workspace, log):
     if implementation:
         command.extend(["-c", "windows.sandbox=" + implementation])
     marker = "FORGE_EVAL_SANDBOX_READY"
-    command.extend(["sandbox", "--include-managed-config", "--permission-profile", ":workspace",
-                    "-C", str(workspace), "--", "powershell.exe", "-NoProfile", "-Command", "Write-Output '" + marker + "'"])
-    result = run(command, workspace, log, min(args.verify_timeout, 30))
+    profile, script, limit = ":workspace", "Write-Output '" + marker + "'", 30
+    if scratch is not None:
+        try:
+            permissions = check_local_permissions(args.executable, workspace, writable_caches, scratch)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            log.write_text(f"Effective permission inspection failed: {error}\n", encoding="utf-8")
+            return {"ready": False, "exit_code": None, "timeout": isinstance(error, subprocess.TimeoutExpired),
+                    "log": log.name, "error": str(error), "stage": "effective permission inspection"}
+        profile, settings = local_profile(scratch, writable_caches)
+        command.extend(settings)
+        limit = 90
+        # Exercise real Git fixtures, file replacement and localhost shutdown
+        # tests before a model call. No task modules or test outcomes are changed.
+        safety_timeout = min(args.verify_timeout, limit) + 30
+        script = (scratch_prefix(scratch) +
+                  f"go test -count=1 -timeout {safety_timeout}s ./cmd/dev ./cmd/forge ./internal/server; "
+                  f"if ($LASTEXITCODE -ne 0) {{ exit $LASTEXITCODE }}; Write-Output '{marker}'")
+    command.extend(["sandbox", "--include-managed-config", "--permission-profile", profile,
+                    "-C", str(workspace), "--", "powershell.exe", "-NoProfile", "-Command", script])
+    result = run(command, workspace, log, min(args.verify_timeout, limit))
+    if scratch is not None:
+        result["effective_permissions"] = permissions
     result["ready"] = (not result["timeout"] and result["exit_code"] == 0 and
                        marker in log.read_text(encoding="utf-8", errors="replace").splitlines())
     return result
@@ -204,11 +305,15 @@ def executor_preflight(args, workspace, log):
 def add_executor_option(parser):
     parser.add_argument("--codex-windows-sandbox", choices=("mxc", "elevated", "unelevated"),
                         help="Override only this evaluation's native Windows sandbox implementation; keep workspace-write")
+    parser.add_argument("--codex-windows-local-tests", action="store_true",
+                        help="Opt in to an MXC workspace profile with localhost access and an owned temp directory")
 
 
 def validate_executor_option(parser, args):
     if args.codex_windows_sandbox and (args.agent != "codex" or os.name != "nt"):
         parser.error("--codex-windows-sandbox requires Codex on native Windows")
+    if args.codex_windows_local_tests and (args.agent != "codex" or os.name != "nt" or args.codex_windows_sandbox != "mxc"):
+        parser.error("--codex-windows-local-tests requires Codex on native Windows with --codex-windows-sandbox mxc")
 
 
 def reported_usage(log):
@@ -262,12 +367,12 @@ def commit_fixture(workspace):
     return capture(["git", "rev-parse", "HEAD"], workspace)
 
 
-def task_prompt(task):
+def task_prompt(task, scratch=None):
     tests = "Add new tests. " if task.get("id") != "bootstrap" else ""
     return task["prompt"] + "\nUse AGENTS.md. " + tests + ("Do not edit or remove existing tests, migrations, "
             "dependency files, check configuration, pinned tool binaries, or agent instructions. "
             "Do not add verification tooling or configuration. Do not commit or push. "
-            "Run go run ./cmd/dev check and the relevant integration tests. Report any unrun checks. ") + SHELL_GUIDANCE
+            "Run go run ./cmd/dev check and the relevant integration tests. Report failed, blocked and unrun checks. ") + shell_guidance(scratch)
 
 
 def evaluate(args, task, attempt, sha, verifier, version):
@@ -280,9 +385,15 @@ def evaluate(args, task, attempt, sha, verifier, version):
               "executor": executor_name(args),
               "verifier_sha256": hashlib.sha256(verifier.encode()).hexdigest(),
               "runner_sha256": file_digest(HERE / "run.py"),
-              "prompt_sha256": hashlib.sha256(task_prompt(task).encode()).hexdigest(),
+              "verification_scope": "trusted coordinator after agent exit",
+              "agent_session_checks": {"status": "unreviewed", "log": "agent.log"},
               "fixture": "initialized full preset", "cache": "shared host Go caches", "steps": []}
     try:
+        scratch = prepare_scratch(args, directory)
+        record["sandbox_temp"] = str(scratch) if scratch else None
+        prompt = task_prompt(task, scratch)
+        record["prompt_sha256"] = hashlib.sha256(prompt.encode()).hexdigest()
+        (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
         record["go_version"] = capture(["go", "version"], args.source)
         capture(["git", "clone", "--quiet", "--no-hardlinks", str(args.source), str(workspace)],
                 args.source, args.verify_timeout)
@@ -324,11 +435,12 @@ def evaluate(args, task, attempt, sha, verifier, version):
                                                 for name, data in baseline_migrations.items()}
         frozen = protected_files(workspace)
         application_before = application_snapshot(workspace) if task["id"] == "bootstrap" else None
-        prompt = task_prompt(task)
-        (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
         caches = [Path(value).resolve() for value in capture(["go", "env", "GOCACHE", "GOMODCACHE"], workspace).splitlines()]
         record["writable_caches"] = [str(path) for path in caches] if args.agent == "codex" else []
-        preflight = executor_preflight(args, workspace, directory / "sandbox-preflight.log")
+        if scratch is not None:
+            record["permission_profile"] = local_profile(scratch, caches)[0]
+            record["network_allowlist"] = ["localhost", "127.0.0.1"]
+        preflight = executor_preflight(args, workspace, directory / "sandbox-preflight.log", caches, scratch)
         if preflight is not None:
             record["steps"].append(preflight)
             if not preflight["ready"]:
@@ -336,7 +448,7 @@ def evaluate(args, task, attempt, sha, verifier, version):
                 record["error"] = "native Windows sandbox preflight failed; review sandbox-preflight.log before retrying"
                 return record
         argv = agent_command(args.agent, args.executable, args.model, workspace, caches,
-                             getattr(args, "codex_windows_sandbox", None))
+                             getattr(args, "codex_windows_sandbox", None), scratch)
         agent = run(argv, workspace, directory / "agent.log", args.timeout, prompt=prompt)
         record["steps"].append(agent)
         record["reported_usage"] = reported_usage(directory / "agent.log")

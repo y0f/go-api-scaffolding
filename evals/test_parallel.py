@@ -1,10 +1,13 @@
 """Exercise concurrency and worktree ownership without calling a provider."""
 
 from pathlib import Path
+import hashlib
 import subprocess
 import tempfile
 import threading
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 import parallel
 
@@ -56,6 +59,36 @@ class ParallelTests(unittest.TestCase):
             parallel.integrate_changes(root, target, paths)
             self.assertEqual((target / "internal/modules/note/note.go").read_text(), "repaired implementation\n")
             self.assertFalse((target / "internal/modules/note/service_test.go").exists())
+
+    def test_worker_records_exact_scratch_prompt_and_external_grade_scope(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            workspace, scratch = output / "workspace", output / "note-scratch"
+            workspace.mkdir()
+            scratch.mkdir()
+            sha, _ = self.fixture(workspace)
+            args = SimpleNamespace(output=output, agent="codex", executable="fake-client", model="test",
+                                   codex_windows_sandbox="mxc", timeout=1, verify_timeout=1)
+            real_run = parallel.runner.run
+
+            def launch(command, cwd, log, timeout, prompt=None, **kwargs):
+                if command[0] == "git":
+                    return real_run(command, cwd, log, timeout, **kwargs)
+                if command[0] == "fake-client":
+                    self.assertIn(parallel.runner.scratch_prefix(scratch), prompt)
+                    self.assertNotIn("--sandbox", command)
+                    (workspace / "internal/modules/note/regression_test.go").write_text("new test", encoding="utf-8")
+                log.write_text("{}\n", encoding="utf-8")
+                return {"exit_code": 0, "timeout": False, "seconds": 0, "log": log.name}
+
+            with mock.patch.object(parallel.runner, "run", side_effect=launch):
+                result = parallel.worker(args, "note", workspace, sha, (), scratch)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["agent_session_checks"]["status"], "unreviewed")
+            self.assertEqual(result["verification_scope"], "trusted coordinator after agent exit")
+            self.assertEqual(result["sandbox_temp"], str(scratch))
+            prompt = (output / "note-prompt.txt").read_text(encoding="utf-8")
+            self.assertEqual(result["prompt_sha256"], hashlib.sha256(prompt.encode()).hexdigest())
 
     def test_rejects_foreign_staged_files_and_modified_existing_tests(self):
         with tempfile.TemporaryDirectory() as temporary:

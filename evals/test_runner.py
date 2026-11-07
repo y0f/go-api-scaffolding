@@ -1,6 +1,8 @@
 """Tests for evaluation bookkeeping and integrity checks; no model calls."""
 
 import importlib.util
+import argparse
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -132,6 +134,11 @@ class EvaluationTests(unittest.TestCase):
                     result = runner.evaluate(args, {"id": "bootstrap", "prompt": "Bootstrap."}, 1, "source", "", "test-version")
                 self.assertEqual(result["status"], expected, result)
                 self.assertEqual(len(checks), 1 if expected == "passed" else 0)
+                if expected == "passed":
+                    self.assertEqual(result["verification_scope"], "trusted coordinator after agent exit")
+                    self.assertEqual(result["agent_session_checks"]["status"], "unreviewed")
+                    prompt = (args.output / "claude-bootstrap-1/prompt.txt").read_text(encoding="utf-8")
+                    self.assertEqual(result["prompt_sha256"], hashlib.sha256(prompt.encode()).hexdigest())
 
     def test_agent_commands_keep_permissions_enabled(self):
         for agent in ("claude", "codex"):
@@ -176,6 +183,94 @@ class EvaluationTests(unittest.TestCase):
                 self.assertTrue(runner.executor_preflight(args, workspace, log)["ready"])
             with mock.patch.object(runner.os, "name", "posix"), mock.patch.object(runner, "run") as launch:
                 self.assertIsNone(runner.executor_preflight(args, workspace, log))
+                launch.assert_not_called()
+
+    def test_local_test_profile_is_explicit_and_keeps_narrow_grants(self):
+        scratch = Path("owned-scratch")
+        name, settings = runner.local_profile(scratch, [Path("go-cache")])
+        command = runner.agent_command("codex", "codex", "model", Path("workspace"), [Path("go-cache")], "mxc", scratch)
+        self.assertNotIn("--sandbox", command, "legacy flags override named permissions")
+        self.assertIn(f'default_permissions="{name}"', command)
+        self.assertIn(f'permissions.{name}.extends=":workspace"', settings)
+        self.assertIn("features.network_proxy=true", settings)
+        self.assertIn(f'permissions.{name}.network.domains={{localhost="allow","127.0.0.1"="allow"}}', settings)
+        self.assertFalse(any("bypass" in argument or "danger-full-access" in argument for argument in command))
+        self.assertNotEqual(name, runner.local_profile(Path("other-worker-scratch"))[0])
+        with self.assertRaises(ValueError):
+            runner.agent_command("codex", "codex", "model", Path("workspace"), scratch=scratch)
+
+    def test_local_test_option_requires_explicit_native_mxc(self):
+        parser = argparse.ArgumentParser()
+        runner.add_executor_option(parser)
+        for agent, platform, implementation in (("claude", "nt", "mxc"), ("codex", "posix", "mxc"),
+                                                 ("codex", "nt", None), ("codex", "nt", "unelevated")):
+            args = SimpleNamespace(agent=agent, codex_windows_sandbox=implementation, codex_windows_local_tests=True)
+            with mock.patch.object(runner.os, "name", platform), mock.patch.object(parser, "error", side_effect=ValueError):
+                with self.assertRaises(ValueError):
+                    runner.validate_executor_option(parser, args)
+
+    def test_local_test_scratch_and_prompt_remain_outside_application(self):
+        with tempfile.TemporaryDirectory(prefix="eval-'quoted-$()-") as temporary:
+            output = Path(temporary)
+            workspace = output / "workspace"
+            workspace.mkdir()
+            self.assertIsNone(runner.prepare_scratch(SimpleNamespace(), output))
+            scratch = runner.prepare_scratch(SimpleNamespace(codex_windows_local_tests=True), output)
+            self.assertFalse(scratch.is_relative_to(workspace))
+            prompt = runner.task_prompt({"id": "bootstrap", "prompt": "Bootstrap."}, scratch)
+            self.assertIn(str(scratch).replace("'", "''"), prompt)
+            self.assertIn(runner.scratch_prefix(scratch), prompt)
+            self.assertIn("only exception", prompt)
+            self.assertNotEqual(prompt, runner.task_prompt({"id": "bootstrap", "prompt": "Bootstrap."}))
+
+    def test_effective_permission_inspection_rejects_broader_or_unknown_scopes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            parent = Path(temporary)
+            workspace, scratch, cache = (parent / name for name in ("workspace", "scratch", "cache"))
+            entries = "".join(f'<entry access="write"><path>{path}</path></entry>' for path in (workspace, scratch, cache))
+
+            def context(kind="restricted", rules=entries):
+                return json.dumps([{"content": [{"text": '<environment_context><filesystem><permission_profile>'
+                        f'<file_system type="{kind}">{rules}</file_system>'
+                        '</permission_profile></filesystem></environment_context>'}]}])
+
+            with mock.patch.object(runner, "capture", return_value=context()):
+                result = runner.check_local_permissions("codex", workspace, [cache], scratch)
+                self.assertEqual(result["filesystem"], "restricted")
+            for output in (context("unrestricted"), context(rules=entries + '<entry access="write"><special>:root</special></entry>'),
+                           context(rules=entries + f'<entry access="write"><path>{parent}</path></entry>'), "[]"):
+                with mock.patch.object(runner, "capture", return_value=output):
+                    with self.assertRaises(ValueError):
+                        runner.check_local_permissions("codex", workspace, [cache], scratch)
+
+    def test_local_preflight_runs_real_capability_tests_before_model_call(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            scratch = workspace / "scratch"
+            args = SimpleNamespace(agent="codex", executable="codex", codex_windows_sandbox="mxc", verify_timeout=600)
+
+            def probe(command, cwd, output, timeout):
+                self.assertIn("sandbox", command)
+                self.assertNotIn("exec", command)
+                self.assertEqual(timeout, 90)
+                self.assertIn(runner.scratch_prefix(scratch), command[-1])
+                self.assertIn("./cmd/dev ./cmd/forge ./internal/server", command[-1])
+                self.assertIn("-timeout 120s", command[-1])
+                output.write_text("FORGE_EVAL_SANDBOX_READY\n", encoding="utf-8")
+                return {"exit_code": 0, "timeout": False}
+
+            with mock.patch.object(runner.os, "name", "nt"), \
+                    mock.patch.object(runner, "check_local_permissions", return_value={"filesystem": "restricted"}) as inspect, \
+                    mock.patch.object(runner, "run", side_effect=probe):
+                result = runner.executor_preflight(args, workspace, workspace / "probe.log", (), scratch)
+                self.assertTrue(result["ready"])
+                inspect.assert_called_once()
+            with mock.patch.object(runner.os, "name", "nt"), \
+                    mock.patch.object(runner, "check_local_permissions", side_effect=ValueError("unexpected scope")), \
+                    mock.patch.object(runner, "run") as launch:
+                result = runner.executor_preflight(args, workspace, workspace / "blocked.log", (), scratch)
+                self.assertFalse(result["ready"])
+                self.assertEqual(result["stage"], "effective permission inspection")
                 launch.assert_not_called()
 
     def test_bootstrap_snapshot_detects_added_application_code(self):
