@@ -16,6 +16,8 @@ func TestGeneratedCheckIncludesEveryWorkingTreeState(t *testing.T) {
 			t.Chdir(gitFixtureDir(t))
 			git := func(args ...string) {
 				t.Helper()
+				// Tiny owned fixtures need no asynchronous Git maintenance.
+				args = append([]string{"-c", "maintenance.auto=false", "-c", "gc.auto=0"}, args...)
 				if out, err := exec.Command("git", args...).CombinedOutput(); err != nil {
 					t.Fatalf("git %v: %v\n%s", args, err, out)
 				}
@@ -59,23 +61,123 @@ func gitFixtureDir(t *testing.T) string {
 func makeFixtureWritable(directory string) error {
 	root, err := os.OpenRoot(directory)
 	if err != nil {
-		return err
+		return fixtureCleanupError(err)
 	}
 	defer root.Close()
 	return fs.WalkDir(root.FS(), ".", func(name string, entry fs.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-		// WalkDir does not follow links; change only regular files in this root.
-		if !entry.Type().IsRegular() {
-			return nil
-		}
-		info, err := entry.Info()
-		if err != nil {
-			return err
-		}
-		return root.Chmod(name, info.Mode().Perm()|0o600)
+		return makeFixtureEntryWritable(root, name, entry, walkErr)
 	})
+}
+
+func makeFixtureEntryWritable(root *os.Root, name string, entry fs.DirEntry, walkErr error) error {
+	if walkErr != nil {
+		return fixtureCleanupError(walkErr)
+	}
+	// WalkDir does not follow links; change only regular files in this root.
+	if !entry.Type().IsRegular() {
+		return nil
+	}
+	info, err := entry.Info()
+	if err != nil {
+		return fixtureCleanupError(err)
+	}
+	return fixtureCleanupError(root.Chmod(name, info.Mode().Perm()|0o600))
+}
+
+func fixtureCleanupError(err error) error {
+	// Git can remove transient files between enumeration, Info and Chmod.
+	// Absence already satisfies cleanup; permission and confinement errors do not.
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil
+	}
+	return err
+}
+
+type fixtureEntry struct {
+	fs.DirEntry
+	readInfo func() (fs.FileInfo, error)
+}
+
+func (entry fixtureEntry) Info() (fs.FileInfo, error) { return entry.readInfo() }
+
+func TestGitFixtureCleanupToleratesDisappearingFiles(t *testing.T) {
+	for _, stage := range []string{"walk", "info", "chmod"} {
+		t.Run(stage, func(t *testing.T) {
+			directory := gitFixtureDir(t)
+			writeFixture(t, filepath.Join(directory, "maintenance.lock"), "transient")
+			root, err := os.OpenRoot(directory)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer root.Close()
+			entries, err := fs.ReadDir(root.FS(), ".")
+			if err != nil {
+				t.Fatal(err)
+			}
+			entry := entries[0]
+			var walkErr error
+			switch stage {
+			case "walk":
+				walkErr = &fs.PathError{Op: "readdir", Path: entry.Name(), Err: fs.ErrNotExist}
+			case "info":
+				if err := root.Remove(entry.Name()); err != nil {
+					t.Fatal(err)
+				}
+				original := entry
+				// Force a fresh stat: Windows directory entries may cache Info.
+				entry = fixtureEntry{DirEntry: original, readInfo: func() (fs.FileInfo, error) {
+					return root.Stat(original.Name())
+				}}
+			case "chmod":
+				original := entry
+				entry = fixtureEntry{DirEntry: original, readInfo: func() (fs.FileInfo, error) {
+					info, infoErr := original.Info()
+					if infoErr != nil {
+						return nil, infoErr
+					}
+					// Reproduce Git removing its lock after Info, before Chmod.
+					if err := root.Remove(original.Name()); err != nil {
+						t.Fatal(err)
+					}
+					return info, nil
+				}}
+			}
+			if err := makeFixtureEntryWritable(root, entry.Name(), entry, walkErr); err != nil {
+				t.Fatalf("file disappearing during %s must not fail cleanup: %v", stage, err)
+			}
+		})
+	}
+}
+
+func TestGitFixtureCleanupPreservesOtherErrors(t *testing.T) {
+	directory := gitFixtureDir(t)
+	writeFixture(t, filepath.Join(directory, "object"), "owned fixture")
+	root, err := os.OpenRoot(directory)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer root.Close()
+	entries, err := fs.ReadDir(root.FS(), ".")
+	if err != nil {
+		t.Fatal(err)
+	}
+	entry := entries[0]
+	if err := makeFixtureEntryWritable(root, entry.Name(), entry, fs.ErrPermission); !errors.Is(err, fs.ErrPermission) {
+		t.Fatalf("lost directory traversal error: %v", err)
+	}
+	unreadable := fixtureEntry{DirEntry: entry, readInfo: func() (fs.FileInfo, error) { return nil, fs.ErrPermission }}
+	if err := makeFixtureEntryWritable(root, entry.Name(), unreadable, nil); !errors.Is(err, fs.ErrPermission) {
+		t.Fatalf("lost file metadata error: %v", err)
+	}
+	if err := makeFixtureEntryWritable(root, filepath.Join("..", "outside"), entry, nil); err == nil {
+		t.Fatal("cleanup suppressed an attempted root escape")
+	}
+}
+
+func TestGitFixtureCleanupAlreadyRemoved(t *testing.T) {
+	if err := makeFixtureWritable(filepath.Join(t.TempDir(), "already-removed")); err != nil {
+		t.Fatalf("absent fixture needs no cleanup: %v", err)
+	}
 }
 
 func TestGitFixtureCleanupMakesReadOnlyObjectsRemovable(t *testing.T) {
