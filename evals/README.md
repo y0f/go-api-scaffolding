@@ -41,7 +41,14 @@ neither the runner nor the agent pushes anything.
 
 Agent sessions retain normal permission checks. Claude permits edits and the
 documented Go/Task and read-only Git commands through Bash or native PowerShell;
-prompts request individual commands without `cd` or pipelines. Codex uses its workspace sandbox with write access
+`git ls-files` can inspect the current workspace, including an explicit `-C`
+that names that exact workspace. Claude receives a path-scoped
+[`Read` rule](https://code.claude.com/docs/en/permissions#read-and-edit) for Go's
+module cache, so file reads and searches can inspect dependency sources without
+granting edits there. This changes no saved settings and does not override
+managed denials or outside-directory restrictions. The resolved grant is recorded
+as `read_only_caches` and disclosed in the saved prompt. Prompts request individual
+commands without `cd` or pipelines. Codex uses its workspace sandbox with write access
 to Go's build and module cache directories. Dependencies are warmed during
 preparation. Permission denials or unavailable dependencies are unsuccessful
 attempts, not successful skips or evidence of model competence.

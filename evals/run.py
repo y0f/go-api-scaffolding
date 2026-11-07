@@ -7,7 +7,7 @@ from contextlib import nullcontext
 import hashlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import platform
 import shutil
 import signal
@@ -231,6 +231,60 @@ def check_local_permissions(executable, workspace, caches, scratch):
     return {"filesystem": "restricted", "write_roots": sorted(actual), "inspection": "no-model prompt-input"}
 
 
+def read_only_caches(agent, caches):
+    # Both callers collect `go env GOCACHE GOMODCACHE`, in that order. Only the
+    # second directory contains dependency sources Claude needs to inspect.
+    return list(caches[1:2]) if agent == "claude" else []
+
+
+def claude_read_rule(directory):
+    """Anchor a Read rule to one local directory, without adding a worktree."""
+    raw = str(directory)
+    if any(character in raw for character in "*?[]{}!,\n\r"):
+        raise ValueError("module cache path cannot contain permission pattern characters")
+    windows = PureWindowsPath(raw)
+    if windows.drive:
+        if (len(windows.drive) != 2 or windows.drive[1] != ":" or
+                not windows.drive[0].isascii() or not windows.drive[0].isalpha() or
+                not windows.is_absolute() or len(windows.parts) <= 1 or ".." in windows.parts):
+            raise ValueError("module cache must be a local absolute directory below a drive root")
+        normalized = "/" + windows.drive[0].lower() + "/" + "/".join(windows.parts[1:])
+    else:
+        posix = PurePosixPath(raw)
+        if (not posix.is_absolute() or raw.startswith("//") or len(posix.parts) <= 1 or
+                ".." in posix.parts or "\\" in raw):
+            raise ValueError("module cache must be a local absolute directory below the filesystem root")
+        normalized = str(posix)
+    # Claude normalizes C:\\Users to /c/Users, and // anchors at filesystem root.
+    return "Read(/" + normalized + "/**)"
+
+
+def cache_read_guidance(agent, caches):
+    directories = read_only_caches(agent, caches)
+    if not directories:
+        return ""
+    for directory in directories:
+        claude_read_rule(directory)  # Reject ambiguous grants before any model call.
+    return ("Use git ls-files from the current workspace root to inspect tracked files. "
+            "Dependency source reads and searches are allowed in the Go module cache: " +
+            ", ".join(str(directory) for directory in directories) +
+            ". This is a read-only file-tool grant; do not modify cached dependencies. ")
+
+
+def claude_git_read_rules(workspace):
+    """Permit explicit-cwd inspection only when -C names this exact worktree."""
+    resolved = workspace.resolve()
+    commands = []
+    for path in sorted({str(resolved), resolved.as_posix()}):
+        if any(character in path for character in "*?[]{}!,\n\r\"'$`"):
+            raise ValueError("workspace path cannot be represented by a literal Git permission rule")
+        operands = [f'"{path}"', f"'{path}'"]
+        if all(character.isalnum() or character in "/\\:._-" for character in path):
+            operands.append(path)
+        commands.extend(f"git -C {operand} ls-files *" for operand in operands)
+    return [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
+
+
 def agent_command(agent, executable, model, workspace, writable_caches=(), windows_sandbox=None, scratch=None):
     if agent == "codex":
         command = [executable]
@@ -247,9 +301,11 @@ def agent_command(agent, executable, model, workspace, writable_caches=(), windo
             for directory in writable_caches:
                 command.extend(["--add-dir", str(directory)])
         return command + ["-"]
-    commands = ("go *", "./bin/task *", "./bin/task.exe *", "git status *", "git diff *")
+    commands = ("go *", "./bin/task *", "./bin/task.exe *", "git status *", "git diff *", "git ls-files *")
     permissions = [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
     permissions.append(r"PowerShell(.\bin\task.exe *)")
+    permissions.extend(claude_git_read_rules(workspace))
+    permissions.extend(claude_read_rule(path) for path in read_only_caches(agent, writable_caches))
     return [executable, "--print", "--model", model, "--permission-mode", "acceptEdits",
             "--permission-prompts", "none", "--output-format", "json", "--no-session-persistence",
             "--allowedTools", *permissions]
@@ -391,9 +447,6 @@ def evaluate(args, task, attempt, sha, verifier, version):
     try:
         scratch = prepare_scratch(args, directory)
         record["sandbox_temp"] = str(scratch) if scratch else None
-        prompt = task_prompt(task, scratch)
-        record["prompt_sha256"] = hashlib.sha256(prompt.encode()).hexdigest()
-        (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
         record["go_version"] = capture(["go", "version"], args.source)
         capture(["git", "clone", "--quiet", "--no-hardlinks", str(args.source), str(workspace)],
                 args.source, args.verify_timeout)
@@ -437,6 +490,10 @@ def evaluate(args, task, attempt, sha, verifier, version):
         application_before = application_snapshot(workspace) if task["id"] == "bootstrap" else None
         caches = [Path(value).resolve() for value in capture(["go", "env", "GOCACHE", "GOMODCACHE"], workspace).splitlines()]
         record["writable_caches"] = [str(path) for path in caches] if args.agent == "codex" else []
+        record["read_only_caches"] = [str(path) for path in read_only_caches(args.agent, caches)]
+        prompt = task_prompt(task, scratch) + cache_read_guidance(args.agent, caches)
+        record["prompt_sha256"] = hashlib.sha256(prompt.encode()).hexdigest()
+        (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
         if scratch is not None:
             record["permission_profile"] = local_profile(scratch, caches)[0]
             record["network_allowlist"] = ["localhost", "127.0.0.1"]
