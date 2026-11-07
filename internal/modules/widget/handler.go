@@ -17,7 +17,8 @@ import (
 // Handler adapts HTTP to the widget service. It implements the generated
 // api.ServerInterface for the widget operations.
 type Handler struct {
-	service *Service
+	api.Unimplemented // Unrelated resource operations are implemented by the composition root.
+	service           *Service
 	//forge:begin idempotency
 	idempotency *idempotency.Store
 	//forge:end idempotency

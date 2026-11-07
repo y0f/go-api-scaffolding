@@ -15,7 +15,9 @@ servers:
 tags:
   - name: widgets
     description: Example resource demonstrating a full vertical slice.
+# forge:end example
 paths:
+# forge:begin example
   /v1/widgets:
     get:
       tags: [widgets]
@@ -134,7 +136,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   parameters:
-    # forge:begin example
     Limit:
       name: limit
       in: query
@@ -160,6 +161,7 @@ components:
         Number of items to skip. Capped at 10000, because the database still
         reads every skipped row; a larger offset is a 400. Items past
         offset 10000 plus limit cannot be listed, although `total` counts them.
+    # forge:begin example
     WidgetID:
       name: id
       in: path
@@ -225,6 +227,7 @@ components:
             $ref: "#/components/schemas/Widget"
         pagination:
           $ref: "#/components/schemas/Pagination"
+    # forge:end example
     Pagination:
       type: object
       required: [limit, offset, total]
@@ -238,7 +241,6 @@ components:
         total:
           type: integer
           format: int64
-    # forge:end example
     Problem:
       type: object
       description: Problem details as defined by RFC 9457.

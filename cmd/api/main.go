@@ -17,7 +17,6 @@ import (
 	"github.com/y0f/go-api-scaffolding/internal/config"
 	"github.com/y0f/go-api-scaffolding/internal/idempotency"
 	"github.com/y0f/go-api-scaffolding/internal/maintenance"
-	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
 	"github.com/y0f/go-api-scaffolding/internal/observability"
 	"github.com/y0f/go-api-scaffolding/internal/outbox"
 	"github.com/y0f/go-api-scaffolding/internal/platform/database"
@@ -99,12 +98,6 @@ func run() error {
 	//forge:begin idempotency
 	idemStore := idempotency.NewStore(pool, 24*time.Hour)
 	//forge:end idempotency
-	//forge:begin example
-	widgetHandler := widget.NewHandler(widget.NewService(widget.NewRepository(pool)))
-	//forge:begin idempotency
-	widgetHandler.EnableIdempotency(idemStore)
-	//forge:end idempotency
-	//forge:end example
 
 	//forge:begin workers
 	// Background workers run under a context we can cancel independently of the
@@ -164,9 +157,11 @@ func run() error {
 		Telemetry:     telemetry,
 		Health:        health,
 		Authenticator: authenticator,
-		//forge:begin example
-		API: widgetHandler,
-		//forge:end example
+		API: newApplicationAPI(pool,
+			//forge:begin idempotency
+			idemStore,
+			//forge:end idempotency
+		),
 		Config: server.RouterConfig{
 			TrustedProxies:     cfg.HTTP.TrustedProxies,
 			CORSAllowedOrigins: cfg.HTTP.CORSAllowedOrigins,

@@ -1,0 +1,129 @@
+//go:build integration
+
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"log/slog"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	{{if .Idempotency}}
+	"time"
+	{{end}}
+	"github.com/golang-jwt/jwt/v5"
+
+	"{{.Module}}/internal/auth"
+	{{if .Idempotency}}
+	"{{.Module}}/internal/idempotency"
+	{{end}}
+	"{{.Module}}/internal/observability"
+	"{{.Module}}/internal/server"
+	"{{.Module}}/internal/testutil"
+)
+
+type journeyVerifier struct{}
+
+func (journeyVerifier) Verify(_ context.Context, token string) (*auth.Claims, error) {
+	claims := &auth.Claims{RegisteredClaims: jwt.RegisteredClaims{Subject: "journey"}, Roles: []string{"admin"}}
+	if token == "allowed" {
+		claims.Scope = "orders:write categories:write"
+	}
+	return claims, nil
+}
+
+func TestGeneratedResourceJourney(t *testing.T) {
+	pool := testutil.NewDB(t)
+	telemetry, err := observability.Setup(context.Background(), observability.TelemetryConfig{ServiceName: "journey"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = telemetry.Shutdown(context.Background()) })
+	app := newApplicationAPI(pool {{if .Idempotency}}, idempotency.NewStore(pool, time.Hour){{end}})
+	router, err := server.NewRouter(server.RouterDeps{
+		Logger: slog.New(slog.DiscardHandler), Telemetry: telemetry, Health: server.NewHealth(pool),
+		Authenticator: auth.NewAuthenticator(journeyVerifier{}), API: app,
+		Config: server.RouterConfig{RateLimitPerSecond: 1000, RateLimitBurst: 1000, MaxBodyBytes: 1 << 20},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	send := func(method, path, token, body, key string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest(method, path, strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+		if token != "" {
+			req.Header.Set("Authorization", "Bearer "+token)
+		}
+		if key != "" {
+			req.Header.Set("Idempotency-Key", key)
+		}
+		rec := httptest.NewRecorder()
+		router.ServeHTTP(rec, req)
+		return rec
+	}
+	check := func(rec *httptest.ResponseRecorder, code int) {
+		t.Helper()
+		if rec.Code != code {
+			t.Fatalf("status %d want %d: %s", rec.Code, code, rec.Body.String())
+		}
+	}
+	spec := send("GET", "/openapi.yaml", "", "", "")
+	check(spec, 200)
+	for _, resource := range []string{"orders", "categories"} {
+		t.Run(resource, func(t *testing.T) {
+			path := "/v1/" + resource
+			if !strings.Contains(spec.Body.String(), path+":") {
+				t.Fatalf("%s absent from served contract", path)
+			}
+			check(send("POST", path, "", `{"name":"first"}`, ""), 401)
+			check(send("POST", path, "denied", `{"name":"first"}`, ""), 403)
+			check(send("POST", path, "allowed", `{}`, ""), 400)
+			check(send("POST", path, "allowed", `{"name":"`+strings.Repeat("a", 201)+`"}`, ""), 400)
+			check(send("POST", path, "allowed", `{"name":"first"} {}`, ""), 400)
+			check(send("GET", path+"?offset=2147483648", "", "", ""), 400)
+			check(send("GET", path+"?limit=101", "", "", ""), 400)
+			check(send("GET", path+"/invalid", "", "", ""), 400)
+			created := send("POST", path, "allowed", `{"name":"first"}`, "")
+			check(created, 201)
+			location := created.Header().Get("Location")
+			if !strings.HasPrefix(location, path+"/") {
+				t.Fatalf("Location=%q", location)
+			}
+			check(send("GET", location, "", "", ""), 200)
+			updated := send("PUT", location, "allowed", `{"name":"updated"}`, "")
+			check(updated, 200)
+			if !strings.Contains(updated.Body.String(), `"name":"updated"`) {
+				t.Fatal(updated.Body.String())
+			}
+			check(send("PUT", location, "denied", `{"name":"forbidden"}`, ""), 403)
+			listed := send("GET", path+"?limit=1&offset=0", "", "", "")
+			check(listed, 200)
+			var page struct {
+				Items      []json.RawMessage `json:"items"`
+				Pagination struct {
+					Limit, Offset int
+					Total         int64
+				} `json:"pagination"`
+			}
+			if err := json.Unmarshal(listed.Body.Bytes(), &page); err != nil {
+				t.Fatal(err)
+			}
+			if len(page.Items) != 1 || page.Pagination.Total != 1 || page.Pagination.Limit != 1 {
+				t.Fatalf("unexpected page: %s", listed.Body.String())
+			}
+			{{if .Idempotency}} first := send("POST", path, "allowed", `{"name":"retry"}`, resource+"-retry")
+			replay := send("POST", path, "allowed", `{"name":"retry"}`, resource+"-retry")
+			check(first, 201)
+			check(replay, 201)
+			if first.Body.String() != replay.Body.String() || replay.Header().Get("Idempotency-Replayed") != "true" || first.Header().Get("Location") != replay.Header().Get("Location") {
+				t.Fatal("idempotency response changed")
+			}
+			check(send("POST", path, "denied", `{"name":"retry"}`, resource+"-retry"), 403)
+			check(send("POST", path, "allowed", `{"name":"different"}`, resource+"-retry"), 409)
+			{{end}} check(send("DELETE", location, "denied", "", ""), 403)
+			check(send("DELETE", location, "allowed", "", ""), 204)
+			check(send("GET", location, "", "", ""), 404)
+		})
+	}
+}

@@ -1,0 +1,94 @@
+  /v1/{{.Table}}:
+    get:
+      tags: [{{.Table}}]
+      summary: List {{.Table}}
+      operationId: list{{.Plural}}
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: A page of {{.Table}}.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{.Pascal}}List"
+        default:
+          $ref: "#/components/responses/Problem"
+    post:
+      tags: [{{.Table}}]
+      summary: Create a {{.Snake}}
+      operationId: create{{.Pascal}}
+      description: Requires the {{.Table}}:write permission.{{if .Idempotency}} An Idempotency-Key header makes retries replay the stored response; a different body with the same key returns 409.{{end}}
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/{{.Pascal}}Input"
+      responses:
+        "201":
+          description: The created {{.Snake}}.
+          headers:
+            Location:
+              schema: { type: string }
+{{if .Idempotency}}            Idempotency-Replayed:
+              schema: { type: string, enum: ["true"] }
+{{end}}          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{.Pascal}}"
+        default:
+          $ref: "#/components/responses/Problem"
+  /v1/{{.Table}}/{id}:
+    parameters:
+      - $ref: "#/components/parameters/{{.Pascal}}ID"
+    get:
+      tags: [{{.Table}}]
+      summary: Get a {{.Snake}}
+      operationId: get{{.Pascal}}
+      responses:
+        "200":
+          description: The requested {{.Snake}}.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{.Pascal}}"
+        default:
+          $ref: "#/components/responses/Problem"
+    put:
+      tags: [{{.Table}}]
+      summary: Replace a {{.Snake}}
+      operationId: update{{.Pascal}}
+      description: Requires the {{.Table}}:write permission.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/{{.Pascal}}Input"
+      responses:
+        "200":
+          description: The updated {{.Snake}}.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/{{.Pascal}}"
+        default:
+          $ref: "#/components/responses/Problem"
+    delete:
+      tags: [{{.Table}}]
+      summary: Delete a {{.Snake}}
+      operationId: delete{{.Pascal}}
+      description: Requires the {{.Table}}:write permission.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: The {{.Snake}} was deleted.
+        default:
+          $ref: "#/components/responses/Problem"

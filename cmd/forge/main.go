@@ -2,12 +2,9 @@
 // a vertical slice (SQL, store, service, handler, test, migration), so a service
 // keeps evolving with one command instead of hand-copying boilerplate.
 //
-// The generated module is secure by default but self-contained rather than
-// spec-first: writes are authenticated with auth.Middleware and authorized
-// against a per-resource permission, reads are public, and errors render as
-// problem+json. Routing is plain chi instead of the generated OpenAPI server
-// interface; make it spec-first by adding the paths to api/openapi.yaml and
-// implementing that interface.
+// New resources follow the same OpenAPI contract, validation and typed handler
+// workflow as the example. Writes require explicit per-resource permissions.
+// SQL, migrations, contract operations and composition are added together.
 //
 // Usage:
 //
@@ -15,20 +12,18 @@
 //	forge init                  # set up this clone: pick a module path and the slices to keep
 //	forge add resource <Name>
 //
-// After generating, run `task generate` and mount the resource's handler.
+// After adding a resource, run `task generate` and apply its migration.
 package main
 
 import (
-	"bytes"
 	"embed"
 	"errors"
+	"flag"
 	"fmt"
-	"go/format"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"text/template"
 	"unicode"
 )
 
@@ -40,10 +35,11 @@ var templateFS embed.FS
 // forge binary built elsewhere still writes the project's own import paths.
 const moduleName = "github.com/y0f/go-api-scaffolding"
 
-var usage = "usage: forge add resource <Name>"
+var usage = "usage: forge add resource <Name> [-dry-run]"
 
 type resource struct {
 	Pascal string
+	Plural string
 	Camel  string
 	Snake  string
 	Table  string
@@ -80,92 +76,18 @@ func run(args []string) error {
 		return fmt.Errorf("invalid resource name %q", args[2])
 	}
 
-	version, err := nextMigrationVersion("migrations")
-	if err != nil {
+	flags := flag.NewFlagSet("forge add resource", flag.ContinueOnError)
+	dryRun := flags.Bool("dry-run", false, "validate and list changes without writing files")
+	if err := flags.Parse(args[3:]); err != nil {
 		return err
 	}
-	moduleDir := filepath.Join("internal", "modules", res.Snake)
-
-	targets := []struct {
-		tmpl string
-		path string
-	}{
-		{"domain.go.tmpl", filepath.Join(moduleDir, res.Snake+".go")},
-		{"store.go.tmpl", filepath.Join(moduleDir, "store.go")},
-		{"service.go.tmpl", filepath.Join(moduleDir, "service.go")},
-		{"handler.go.tmpl", filepath.Join(moduleDir, "handler.go")},
-		{"service_test.go.tmpl", filepath.Join(moduleDir, "service_test.go")},
-		{"queries.sql.tmpl", filepath.Join(moduleDir, "queries.sql")},
-		{"migration.sql.tmpl", filepath.Join("migrations", version+"_create_"+res.Table+".sql")},
+	if flags.NArg() != 0 {
+		return errors.New(usage)
 	}
-	if res.Idempotency {
-		targets = append(targets,
-			struct{ tmpl, path string }{"idempotent.go.tmpl", filepath.Join(moduleDir, "idempotent.go")},
-			struct{ tmpl, path string }{"idempotent_test.go.tmpl", filepath.Join(moduleDir, "idempotent_test.go")},
-		)
-	}
-
-	for _, t := range targets {
-		if err := renderFile(t.tmpl, t.path, res); err != nil {
-			return err
-		}
-		fmt.Println("created", t.path)
-	}
-	if err := registerQueries(filepath.ToSlash(filepath.Join(moduleDir, "queries.sql"))); err != nil {
-		return err
-	}
-	if err := registerModel(res.Table, res.Pascal); err != nil {
-		return err
-	}
-	fmt.Println("registered the queries file and model name in sqlc.yaml")
-
-	printNextSteps(res)
-	return nil
+	return addResource(res, *dryRun)
 }
 
 const sqlcConfig = "sqlc.yaml"
-
-// registerQueries appends path to the queries list in sqlc.yaml, so a new module
-// is picked up by `task generate` without a manual edit.
-func registerQueries(path string) error {
-	src, err := os.ReadFile(sqlcConfig)
-	if err != nil {
-		return err
-	}
-	if strings.Contains(string(src), "- "+path) {
-		return nil
-	}
-	const key = "    queries:\n"
-	i := strings.Index(string(src), key)
-	if i < 0 {
-		return fmt.Errorf("%s: no queries list found", sqlcConfig)
-	}
-	at := i + len(key)
-	out := string(src[:at]) + "      - " + path + "\n" + string(src[at:])
-	return os.WriteFile(sqlcConfig, []byte(out), 0o600) //#nosec G703 -- constant path; the inserted line comes from the validated resource name
-}
-
-// registerModel pins the name sqlc gives the table's model struct to pascal.
-// sqlc otherwise singularizes the table name with its own inflection rules,
-// which disagree with pluralize for nouns such as quiz, analysis and news, and
-// the templates reference db.<Pascal>. Excluding the table from inflection
-// makes the rename key the table name itself, so no inflection is involved.
-func registerModel(table, pascal string) error {
-	src, err := os.ReadFile(sqlcConfig)
-	if err != nil {
-		return err
-	}
-	out := string(src)
-	for _, opt := range []struct{ key, entry string }{
-		{"inflection_exclude_table_names", "- " + table},
-		{"rename", table + ": " + pascal},
-	} {
-		if out, err = addGoOption(out, opt.key, opt.entry); err != nil {
-			return err
-		}
-	}
-	return os.WriteFile(sqlcConfig, []byte(out), 0o600) //#nosec G703 -- constant path; the inserted lines come from the validated resource name
-}
 
 // addGoOption adds entry under key in the gen.go block of sqlc.yaml, creating
 // the key when it is missing. An entry already present is left alone.
@@ -198,6 +120,7 @@ func nextMigrationVersion(dir string) (string, error) {
 		return "", fmt.Errorf("read %s: %w", dir, err)
 	}
 	highest := 0
+	versions := map[int]string{}
 	for _, e := range entries {
 		name := e.Name()
 		if !strings.HasSuffix(name, ".sql") {
@@ -211,6 +134,10 @@ func nextMigrationVersion(dir string) (string, error) {
 		if err != nil {
 			continue
 		}
+		if previous, ok := versions[n]; ok {
+			return "", fmt.Errorf("duplicate migration version %d: %s and %s; renumber the unapplied migration before generating", n, previous, name)
+		}
+		versions[n] = name
 		if n > highest {
 			highest = n
 		}
@@ -218,52 +145,16 @@ func nextMigrationVersion(dir string) (string, error) {
 	return fmt.Sprintf("%05d", highest+1), nil
 }
 
-func renderFile(tmplName, outPath string, res resource) error {
-	if _, err := os.Stat(outPath); err == nil {
-		return fmt.Errorf("%s already exists, refusing to overwrite", outPath)
-	}
-	tmpl, err := template.ParseFS(templateFS, "templates/"+tmplName)
-	if err != nil {
-		return fmt.Errorf("parse template %s: %w", tmplName, err)
-	}
-	var buf bytes.Buffer
-	if err := tmpl.Execute(&buf, res); err != nil {
-		return fmt.Errorf("render %s: %w", tmplName, err)
-	}
-	out := buf.Bytes()
-	if strings.HasSuffix(outPath, ".go") {
-		// Canonical formatting regardless of template whitespace, so a forged
-		// module passes gofumpt untouched.
-		if out, err = format.Source(out); err != nil {
-			return fmt.Errorf("format %s: %w", outPath, err)
-		}
-	}
-	if err := os.MkdirAll(filepath.Dir(outPath), 0o750); err != nil {
-		return err
-	}
-	return os.WriteFile(outPath, out, 0o600)
-}
-
 func printNextSteps(res resource) {
-	enable := ""
-	if res.Idempotency {
-		enable = fmt.Sprintf("\n       %sHandler.EnableIdempotency(idemStore)", res.Camel)
-	}
 	fmt.Printf(`
+Registered /v1/%s in api/openapi.yaml and cmd/api/resources.go.
 Next steps:
-  1. Regenerate type-safe code:
-       task generate
-  2. Build the handler in cmd/api/main.go, before server.NewRouter:
-       %[1]sHandler := %[2]s.NewHandler(%[2]s.NewService(%[2]s.NewRepository(pool)), verifier)%[3]s
-     then append %[1]sHandler.Mount to the Mounts slice in server.RouterDeps.
-     For the first resource, add the field:
-       Mounts: []func(chi.Router){%[1]sHandler.Mount},
-     with imports "github.com/go-chi/chi/v5" and "%[4]s/internal/modules/%[2]s".
-  3. Grant write access in internal/auth/principal.go (rolePermissions) by adding
-     %[5]q to the roles that may write, or issue tokens carrying it as a scope.
-  4. Apply the new migration (task up does this too):
-       task migrate
-`, res.Camel, res.Snake, enable, res.Module, res.Table+":write")
+  1. go run ./cmd/dev generate
+  2. Grant %q to the roles that may write in internal/auth/principal.go,
+     or issue a token carrying that scope. Writes remain denied otherwise.
+  3. go run ./cmd/migrate up
+  4. go run ./cmd/dev check
+`, res.Table, res.Table+":write")
 }
 
 // projectModule returns the module path declared in ./go.mod, falling back to
@@ -293,11 +184,12 @@ func newResource(name string) resource {
 	snake := strings.Join(words, "_")
 	pascal := toPascal(words)
 	camel := ""
-	if pascal != "" {
-		camel = strings.ToLower(pascal[:1]) + pascal[1:]
+	if len(words) != 0 {
+		camel = words[0] + toPascal(words[1:])
 	}
 	return resource{
 		Pascal:      pascal,
+		Plural:      toPascal(splitWords(pluralize(snake))),
 		Camel:       camel,
 		Snake:       snake,
 		Table:       pluralize(snake),
@@ -308,7 +200,7 @@ func newResource(name string) resource {
 }
 
 // splitWords breaks snake_case, kebab-case, camelCase, and PascalCase into
-// lowercase words. Runs of capitals (such as ID) are not specially handled.
+// lowercase words, preserving the boundary between acronyms and later words.
 func splitWords(s string) []string {
 	var words []string
 	var cur []rune
@@ -350,11 +242,24 @@ func toPascal(words []string) string {
 		if w == "" {
 			continue
 		}
-		runes := []rune(w)
-		runes[0] = unicode.ToUpper(runes[0])
-		b.WriteString(string(runes))
+		upper := strings.ToUpper(w)
+		switch {
+		case isInitialism(upper):
+			b.WriteString(upper)
+		case strings.HasSuffix(w, "s") && isInitialism(strings.TrimSuffix(upper, "S")):
+			b.WriteString(strings.TrimSuffix(upper, "S") + "s")
+		default:
+			runes := []rune(w)
+			runes[0] = unicode.ToUpper(runes[0])
+			b.WriteString(string(runes))
+		}
 	}
 	return b.String()
+}
+
+func isInitialism(word string) bool {
+	const words = " ACL API ASCII CPU CSS DNS EOF GUID HTML HTTP HTTPS ID IP JSON QPS RAM RPC SLA SMTP SQL SSH TCP TLS TTL UDP UI UID UUID URI URL UTF8 VM XML XMPP XSRF XSS "
+	return strings.Contains(words, " "+word+" ")
 }
 
 // pluralize covers the regular English forms; rename the table by hand for an
