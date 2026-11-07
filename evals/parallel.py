@@ -87,11 +87,13 @@ def worker(args, resource, workspace, fixture, caches, scratch=None):
               "Another worker owns the other broken module; do not repair it or run the whole suite. "
               f"Read AGENTS.md and run go test ./internal/modules/{resource}. Do not commit or push. "
               "Report the files changed and failed, blocked or unrun checks. ") + runner.shell_guidance(scratch)
+    prompt += runner.cache_read_guidance(args.agent, caches)
     (args.output / f"{resource}-prompt.txt").write_text(prompt, encoding="utf-8")
     record = {"resource": resource, "status": "error", "human_interventions": 0,
               "verification_scope": "trusted coordinator after agent exit",
               "agent_session_checks": {"status": "unreviewed", "log": f"{resource}-agent.log"},
               "sandbox_temp": str(scratch) if scratch else None,
+              "read_only_caches": [str(path) for path in runner.read_only_caches(args.agent, caches)],
               "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()}
     if scratch is not None:
         record["permission_profile"] = runner.local_profile(scratch, caches)[0]
@@ -163,6 +165,7 @@ def scenario(args):
         record["fixture_tree"] = runner.capture(["git", "rev-parse", "HEAD^{tree}"], fixture)
         caches = [Path(value).resolve() for value in runner.capture(["go", "env", "GOCACHE", "GOMODCACHE"], fixture).splitlines()]
         record["writable_caches"] = [str(path) for path in caches] if args.agent == "codex" else []
+        record["read_only_caches"] = [str(path) for path in runner.read_only_caches(args.agent, caches)]
         workspaces = {}
         for name in (*RESOURCES, "coordinator"):
             path = args.output / name
