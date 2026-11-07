@@ -245,6 +245,10 @@ jobs:
       # docker-compose.yml is only ever run by hand through `task up`, so a
       # broken service definition or interpolation would go unnoticed here.
       - run: docker compose -f deployments/docker-compose.yml config --quiet
+      # forge:begin otlp
+      # Architecture-specific tags can pull on CI while breaking ARM developers.
+      - run: python .github/scripts/check_image_platforms.py deployments/docker-compose.yml otel-collector
+      # forge:end otlp
       # config never resolves image references, so an image bump to a tag that
       # does not exist would still reach main and only fail at `task up`.
       - run: docker compose -f deployments/docker-compose.yml pull --quiet

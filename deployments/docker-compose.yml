@@ -57,7 +57,7 @@ services:
 
   # forge:begin otlp
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.164.0-386
+    image: otel/opentelemetry-collector-contrib:0.164.0
     profiles: ["observability"]
     command: ["--config=/etc/otel-collector-config.yaml"]
     volumes:
