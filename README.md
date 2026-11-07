@@ -4,7 +4,12 @@
 <img src="docs/assets/gophling.png" alt="gophling mascot" width="128" height="128" align="right">
 
 Go REST API scaffold for parallel coding agents, with PostgreSQL,
-OpenAPI, sqlc, and reproducible checks. Each resource is an ordinary Go package.
+OpenAPI, sqlc, and reproducible checks.
+
+Agents work in separate resource packages and Git worktrees, keeping most edits
+local. One coordinator integrates shared contracts, migrations, and route wiring.
+Pinned generators, focused tests, and a shared fast check make the changes easier
+to combine and review.
 
 [![CI](https://github.com/y0f/gophling/actions/workflows/ci.yml/badge.svg)](https://github.com/y0f/gophling/actions/workflows/ci.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
