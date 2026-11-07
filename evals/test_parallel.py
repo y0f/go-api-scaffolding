@@ -90,6 +90,35 @@ class ParallelTests(unittest.TestCase):
             prompt = (output / "note-prompt.txt").read_text(encoding="utf-8")
             self.assertEqual(result["prompt_sha256"], hashlib.sha256(prompt.encode()).hexdigest())
 
+    def test_claude_worker_records_read_only_cache_and_exact_prompt(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary)
+            workspace = output / "workspace"
+            workspace.mkdir()
+            sha, _ = self.fixture(workspace)
+            caches = [output / "build-cache", output / "modules"]
+            args = SimpleNamespace(output=output, agent="claude", executable="fake-client", model="test",
+                                   timeout=1, verify_timeout=1)
+            real_run = parallel.runner.run
+
+            def launch(command, cwd, log, timeout, prompt=None, **kwargs):
+                if command[0] == "git":
+                    return real_run(command, cwd, log, timeout, **kwargs)
+                if command[0] == "fake-client":
+                    self.assertIn(parallel.runner.claude_read_rule(caches[1]), command)
+                    self.assertNotIn("--add-dir", command)
+                    self.assertIn(str(caches[1]), prompt)
+                    (workspace / "internal/modules/note/regression_test.go").write_text("new test", encoding="utf-8")
+                log.write_text("{}\n", encoding="utf-8")
+                return {"exit_code": 0, "timeout": False, "seconds": 0, "log": log.name}
+
+            with mock.patch.object(parallel.runner, "run", side_effect=launch):
+                result = parallel.worker(args, "note", workspace, sha, caches)
+            self.assertEqual(result["status"], "passed")
+            self.assertEqual(result["read_only_caches"], [str(caches[1])])
+            prompt = (output / "note-prompt.txt").read_text(encoding="utf-8")
+            self.assertEqual(result["prompt_sha256"], hashlib.sha256(prompt.encode()).hexdigest())
+
     def test_rejects_foreign_staged_files_and_modified_existing_tests(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

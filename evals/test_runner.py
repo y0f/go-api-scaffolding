@@ -119,6 +119,8 @@ class EvaluationTests(unittest.TestCase):
                         (cwd / "bin").mkdir()
                         (cwd / "bin/task").write_text("trusted executable", encoding="utf-8")
                     if argv[0] == "test-client":
+                        self.assertIn(runner.claude_read_rule((root / "modules").resolve()), argv)
+                        self.assertIn(str((root / "modules").resolve()), prompt)
                         if outcome == "permission":
                             event = {"permission_denials": [{"tool_name": "Bash"}]}
                         if outcome == "provider_error":
@@ -133,6 +135,8 @@ class EvaluationTests(unittest.TestCase):
                         mock.patch.object(runner, "commit_fixture", return_value="fixture"):
                     result = runner.evaluate(args, {"id": "bootstrap", "prompt": "Bootstrap."}, 1, "source", "", "test-version")
                 self.assertEqual(result["status"], expected, result)
+                self.assertEqual(result["writable_caches"], [])
+                self.assertEqual(result["read_only_caches"], [str((root / "modules").resolve())])
                 self.assertEqual(len(checks), 1 if expected == "passed" else 0)
                 if expected == "passed":
                     self.assertEqual(result["verification_scope"], "trusted coordinator after agent exit")
@@ -146,6 +150,35 @@ class EvaluationTests(unittest.TestCase):
             self.assertIn("explicit-model", command)
             self.assertFalse(any("bypass" in argument for argument in command))
 
+    def test_claude_read_rule_anchors_local_paths_without_wildcard_expansion(self):
+        for directory, rule in (
+                (r"C:\Users\A Person\go\pkg\mod", "Read(//c/Users/A Person/go/pkg/mod/**)"),
+                ("D:/go/pkg/mod/", "Read(//d/go/pkg/mod/**)"),
+                ("/home/person/go/pkg/mod", "Read(//home/person/go/pkg/mod/**)")):
+            with self.subTest(directory=directory):
+                self.assertEqual(runner.claude_read_rule(directory), rule)
+        for directory in ("relative/cache", "/", "C:/", "C:relative", r"\server\share",
+                          r"\\server\share\mod", r"\\?\C:\mod", "/tmp/../mod",
+                          "/tmp/cache*", "/tmp/cache?", "/tmp/cache[1]", "/tmp/cache,other",
+                          "/tmp/cache\nother", "//server/share"):
+            with self.subTest(directory=directory), self.assertRaises(ValueError):
+                runner.claude_read_rule(directory)
+
+    def test_claude_cache_access_only_allows_dependency_source_reads(self):
+        caches = ["/cache/build", "/cache/modules"]
+        command = runner.agent_command("claude", "claude", "model", Path("workspace"), caches)
+        self.assertIn("Read(//cache/modules/**)", command)
+        self.assertNotIn("Read(//cache/build/**)", command)
+        self.assertNotIn("--add-dir", command)
+        self.assertFalse(any(argument.startswith("Edit(") for argument in command))
+        for broad in ("Read", "Read(*)", "Grep", "Glob"):
+            self.assertNotIn(broad, command)
+        codex = runner.agent_command("codex", "codex", "model", Path("workspace"), caches)
+        self.assertEqual(codex, ["codex", "exec", "--model", "model", "--json", "--ephemeral",
+                                 "--cd", "workspace", "--sandbox", "workspace-write",
+                                 "--add-dir", "/cache/build", "--add-dir", "/cache/modules", "-"])
+        self.assertEqual(runner.cache_read_guidance("codex", caches), "")
+
     def test_claude_allows_named_native_powershell_commands(self):
         command = runner.agent_command("claude", "claude", "model", Path("workspace"))
         for rule in ("PowerShell(go *)", "PowerShell(./bin/task.exe *)", r"PowerShell(.\bin\task.exe *)",
@@ -155,6 +188,32 @@ class EvaluationTests(unittest.TestCase):
         self.assertNotIn("PowerShell(*)", command)
         self.assertIn("--permission-prompts", command)
         self.assertIn("none", command)
+
+    def test_claude_git_inspection_is_bound_to_exact_workspace(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary) / "workspace with spaces"
+            workspace.mkdir()
+            command = runner.agent_command("claude", "claude", "model", workspace)
+            forms = {str(workspace.resolve()), workspace.resolve().as_posix()}
+            for shell in ("Bash", "PowerShell"):
+                self.assertIn(f"{shell}(git ls-files *)", command)
+                for path in forms:
+                    self.assertIn(f'{shell}(git -C "{path}" ls-files *)', command)
+                self.assertNotIn(f"{shell}(git *)", command)
+                self.assertNotIn(f"{shell}(git -C * ls-files *)", command)
+                self.assertFalse(any(item.startswith(f"{shell}(git stash") for item in command))
+            explicit = [item for item in command if "git -C " in item]
+            self.assertTrue(explicit)
+            for rule in explicit:
+                self.assertTrue(any(path in rule for path in forms))
+                self.assertTrue(rule.endswith(" ls-files *)"))
+                self.assertEqual(rule.count("*"), 1)
+            for name in ("workspace*", "workspace'", 'workspace"', "workspace$", "workspace`", "workspace,other"):
+                with self.subTest(name=name), self.assertRaises(ValueError):
+                    runner.claude_git_read_rules(Path(temporary) / name)
+            special = Path(temporary) / "workspace;other"
+            for rule in runner.claude_git_read_rules(special):
+                self.assertTrue('git -C "' in rule or "git -C '" in rule)
 
     def test_codex_windows_override_preserves_workspace_sandbox(self):
         command = runner.agent_command("codex", "codex", "model", Path("workspace"), windows_sandbox="mxc")
