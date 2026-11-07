@@ -30,21 +30,8 @@ deployments/      Dockerfile and Docker Compose configuration
 
 ## Request flow
 
-```mermaid
-flowchart LR
-    client[Client] --> mw[Middleware:
-    real ip, request id, otel, log, recover, CORS, rate limit]
-    mw --> val[OpenAPI validator
-    + authentication]
-    val --> h[Handler]
-    h --> svc[Service: RBAC + rules]
-    svc --> repo[Repository]
-    repo --> pg[(Postgres via pgx/sqlc)]
-    %% forge:begin outbox
-    repo -. same tx .-> ob[(outbox_messages)]
-    ob --> relay[Outbox relay] --> pub[Publisher]
-    %% forge:end outbox
-```
+Client → middleware → OpenAPI validation and authentication → handler →
+service authorization and rules → repository → PostgreSQL.
 
 A request passes global middleware, then the OpenAPI validator checks it against
 `api/openapi.yaml` and runs the bearer authentication function for protected
