@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.3.0
+
+### Upgrade notes
+
+- The project is now named `gophling`. New installations use
+  `go run github.com/y0f/gophling/cmd/forge@v1.3.0 new myapp`.
+  Existing initialized projects do not upgrade automatically; review the
+  relevant changes before applying them to your application.
+- `forge new` selects the launcher's release by default and records the exact
+  scaffold revision in `.forge.json`. `-ref` selects another tag or commit.
+  Initialization verifies a staged copy before publishing. If publication is
+  interrupted, use the same launcher's `init -recover` command before editing.
+- Generated resources now extend OpenAPI, SQL, migrations, tests, and explicit
+  application wiring together. Run `go run ./cmd/dev generate` and apply the
+  migration before serving a new resource.
+- The minimum Go version is 1.26.10; development tools use Go 1.27.3. Bootstrap
+  downloads the preferred toolchain when needed. `go run ./cmd/dev check` runs
+  the fast checks without Docker; `ci` adds integration, race, vulnerability,
+  generated-project, and container checks.
+- Idempotent write replays recheck current permissions. Shutdown deadlines now
+  cancel unfinished HTTP requests. Sensitive parent log groups are redacted.
+- `task down` retains the development database; use `task reset` to delete it.
+  Development ports bind to loopback by default.
+- Shared agent instructions, worktree guidance, evaluation runners, and a
+  recorded resource workflow document the development process. Compatibility
+  guidance and measured client results are reported separately.
+
 ## v1.2.0
 
 ### Upgrade notes
