@@ -110,7 +110,7 @@ func TestScaffoldMarkers(t *testing.T) {
 func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	root := repoRoot(t)
 	dir := t.TempDir()
-	for _, p := range append([]string{"README.md", "CHANGELOG.md", "LICENSE"}, initPaths...) {
+	for _, p := range append([]string{"README.md", "CHANGELOG.md", "LICENSE", ".goreleaser.yaml"}, initPaths...) {
 		if p == "evals" || p == "docs/_layouts" {
 			if err := os.MkdirAll(filepath.Join(dir, p), 0o750); err != nil {
 				t.Fatal(err)
@@ -160,6 +160,10 @@ func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	}
 	if !strings.HasPrefix(string(readme), "# app\n") {
 		t.Error("README.md must use the initialized project's name as its title")
+	}
+	release, err := os.ReadFile(".goreleaser.yaml")
+	if err != nil || strings.Contains(string(release), "CHANGELOG.md") {
+		t.Fatalf("initialized release config retains a removed scaffold changelog: %s, %v", release, err)
 	}
 	license, err := os.ReadFile("LICENSE")
 	if err != nil {

@@ -2,6 +2,11 @@ version: 2
 project_name: gophling
 
 release:
+  # forge:begin init
+  header: |
+    Read the [upgrade notes](https://github.com/y0f/gophling/blob/{{ .Tag }}/CHANGELOG.md)
+    before updating an existing project.
+  # forge:end init
   # The workflow verifies uploaded assets before publishing this draft.
   draft: true
   use_existing_draft: true
@@ -85,8 +90,5 @@ changelog:
       regexp: "^fix"
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
-      - "^ci:"
-      - '^build\(deps'
+      - '^(docs|test|chore|ci)(\([^)]+\))?:'
+      - '^build\(deps[^)]*\):'
