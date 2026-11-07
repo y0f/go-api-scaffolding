@@ -323,6 +323,10 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
+		ext := strings.ToLower(filepath.Ext(file))
+		if (ext == ".md" || ext == ".markdown") && markerRe.Match(src) {
+			out = trimMarkdownEOF(out)
+		}
 		switch file {
 		case ".goreleaser.yaml", ".goreleaser.yml":
 			out = rewriteReleaseConfig(out, module)
@@ -483,6 +487,16 @@ func strip(src string, dropped map[string]bool) (string, error) {
 		return "", fmt.Errorf("forge:begin %s without matching end", stack[len(stack)-1])
 	}
 	return strings.TrimLeft(collapseBlankLines(out.String()), "\n"), nil
+}
+
+// trimMarkdownEOF removes blank lines left after marker removal without
+// trimming a content line's hard-break spaces or changing its line ending.
+func trimMarkdownEOF(src string) string {
+	lines := strings.SplitAfter(src, "\n")
+	for len(lines) > 0 && strings.Trim(lines[len(lines)-1], " \t\r\n") == "" {
+		lines = lines[:len(lines)-1]
+	}
+	return strings.Join(lines, "")
 }
 
 var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} [^\r\n]+`)

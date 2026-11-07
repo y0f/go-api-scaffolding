@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.0.0
+
+- Remove trailing blank lines left in Markdown by initialization's optional
+  sections, so fresh full and minimal projects pass Git's whitespace check.
+  Markdown hard breaks and existing file permissions are preserved.
+
 ## v1.3.0
 
 ### Upgrade notes
