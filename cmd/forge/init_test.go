@@ -58,9 +58,7 @@ func TestStripRejectsBrokenMarkers(t *testing.T) {
 // no-op as the code evolves.
 func TestScaffoldMarkers(t *testing.T) {
 	root := repoRoot(t)
-	if err := os.Chdir(root); err != nil {
-		t.Fatal(err)
-	}
+	t.Chdir(root)
 	files, err := trackedFiles()
 	if err != nil {
 		t.Fatal(err)
@@ -113,8 +111,19 @@ func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	root := repoRoot(t)
 	dir := t.TempDir()
 	for _, p := range append([]string{"README.md", "CHANGELOG.md"}, initPaths...) {
+		if p == "evals" || p == "docs/_layouts" {
+			if err := os.MkdirAll(filepath.Join(dir, p), 0o750); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(filepath.Join(dir, p, "README.md"), []byte("scaffold evaluations"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			continue
+		}
 		src, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(p)))
-		if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			src = []byte("scaffold-only fixture\n")
+		} else if err != nil {
 			t.Fatal(err)
 		}
 		dst := filepath.Join(dir, filepath.FromSlash(p))
@@ -148,6 +157,9 @@ func TestInitRemovesTemplateOnlyFiles(t *testing.T) {
 	}
 	if strings.Contains(string(readme), moduleName) {
 		t.Error("README.md kept the scaffold module path")
+	}
+	if !strings.HasPrefix(string(readme), "# app\n") {
+		t.Error("README.md must use the initialized project's name as its title")
 	}
 }
 

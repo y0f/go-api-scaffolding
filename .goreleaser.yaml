@@ -34,6 +34,10 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -trimpath
+    # forge:begin init
+    ldflags:
+      - -s -w -X main.scaffoldVersion={{ .Tag }}
+    # forge:end init
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
 

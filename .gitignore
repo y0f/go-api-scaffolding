@@ -10,3 +10,7 @@ coverage.html
 .env.local
 __debug_bin*
 .DS_Store
+/.forge-init-recovery/
+/.forge-init-backup-*/
+/.forge-init-retired-*/
+/.forge-new-*/
