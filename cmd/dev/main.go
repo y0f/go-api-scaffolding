@@ -279,7 +279,7 @@ func fullChecks() error {
 		//forge:end init
 		{"docker", "compose", "-f", "deployments/docker-compose.yml", "--profile", "*", "config", "--quiet"},
 		{"docker", "compose", "-f", "deployments/docker-compose.yml", "--profile", "*", "pull", "--quiet"},
-		{"docker", "build", "-f", "deployments/Dockerfile", "-t", "go-api-scaffolding:check", "."},
+		{"docker", "build", "-f", "deployments/Dockerfile", "-t", "gophling:check", "."},
 	} {
 		if err := execute([]string{"CGO_ENABLED=1"}, command...); err != nil {
 			return err

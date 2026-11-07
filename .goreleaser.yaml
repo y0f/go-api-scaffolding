@@ -13,7 +13,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+      - -s -w -X github.com/y0f/gophling/internal/config.version={{ .Version }}
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
   - id: migrate
@@ -24,7 +24,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{ .Version }}
+      - -s -w -X github.com/y0f/gophling/internal/config.version={{ .Version }}
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
   - id: forge

@@ -1,0 +1,20 @@
+title: gophling
+description: Go REST API scaffold for efficient agent orchestration, with PostgreSQL, OpenAPI, sqlc, and reproducible checks.
+url: https://y0f.github.io
+baseurl: /gophling
+repository: y0f/gophling
+lang: en
+markdown: kramdown
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+  - jekyll-seo-tag
+  - jekyll-sitemap
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+exclude:
+  - assets/logo.webp

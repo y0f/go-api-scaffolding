@@ -5,9 +5,9 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	api "github.com/y0f/go-api-scaffolding/internal/gen/api"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
+	api "github.com/y0f/gophling/internal/gen/api"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/modules/widget"
 	// forge:resource-imports
 )
 

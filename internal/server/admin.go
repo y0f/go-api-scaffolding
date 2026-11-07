@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/config"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/config"
 )
 
 // NewAdminServer builds the introspection listener exposing pprof and expvar.

@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/config"
+	"github.com/y0f/gophling/internal/config"
 )
 
 // Run starts the HTTP server and blocks until ctx is cancelled, then performs a

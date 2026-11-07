@@ -1,4 +1,4 @@
-module github.com/y0f/go-api-scaffolding/tools
+module github.com/y0f/gophling/tools
 
 go 1.26.10
 

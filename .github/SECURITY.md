@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Please report security issues privately through GitHub's
-[private vulnerability reporting](https://github.com/y0f/go-api-scaffolding/security/advisories/new)
+[private vulnerability reporting](https://github.com/y0f/gophling/security/advisories/new)
 rather than opening a public issue. Include reproduction steps and the affected
 version. You can expect an acknowledgement within a few days.
 

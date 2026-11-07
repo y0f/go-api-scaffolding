@@ -225,7 +225,7 @@ jobs:
       # Nothing else builds deployments/Dockerfile, so a base-image bump or a
       # broken build stage would otherwise reach main unnoticed. Build only, the
       # image is never pushed from CI.
-      - run: docker build -f deployments/Dockerfile -t go-api-scaffolding:ci .
+      - run: docker build -f deployments/Dockerfile -t gophling:ci .
 
   # Its own job so a broken deployments/Dockerfile does not mask the compose
   # signal: the two are most likely to be touched in the same PR.

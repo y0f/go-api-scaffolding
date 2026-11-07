@@ -40,4 +40,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/y0f/go-api-scaffolding
+        - github.com/y0f/gophling

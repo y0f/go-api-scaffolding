@@ -13,12 +13,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/server"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/modules/widget"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/server"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 func newTestServer(t *testing.T) (*httptest.Server, string, *auth.DevIssuer) {

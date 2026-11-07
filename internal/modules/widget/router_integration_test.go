@@ -17,14 +17,14 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
+	"github.com/y0f/gophling/internal/auth"
 	//forge:begin idempotency
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
+	"github.com/y0f/gophling/internal/idempotency"
 	//forge:end idempotency
-	"github.com/y0f/go-api-scaffolding/internal/modules/widget"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/server"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/modules/widget"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/server"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 // newRouterServer serves the widget API through the real router, so requests

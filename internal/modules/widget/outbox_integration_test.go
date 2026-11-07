@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 type outboxRow struct {

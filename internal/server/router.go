@@ -16,11 +16,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 
-	spec "github.com/y0f/go-api-scaffolding/api"
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	api "github.com/y0f/go-api-scaffolding/internal/gen/api"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/platform/problem"
+	spec "github.com/y0f/gophling/api"
+	"github.com/y0f/gophling/internal/auth"
+	api "github.com/y0f/gophling/internal/gen/api"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/platform/problem"
 )
 
 type RouterConfig struct {

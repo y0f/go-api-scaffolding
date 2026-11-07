@@ -14,7 +14,7 @@ vars:
   PKG: ./cmd/api
   VERSION:
     sh: git describe --tags --always --dirty 2>/dev/null || echo dev
-  LDFLAGS: -s -w -X github.com/y0f/go-api-scaffolding/internal/config.version={{.VERSION}}
+  LDFLAGS: -s -w -X github.com/y0f/gophling/internal/config.version={{.VERSION}}
 
 tasks:
   default:

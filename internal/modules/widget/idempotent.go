@@ -11,11 +11,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
-	"github.com/y0f/go-api-scaffolding/internal/platform/problem"
+	"github.com/y0f/gophling/internal/auth"
+	db "github.com/y0f/gophling/internal/gen/db"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/platform/database"
+	"github.com/y0f/gophling/internal/platform/problem"
 )
 
 // IdempotencyClaim ties a create to a client-supplied Idempotency-Key. The key

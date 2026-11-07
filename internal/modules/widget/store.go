@@ -10,9 +10,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	db "github.com/y0f/go-api-scaffolding/internal/gen/db"
-	"github.com/y0f/go-api-scaffolding/internal/outbox"
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
+	db "github.com/y0f/gophling/internal/gen/db"
+	"github.com/y0f/gophling/internal/outbox"
+	"github.com/y0f/gophling/internal/platform/database"
 )
 
 // Repository is the persistence seam. Swap the implementation to change the

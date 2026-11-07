@@ -22,8 +22,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
 	"github.com/testcontainers/testcontainers-go/wait"
 
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
-	"github.com/y0f/go-api-scaffolding/migrations"
+	"github.com/y0f/gophling/internal/platform/database"
+	"github.com/y0f/gophling/migrations"
 )
 
 const templateDB = "forge_template"

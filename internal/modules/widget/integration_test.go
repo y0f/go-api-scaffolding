@@ -9,8 +9,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/testutil"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/testutil"
 )
 
 func TestRepositoryCRUD(t *testing.T) {

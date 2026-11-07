@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/y0f/go-api-scaffolding/migrations"
+	"github.com/y0f/gophling/migrations"
 )
 
 // migrate only needs FORGE_DB_URL, so unrelated API settings (auth in

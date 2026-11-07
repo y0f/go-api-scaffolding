@@ -33,7 +33,7 @@ var templateFS embed.FS
 // moduleName is the scaffold's own module path. forge init rewrites it in the
 // project's source; add resource reads the real path from go.mod instead, so a
 // forge binary built elsewhere still writes the project's own import paths.
-const moduleName = "github.com/y0f/go-api-scaffolding"
+const moduleName = "github.com/y0f/gophling"
 
 var usage = "usage: forge add resource <Name> [-dry-run]"
 

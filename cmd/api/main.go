@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/y0f/go-api-scaffolding/internal/auth"
-	"github.com/y0f/go-api-scaffolding/internal/config"
-	"github.com/y0f/go-api-scaffolding/internal/idempotency"
-	"github.com/y0f/go-api-scaffolding/internal/maintenance"
-	"github.com/y0f/go-api-scaffolding/internal/observability"
-	"github.com/y0f/go-api-scaffolding/internal/outbox"
-	"github.com/y0f/go-api-scaffolding/internal/platform/database"
-	"github.com/y0f/go-api-scaffolding/internal/server"
+	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/internal/config"
+	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/internal/maintenance"
+	"github.com/y0f/gophling/internal/observability"
+	"github.com/y0f/gophling/internal/outbox"
+	"github.com/y0f/gophling/internal/platform/database"
+	"github.com/y0f/gophling/internal/server"
 )
 
 func main() {
