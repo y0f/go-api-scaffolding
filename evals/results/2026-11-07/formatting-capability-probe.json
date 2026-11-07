@@ -1,0 +1,46 @@
+{
+  "kind": "separate single-invocation capability probe; excluded from all feature metrics",
+  "status": "passed",
+  "adapter_base_commit": "ddbce4ba817335dafed475a59c1279d41983ba69",
+  "adapter_diff_sha256": "d9848e7972918a7c1d9cdd2592abe81818c6ba092a295cf510c74422f8c3b4c8",
+  "runner_sha256": "1afd259982bd45d9f23134a7f16c98f7405ee58885e85c966498b43d13a1c401",
+  "client_version": "2.1.319 (Claude Code)",
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "invocations": 1,
+  "retries": 0,
+  "timeout_seconds": 120,
+  "elapsed_seconds": 9.015,
+  "permission_mode": "acceptEdits",
+  "permission_prompts": "none",
+  "output_format": "verbose stream-json",
+  "exact_tool_command": "gofmt -l internal/modules/label",
+  "prompt_sha256": "703a511b2a5fca6749d3d007ea7eb9d4e732d8c1b3b0e2287f368ac69290f9c4",
+  "private_plan_sha256": "c9eb36d0df85536fdc75d1df5eae218e7b52482e7566f24c033adcb0425e1fdd",
+  "raw_stream_sha256": "52d5812e7a5c4e02320546fcc904ab0fbeaee3afaaea9defe84f7f355d4b1fc9",
+  "permission_denials_count": 0,
+  "fixture_unchanged": true,
+  "settings_unchanged": true,
+  "limits": [
+    "Only the exact PowerShell gofmt -l module-directory form was runtime-probed.",
+    "No feature retries, score replacement, performance comparison or broad permission guarantee."
+  ],
+  "observed_tool_results": [
+    {
+      "tool": "PowerShell",
+      "command_matches": true,
+      "result_is_error": false,
+      "expected_filename_observed": true,
+      "result_content_sha256": "e6bf9814a39719eb12b73cfcf607b49e7228d46b6fa33e1ff73726e278f843c2",
+      "raw_result_event_sha256": "363adb3174186aa4bf5064591b4401ef0ff1b5991343536a744189b6b9854f2c"
+    }
+  ],
+  "source_safe_metadata": {
+    "artifact": "formatting-capability-probe/probe.safe.json",
+    "sha256": "903fdcd3ab7e1e6d3bbc0bd22c9a3748fda5c2c320607dc9af37546a783a2e6f",
+    "bytes": 1743
+  },
+  "excluded_from_feature_and_paired_metrics": true
+}

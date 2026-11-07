@@ -1,0 +1,2836 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "snapshot_started_utc": "2026-11-07T16:04:40.195271+00:00",
+  "plan": {
+    "declared_before_execution": true,
+    "provenance": "Root coordinator declared fixed order, revision and deadlines before starting scenarios",
+    "source_and_harness_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+    "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+    "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+    "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+    "scenario_order": [
+      "codex-serial-1",
+      "codex-parallel-1",
+      "claude-parallel-1",
+      "claude-serial-1",
+      "codex-parallel-2",
+      "codex-serial-2",
+      "claude-serial-2",
+      "claude-parallel-2"
+    ],
+    "execution": "Scenarios run sequentially in this order; two workers run serially or concurrently within each scenario",
+    "clients": [
+      "codex",
+      "claude"
+    ],
+    "modes": [
+      "serial",
+      "parallel"
+    ],
+    "repetitions_per_client_mode": 2,
+    "resources": [
+      "note",
+      "label"
+    ],
+    "planned_scenarios": 8,
+    "planned_worker_calls": 16,
+    "agent_timeout_seconds": 600,
+    "verification_timeout_seconds": 600,
+    "reporting": [
+      "Retain failed workers and scenarios without replacement",
+      "Separate preparation, worker phase, individual agent calls, coordinator checks and total clocks",
+      "Check fixture tree equality, source/harness/client/model/permissions before any within-client comparison",
+      "Two repetitions per client/mode; descriptive only, no statistical or cross-provider speed claim",
+      "No heavy checks or harness/workspace changes during timing"
+    ]
+  },
+  "scenarios": [
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "serial",
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "be95860d61fda7d252db0aa81994a74c72fd7f25",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 76.36,
+      "workers_wall_seconds": 239.953,
+      "total_wall_seconds": 342.563,
+      "id": "codex-serial-1",
+      "planned_order": 1,
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.437
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.297
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.735
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.546
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.657
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.375
+        },
+        {
+          "log": "note-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 14.25
+        },
+        {
+          "log": "label-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 19.219
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 14.266
+        },
+        {
+          "log": "integrated-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.156
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.719
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 2,
+        "read_only_cache_roots_count": 0,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "e6cae43fe124ce39768ed1fac552bef8fee9a6ad3804e5b1e98650b0c3c468dd",
+          "wall_seconds": 116.203,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 107.766
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.313
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 244878,
+              "cached_input_tokens": 214272,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3008,
+              "reasoning_output_tokens": 744
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "3a74570d6b2e7f532cf85268e6a081a6c811708776c44964d5a8d3888beac022",
+                "exit_code": 1,
+                "output_sha256": "5623ec3645b7e225661df3d2bffefeff3a6a6d9f86e0d9ea49bde5da1b690a5e"
+              },
+              {
+                "command_sha256": "3a74570d6b2e7f532cf85268e6a081a6c811708776c44964d5a8d3888beac022",
+                "exit_code": 0,
+                "output_sha256": "e12a7c5794d2b5d9c274064d58e869f5be50d967373e6a939deab905ac568a41"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 3,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "525c718cd7e552de894067b9205cef2b945a026ea17f678d9c68f15a5925a8d5",
+          "wall_seconds": 123.75,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 115.203
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 3.11
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 342617,
+              "cached_input_tokens": 317824,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3131,
+              "reasoning_output_tokens": 548
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "cb38c36be49287987c99c5d1d45dba18a344f6fad819e264e1097c9f240a04c2",
+                "exit_code": 1,
+                "output_sha256": "51991fc185cd954298bfe02b736381374f2b072bf06ba4e0aa3a2b6c719d7032"
+              },
+              {
+                "command_sha256": "cb38c36be49287987c99c5d1d45dba18a344f6fad819e264e1097c9f240a04c2",
+                "exit_code": 0,
+                "output_sha256": "891a17cfa59e0e0c8481d21e8e5013e49764c13c0b499f2ae41cfd7376db8126"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 4,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 26.25,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "accepted",
+        "scope": "Both final worker diffs and new tests, protected boundaries, observed session commands, and coordinator acceptance inspected read-only.",
+        "findings": [],
+        "notes": [
+          "Each worker makes the one-line validator correction inside its owned module and adds a new test file; existing tests and other modules are untouched.",
+          "New tests exercise create, update and idempotent create: blank tabs/newlines/Unicode whitespace rejected before persistence, and nonblank names preserved exactly in repository inputs and returned values.",
+          "Both Codex transcripts show package tests failing on the seeded defect, followed by a passing run after the fix. No unrelated command failures or permission denials.",
+          "Coordinator package checks, integrated fast checks, full integration and compiled-API acceptance all passed. Worker files and integrated copies match byte-for-byte.",
+          "Whole-suite and Docker checks were intentionally unrun by the individual workers; coordinator verification is reported separately."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "parallel",
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "3b71d4773d06a0933e8ed5e6d62a63f6d38b7f9f",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 83.218,
+      "workers_wall_seconds": 133.969,
+      "total_wall_seconds": 240.171,
+      "id": "codex-parallel-1",
+      "planned_order": 2,
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.125
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.093
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.625
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.532
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 3.125
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.093
+        },
+        {
+          "log": "note-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 23.922
+        },
+        {
+          "log": "label-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.063
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 12.782
+        },
+        {
+          "log": "integrated-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.39
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.703
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 2,
+        "read_only_cache_roots_count": 0,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "43654c3a1371484b71cc23a59843122c8ece61faf5074efaca3868cfa2b02d40",
+          "wall_seconds": 128.125,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 119.375
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.672
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 358645,
+              "cached_input_tokens": 317440,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3145,
+              "reasoning_output_tokens": 632
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "9c848cbaa3daa07fef5e3f6371079c87ba89518ee99bac1c25648f9501c99b15",
+                "exit_code": 1,
+                "output_sha256": "1356aa1e623d59121a4c74fc14c8464f634f0814e26c9ed8a951178518988381"
+              },
+              {
+                "command_sha256": "9c848cbaa3daa07fef5e3f6371079c87ba89518ee99bac1c25648f9501c99b15",
+                "exit_code": 0,
+                "output_sha256": "75815ad01b3e8e24f361550715b119f3e41f662f80e5c7f50d61669769081e7e"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 4,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "171aa6675219e5b9e59323f139b956918d1497c4fb539703c2a66e9be02a8975",
+          "wall_seconds": 133.969,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 125.594
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.297
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 276213,
+              "cached_input_tokens": 260480,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3311,
+              "reasoning_output_tokens": 716
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "1c039c5618eb05d1d5eb84845c022b6be569d404b74635a6623700f075dbf1b6",
+                "exit_code": 1,
+                "output_sha256": "5b80765dbc88853e9bce89d669c5bb4f48000c3e1987aa88e8bfce09b61257ce"
+              },
+              {
+                "command_sha256": "1c039c5618eb05d1d5eb84845c022b6be569d404b74635a6623700f075dbf1b6",
+                "exit_code": 0,
+                "output_sha256": "51ff2b9cb48eece399056f2e476fb78b4b10dbf2a76b66daa4688c4f97c7fbd6"
+              }
+            ],
+            "other_failed_command_count": 1,
+            "final_report_count": 3,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 22.984,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "accepted",
+        "scope": "Both final worker diffs and new tests, protected boundaries, observed command transcripts and coordinator acceptance inspected read-only.",
+        "findings": [],
+        "notes": [
+          "Both workers make the correct one-line validator correction and add only a new test file inside their assigned module. Existing tests and the other module remain unchanged.",
+          "New tests cover create/update/idempotent create with tabs, newlines, Unicode whitespace and exact nonblank preservation; label uses an explicit update-call flag to verify invalid input never reaches persistence.",
+          "Both observed package checks reproduced the seeded regression, then passed after correction. The label worker also performed an instruction-file search with no matches (exit 1); no permission or infrastructure failure.",
+          "Coordinator fast checks, full integration and compiled-API acceptance all passed. Integrated bytes match worker source.",
+          "Fixture tree equals serial repeat 1. Timing remains a single paired observation, not a general performance conclusion. Whole-suite checks were correctly delegated to the coordinator."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "parallel",
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "claude acceptEdits / named shell permissions",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "7550c2d6a41db8d05db86a85821c26baffb50d08",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 36.578,
+      "workers_wall_seconds": 52.562,
+      "total_wall_seconds": 112.359,
+      "id": "claude-parallel-1",
+      "planned_order": 3,
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.156
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.75
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.485
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.484
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.469
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 9.218
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 12.797
+        },
+        {
+          "log": "integrated-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.406
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.922
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 0,
+        "read_only_cache_roots_count": 1,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+          "wall_seconds": 52.265,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 44.375
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.218
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 31207,
+              "cache_read_input_tokens": 331125,
+              "output_tokens": 3211
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+          "wall_seconds": 52.562,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 44.875
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.062
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 18,
+              "cache_creation_input_tokens": 31963,
+              "cache_read_input_tokens": 379097,
+              "output_tokens": 2905
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 23.219,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "accepted",
+        "scope": "Both worker final source/test diffs, protected boundaries, final JSON reports, and external coordinator evidence inspected read-only.",
+        "findings": [],
+        "notes": [
+          "Each worker makes the correct one-line validator correction and adds only a new test file under its owned module. Existing tests and other paths are untouched.",
+          "New tests reject tabs/newlines and Unicode whitespace on create and update before repository calls, and preserve ordinary/padded/multiline/Unicode names exactly.",
+          "Claude final JSON reports package tests and vet passed; these are self-reports, not observed tool-command transcripts. Note explicitly did not run the new tests before the fix; Label reports failing-before/passing-after.",
+          "Both external worker package checks, integrated fast checks, full integration and compiled-API acceptance passed. No recorded permission denials. Integrated source matches each worker byte-for-byte.",
+          "Fixture tree matches the completed Codex scenarios. Client timing and token totals do not establish a general cross-model performance or cost comparison."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "serial",
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "claude acceptEdits / named shell permissions",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "0efd3b535cf6ce53591b3b59c74c2026c488daf5",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 37.953,
+      "workers_wall_seconds": 97.719,
+      "total_wall_seconds": 144.484,
+      "id": "claude-serial-1",
+      "planned_order": 4,
+      "repetition": 1,
+      "harness_status_recorded": "verification_failed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.547
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.391
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.531
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.453
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.594
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 9.484
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 1,
+          "timeout": false,
+          "seconds": 8.734
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 0,
+        "read_only_cache_roots_count": 1,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+          "wall_seconds": 51.078,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 43.719
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.172
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 30821,
+              "cache_read_input_tokens": 329549,
+              "output_tokens": 3393
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+          "wall_seconds": 46.641,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 39.36
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.219
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 28716,
+              "cache_read_input_tokens": 330860,
+              "output_tokens": 2932
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 8.812,
+      "independent_grading": {
+        "result": "failed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "failed_attempt",
+        "scope": "Both source/test diffs, boundaries, worker checks and integrated lint failure inspected read-only.",
+        "findings": [
+          {
+            "kind": "implementation_formatting_failure",
+            "path": "internal/modules/label/label.go",
+            "line": 16,
+            "detail": "Label worker omitted the required space after ||. The coordinator fast check failed gofumpt. This is a feature delivery/check failure, not an adapter or permission failure."
+          }
+        ],
+        "notes": [
+          "Both worker module tests passed externally and both fixes have correct validation semantics on inspection; each adds meaningful create/update whitespace and exact-preservation tests. Protected boundaries are clean and permission denials are zero.",
+          "The malformed Label line was present in its worker output and copied unchanged to the coordinator. No merge conflict or coordinator mutation introduced it.",
+          "Claude session test/vet claims are final self-reports only. These checks do not validate formatting. Note explicitly did not run a pre-fix regression proof.",
+          "Scenario remains verification_failed. Integrated fast checks stopped at lint; the full integration step and compiled-API acceptance were not run, so no integrated behavior acceptance is claimed.",
+          "No repair, retry or mutation of the benchmark workspace was performed. The failed scenario remains in the fixed denominator and timing evidence."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "parallel",
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "5ae2e3d0a63ccc8c216785dd9be3d4156e54a0f2",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 107.5,
+      "workers_wall_seconds": 124.969,
+      "total_wall_seconds": 258.829,
+      "id": "codex-parallel-2",
+      "planned_order": 5,
+      "repetition": 2,
+      "harness_status_recorded": "passed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.625
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.375
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.641
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.5
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.64
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.969
+        },
+        {
+          "log": "note-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 45.171
+        },
+        {
+          "log": "label-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.562
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 14.672
+        },
+        {
+          "log": "integrated-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.906
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.704
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 2,
+        "read_only_cache_roots_count": 0,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "c5cb71cee16efa8044249674069d63e12b9695083317b574109ca843e9463fc5",
+          "wall_seconds": 124.969,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 115.109
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 3.031
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 256642,
+              "cached_input_tokens": 246144,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3160,
+              "reasoning_output_tokens": 674
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "cc10ab781aca740fe0332d19a7ab66e17dbcf7869b1d2b0504e80036864cb797",
+                "exit_code": 1,
+                "output_sha256": "0ab9cfe598756346fc5426436053517375dc46b278efca8d8f5288b33185ec07"
+              },
+              {
+                "command_sha256": "cc10ab781aca740fe0332d19a7ab66e17dbcf7869b1d2b0504e80036864cb797",
+                "exit_code": 0,
+                "output_sha256": "90751b2cf5ba2db7d24264c9fec35b0623be868a6e67d3594bd2371c4b54f5b8"
+              }
+            ],
+            "other_failed_command_count": 1,
+            "final_report_count": 4,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "e1f49f9182125d2cfdac4882a256041ad23182b8972a4412ebf457ebf86750c0",
+          "wall_seconds": 112.813,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 102.891
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 3.063
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 146311,
+              "cached_input_tokens": 125440,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 2777,
+              "reasoning_output_tokens": 571
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "c3d056ca11fdcb107ee2a485ac04dc2a93ad0258a96c945b3ed477128c989477",
+                "exit_code": 1,
+                "output_sha256": "1098fc0bb65af2b63564940f2e89f27eb62b922f2bfa92dc1783b87f02749210"
+              },
+              {
+                "command_sha256": "c3d056ca11fdcb107ee2a485ac04dc2a93ad0258a96c945b3ed477128c989477",
+                "exit_code": 0,
+                "output_sha256": "86b4b547584d132a5f1f15f4023e40342caaffd6243d715e89def8c46dcc634e"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 3,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 26.36,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "accepted",
+        "scope": "Worker source/new tests, protected boundaries, observed session checks, and external coordinator evidence inspected read-only.",
+        "findings": [],
+        "notes": [
+          "Both workers make the exact validator correction and add only a new test file under their assigned module. Existing tests and all other paths remain untouched.",
+          "New create/update tests cover tabs/newlines, Unicode whitespace and exact preservation of nonblank names. Explicit repository counters or flags verify invalid inputs never persist and valid inputs reach the repository.",
+          "Both transcripts show seeded regression failures followed by passing package checks. Note had a no-match instruction-file search (exit 1), retained as a benign exploratory result; no infrastructure or permission failure.",
+          "External worker checks, integrated fast checks, full integration and compiled-API acceptance all passed. Worker and integrated files match bytes; fixture tree matches every prior scenario.",
+          "Whole-suite verification was left to the coordinator as instructed."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "serial",
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "d08a4fb62c16bf57cf5cdb911a71803cd6de8fc5",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 76.094,
+      "workers_wall_seconds": 244.828,
+      "total_wall_seconds": 348.188,
+      "id": "codex-serial-2",
+      "planned_order": 6,
+      "repetition": 2,
+      "harness_status_recorded": "passed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.484
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.625
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.641
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.484
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.907
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.062
+        },
+        {
+          "log": "note-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.25
+        },
+        {
+          "log": "label-sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.672
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.437
+        },
+        {
+          "log": "integrated-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.203
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.532
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 2,
+        "read_only_cache_roots_count": 0,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "33ebaa10bfe9729d96769fd668f23a9a2f6fd809cb968cdf357825f860e4e5b1",
+          "wall_seconds": 132.031,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 122.219
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.953
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 348692,
+              "cached_input_tokens": 328960,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3036,
+              "reasoning_output_tokens": 715
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "db9b579f2f00462b46a4b01afa231d70eae647cb9add97598c8827df308c8e81",
+                "exit_code": 1,
+                "output_sha256": "a6d33b731359298d748bce928c0dc608f9275e3f564cfabb2dfb156879a0617f"
+              },
+              {
+                "command_sha256": "db9b579f2f00462b46a4b01afa231d70eae647cb9add97598c8827df308c8e81",
+                "exit_code": 0,
+                "output_sha256": "8674a419dc029e6801ece67b5356d13664204fce23de44f4828386a3e0f8c146"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 3,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "a0a329c27059de4270753302c4492ed755208600e713218161dc03be5b212ebf",
+          "wall_seconds": 112.797,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 103.281
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.922
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 198034,
+              "cached_input_tokens": 182016,
+              "cache_write_input_tokens": 0,
+              "output_tokens": 3072,
+              "reasoning_output_tokens": 667
+            },
+            "permission_denials_count": null,
+            "model_names_provider_reported": [],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 0,
+            "network_allowlist": [
+              "localhost",
+              "127.0.0.1"
+            ],
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "observed command transcript",
+            "observed_checks": [
+              {
+                "command_sha256": "55ae92594ed15ca233a05b5194354294a957b89f923bd18da082e05435f4262d",
+                "exit_code": 1,
+                "output_sha256": "35f1c6fc9c45affd0eca062ad1cabb17e9f72822af8409473683a31d68626526"
+              },
+              {
+                "command_sha256": "55ae92594ed15ca233a05b5194354294a957b89f923bd18da082e05435f4262d",
+                "exit_code": 0,
+                "output_sha256": "d42c0bad92bf69fd12a9a632241f96eb93202ed6a301d2e65b6ab9419ad1855c"
+              }
+            ],
+            "other_failed_command_count": 0,
+            "final_report_count": 3,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 27.266,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "accepted",
+        "scope": "Both final worker source and new tests, protected boundaries, observed command transcripts and external coordinator gates inspected read-only.",
+        "findings": [],
+        "notes": [
+          "Each worker makes only the exact validator correction plus a new owned-module test file. Existing tests, the other module and shared configuration remain unchanged.",
+          "New tests cover create, update and idempotent create: reject tabs/newlines and Unicode whitespace before persistence, preserve nonblank names in repository inputs and returned output.",
+          "Both observed transcripts reproduce the seeded regression before the fix and pass the required package check after correction. No other command failure or permission denial.",
+          "External worker checks, integrated fast checks, full integration and compiled-API acceptance passed; integrated files match worker bytes and fixture tree matches all prior scenarios.",
+          "Workers correctly left full-suite and integration checks to the coordinator."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "serial",
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "claude acceptEdits / named shell permissions",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "a3eec1bc21e8802c736568f9e5377ed2319abff4",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 39.984,
+      "workers_wall_seconds": 98.704,
+      "total_wall_seconds": 147.781,
+      "id": "claude-serial-2",
+      "planned_order": 7,
+      "repetition": 2,
+      "harness_status_recorded": "verification_failed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.844
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.438
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.625
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.515
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.907
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 9.75
+        },
+        {
+          "log": "integrated-0.log",
+          "exit_code": 1,
+          "timeout": false,
+          "seconds": 8.968
+        }
+      ],
+      "integrated_files_count": 4,
+      "permission_policy": {
+        "writable_cache_roots_count": 0,
+        "read_only_cache_roots_count": 1,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+          "wall_seconds": 49.891,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 40.625
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.578
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 30362,
+              "cache_read_input_tokens": 328931,
+              "output_tokens": 2834
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+          "wall_seconds": 48.813,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 39.594
+          },
+          "coordinator_focused_check": {
+            "log": "label-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.594
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 16,
+              "cache_creation_input_tokens": 28339,
+              "cache_read_input_tokens": 330433,
+              "output_tokens": 2720
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": 9.093,
+      "independent_grading": {
+        "result": "failed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log"
+        ]
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "failed_attempt",
+        "scope": "Both source/new test diffs, protected boundaries, worker checks and coordinator lint failure inspected read-only.",
+        "findings": [
+          {
+            "kind": "implementation_formatting_failure",
+            "path": "internal/modules/note/note.go",
+            "line": 16,
+            "detail": "Note worker omitted the required space after ||. Coordinator fast checks failed gofumpt. This is a delivered-code formatting failure, not an adapter or permission failure."
+          }
+        ],
+        "notes": [
+          "Both worker fixes have correct validation semantics on inspection and add meaningful create/update whitespace and exact-preservation tests. External module tests passed, protected boundaries are clean and permission denials are zero.",
+          "Malformed Note line appears in the worker output and the integrated copy unchanged; it was not introduced by integration.",
+          "Session package/vet claims are final self-reports only. Both workers explicitly did not confirm new tests fail before the fix.",
+          "Scenario remains verification_failed. Full integration and compiled-API acceptance were not reached after the formatting gate failed, so no integrated behavior acceptance is claimed.",
+          "No repair, retry or raw workspace mutation; failed scenario and timing stay in the fixed denominator."
+        ]
+      }
+    },
+    {
+      "scenario": "parallel_validation_repair",
+      "mode": "parallel",
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+      "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+      "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+      "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+      "environment": "Windows 11",
+      "executor": "claude acceptEdits / named shell permissions",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "cache": "shared host Go caches; per-worktree tool binaries",
+      "seed": "Both generated Input.Validate methods accept whitespace-only names; existing tests are retained.",
+      "fixture_commit": "400bf4bfa5abb669faa039908deb76d45176428f",
+      "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "preparation_seconds": 41.828,
+      "workers_wall_seconds": 57.531,
+      "total_wall_seconds": 99.359,
+      "id": "claude-parallel-2",
+      "planned_order": 8,
+      "repetition": 2,
+      "harness_status_recorded": "workers_failed",
+      "error_recorded": false,
+      "phase_results": [
+        {
+          "log": "prepare-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.469
+        },
+        {
+          "log": "prepare-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.594
+        },
+        {
+          "log": "prepare-2.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.625
+        },
+        {
+          "log": "prepare-3.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 0.5
+        },
+        {
+          "log": "prepare-4.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 2.921
+        },
+        {
+          "log": "prepare-5.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.688
+        }
+      ],
+      "integrated_files_count": 0,
+      "permission_policy": {
+        "writable_cache_roots_count": 0,
+        "read_only_cache_roots_count": 1,
+        "host_paths_and_profile_identifiers": "withheld"
+      },
+      "workers": [
+        {
+          "resource": "note",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+          "wall_seconds": 57.531,
+          "harness_status_recorded": "passed",
+          "agent": {
+            "log": "note-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 48.171
+          },
+          "coordinator_focused_check": {
+            "log": "note-check.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 2.656
+          },
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 18,
+              "cache_creation_input_tokens": 31814,
+              "cache_read_input_tokens": 378782,
+              "output_tokens": 3949
+            },
+            "permission_denials_count": 0,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        },
+        {
+          "resource": "label",
+          "human_interventions": 0,
+          "verification_scope": "trusted coordinator after agent exit",
+          "prompt_sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+          "wall_seconds": 51.594,
+          "harness_status_recorded": "permission_denied",
+          "agent": {
+            "log": "label-agent.log",
+            "exit_code": 0,
+            "timeout": false,
+            "seconds": 44.875
+          },
+          "coordinator_focused_check": null,
+          "agent_session_checks_recorded": {
+            "status": "unreviewed"
+          },
+          "changed_files_count": 2,
+          "integrity_changes_count": 0,
+          "new_test_files_count": 1,
+          "provider_usage_reported": {
+            "usage_fields": {
+              "input_tokens": 18,
+              "cache_creation_input_tokens": 31158,
+              "cache_read_input_tokens": 375277,
+              "output_tokens": 3449
+            },
+            "permission_denials_count": 1,
+            "model_names_provider_reported": [
+              "claude-opus-5-5"
+            ],
+            "interpretation": "Provider definitions retained; no inferred billing or token normalization."
+          },
+          "permission_policy": {
+            "read_only_cache_roots_count": 1,
+            "network_allowlist": null,
+            "scratch_and_profile_identifiers": "withheld"
+          },
+          "post_run_session_review": {
+            "evidence_kind": "agent final self-report only",
+            "observed_checks": [],
+            "other_failed_command_count": 0,
+            "final_report_count": 1,
+            "interpretation": "Observed transcript exits and final self-reports remain distinct; coordinator grades are reported separately."
+          }
+        }
+      ],
+      "coordinator_residual_seconds": -0.0,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only review, not a human-review claim",
+        "outcome": "failed_attempt",
+        "scope": "Both source/new test diffs, worker evidence and explicit permission denial inspected read-only; no rerun or independent feature grading.",
+        "findings": [
+          {
+            "kind": "adapter_permission_coverage",
+            "worker": "label",
+            "tool": "PowerShell",
+            "command": "gofmt -l internal/modules/label",
+            "detail": "Legitimate read-only formatting inspection was absent from the adapter allowlist, producing one recorded denial. This is a harness permission coverage limitation, not a scaffold runtime defect."
+          }
+        ],
+        "notes": [
+          "Both workers make the exact validator correction and add only new tests inside their assigned module. Tests cover whitespace rejection, unchanged nonblank names, no repository mutation for invalid input, and retained 200/201-rune bounds. Protected boundaries are clean.",
+          "Note external module check passed. Label package/vet successes are final self-reports only; its external package check was not run because the denial makes the attempt fail. No tool-by-tool Claude command evidence is available.",
+          "The coordinator did not integrate the changes or run fast/full integration/API acceptance because one worker failed. No combined-application acceptance is claimed.",
+          "Scenario remains workers_failed with Label permission_denied. No permission broadening, repair, retry or benchmark workspace mutation was performed.",
+          "Fixture tree matches all seven other scenarios. The failure remains in the fixed denominator, and its shorter incomplete clock must not be treated as a successful completion time."
+        ]
+      }
+    }
+  ],
+  "active_scenario_directories": [],
+  "not_started_planned_scenarios": [],
+  "evidence_manifest": [
+    {
+      "artifact": "codex-serial-1/result.json",
+      "sha256": "5b0d9458c79607d33c828d086087401e3cd96158cfd1c52e4b4caf135804e085",
+      "bytes": 14991,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/acceptance.log",
+      "sha256": "d0d646e075291c6c76283c61dda5980101b42a598458afb26c08a8b6a243ad5c",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/integrated-0.log",
+      "sha256": "1ef16429fb95ad0c61b5e4c8e7153ebb31ec00326eb3bd15d699083dd05a2812",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/integrated-1.log",
+      "sha256": "cf18bc1c65d2a0dc02fd767c348f6ed3aca006cc762838b85c425ff727087e6d",
+      "bytes": 1100,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/label-agent.log",
+      "sha256": "18bde29e4fd471fa235ffcf33bf8e53f01e9abde6dd5635c98435e8569585641",
+      "bytes": 55541,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/label-check.log",
+      "sha256": "8e98a7da9aeef7a8075b432a5c1a31a09c3f0436dc11914a23c2eaade88b7f72",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/label-prompt.txt",
+      "sha256": "525c718cd7e552de894067b9205cef2b945a026ea17f678d9c68f15a5925a8d5",
+      "bytes": 1280,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/label-sandbox-preflight.log",
+      "sha256": "bcf0725aaedc647563787bbc8789c39d5f9afd9f6c943528e866d128f8730d51",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/note-agent.log",
+      "sha256": "6fd00eed5054e078f32ff060d18b1397a2eee3881f5a099983a612f33e42bfc1",
+      "bytes": 42038,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/note-check.log",
+      "sha256": "0923e0cc8ab66f2f5f26a8095bfeeb73aae78b5f1e757570b5723adb76844d25",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/note-prompt.txt",
+      "sha256": "e6cae43fe124ce39768ed1fac552bef8fee9a6ad3804e5b1e98650b0c3c468dd",
+      "bytes": 1276,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/note-sandbox-preflight.log",
+      "sha256": "d0e435ce587507c5b73f2d00d79bd29038c0f7def738fef8d17525cda833ccf1",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-1/prepare-5.log",
+      "sha256": "48feeec9f62da64816138d7be0387fc6836f6f85b1aad5a1ec3c67df3051c295",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--codex-serial-1.json",
+      "sha256": "e85099f0eb4f79ed6d01cee97ed76a4ebfc45155c8b948c8a642689b14e29456",
+      "bytes": 28147,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/result.json",
+      "sha256": "fd8c9f05f46f9768bed4e92cbbdc49eb17d3fc36b65ed283b5ed7b80ec240b51",
+      "bytes": 15004,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/acceptance.log",
+      "sha256": "dcf4143642ea07b1766df6d5cc5cf84e937eaf1dae379959f7ca1cb6b6c1ff68",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/integrated-0.log",
+      "sha256": "15aedf68e9150a08c3b5cb2738ff825458ee2498daf7a1439a14be8dcc9c25c2",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/integrated-1.log",
+      "sha256": "c49a8760db4d748a923503a5e2ed9fab98e030d467d958f8a98e2f881741e80d",
+      "bytes": 1100,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/label-agent.log",
+      "sha256": "e9be78b2e4b50cad5ff898d972752ebe7b4ddaedafa8fad60379b0e9af3678bf",
+      "bytes": 44833,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/label-check.log",
+      "sha256": "605943f12e2c8593de3f3f730549d49600a0a539a83c75419cb2b584caf8db08",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/label-prompt.txt",
+      "sha256": "171aa6675219e5b9e59323f139b956918d1497c4fb539703c2a66e9be02a8975",
+      "bytes": 1282,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/label-sandbox-preflight.log",
+      "sha256": "4675457a0d66ab3537d6ac35fe545477f8ba39c836112041ab5e3d100fb2f5db",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/note-agent.log",
+      "sha256": "579c3fc2534dda4b928611ab88eb5fd22d3dabb883c77ee7c5467e4fe0263cda",
+      "bytes": 45920,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/note-check.log",
+      "sha256": "27395c3a6e7843377037159e68c2d69fbf19f5293678ea5f2393d874e3e1e70f",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/note-prompt.txt",
+      "sha256": "43654c3a1371484b71cc23a59843122c8ece61faf5074efaca3868cfa2b02d40",
+      "bytes": 1278,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/note-sandbox-preflight.log",
+      "sha256": "5a7b724010518672e425cc6fbe4092968f2b889075dab274811e7009f831bf49",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-1/prepare-5.log",
+      "sha256": "7adda6d59e88934d365552bfe4193540751f7fee9d410915d873b1fc235ce51b",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--codex-parallel-1.json",
+      "sha256": "6c64169a8eb6e35e75ac218214d3a13022a54a284a3366fe5eaa2921e2394c13",
+      "bytes": 28661,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/result.json",
+      "sha256": "30948393b556c110d8633ca2dcc3d996707ab9aff132c1e881051b54f6b52f16",
+      "bytes": 15296,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/acceptance.log",
+      "sha256": "7440acc5b3fa5da9f5ec053ea99ad320c949b35b99c8eb359b90bb181a50dcf1",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/integrated-0.log",
+      "sha256": "cab5ecca16d5f67c4b1e131fac0fe9b21f9b965040f7c28f984d27558f52b295",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/integrated-1.log",
+      "sha256": "76a8726424855c24f284e392f9f21ad44f3e45299fc71290c2c2bf51378a8916",
+      "bytes": 1100,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/label-agent.log",
+      "sha256": "c79292eea95d09b545ca41d5be158ee919a1810597d6bc8580132fd8ea2a8c09",
+      "bytes": 3577,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/label-check.log",
+      "sha256": "bef9891fca29016d3e2099aa067138ad49b92f036ea485fae6fd33440761e303",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/label-prompt.txt",
+      "sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+      "bytes": 1043,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/note-agent.log",
+      "sha256": "0175ecf4686218e80cb10417f634ca849bbc49f12a2a358fd699032a2e4a042f",
+      "bytes": 3695,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/note-check.log",
+      "sha256": "642f063614a4a63b72b698953dd40d50a250ec6fcac3d8cc3bba334aae9de3a3",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/note-prompt.txt",
+      "sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+      "bytes": 1040,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-1/prepare-5.log",
+      "sha256": "85ee370ee0546aeace57babb8d545a4e67f508123102b6fdf852aea19e834ecd",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--claude-parallel-1.json",
+      "sha256": "b777489931081fe91c751e6e8c789db1deebf7b04f106d84ddb34814a890d144",
+      "bytes": 20810,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/result.json",
+      "sha256": "8bc3f535c3d4210c0f476176ac5623842d0a7c720c82af5bd32f05e1c08fefa9",
+      "bytes": 14689,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/integrated-0.log",
+      "sha256": "7b8677be506321960d606aec0d3f00a8cf2416d1c97c475a5be901951cee2514",
+      "bytes": 368,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/label-agent.log",
+      "sha256": "8a46e579c661da866c8a3d9789641681c9352c28babf96d388d1c11f9d498f5d",
+      "bytes": 3303,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/label-check.log",
+      "sha256": "e43f38ffe19a39472d92bcb0ac8bd397d341c90bb10dd578483fa78e62a14a58",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/label-prompt.txt",
+      "sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+      "bytes": 1043,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/note-agent.log",
+      "sha256": "abd541886edcbe76ea14eba55ccb850253c202a303bc01753380eb2dd834bade",
+      "bytes": 3772,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/note-check.log",
+      "sha256": "6e5607672243e2abc6f47d6216e4768f37d33ce6e91cf94623413e4144122fb3",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/note-prompt.txt",
+      "sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+      "bytes": 1040,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-1/prepare-5.log",
+      "sha256": "13de43bc17d3662474ee7e6dd095c4c6a1ed948adce6f356bcb69ec22e7e1390",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--claude-serial-1.json",
+      "sha256": "76e38bee3cfe28f3df7d1cd9cfd250916f65934d9ea067375a2f1de0da15c143",
+      "bytes": 20313,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/result.json",
+      "sha256": "211f6be1b27c238222d6552fcbba433ce6b5219aa08967f774471ee5f27e35f7",
+      "bytes": 15001,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/acceptance.log",
+      "sha256": "bd9556d991bc2df9298059de5c36dda5767b36bc835a54aa96c432a1f6a0a246",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/integrated-0.log",
+      "sha256": "ab2fad4fd05e18947411625ae4932a02cc50c168a3a8867280be2f00717edab6",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/integrated-1.log",
+      "sha256": "00cce1e5f1d15cfa7030ab0f04d071d505bdf1e3b9ab5e7d698d99fa5f44b225",
+      "bytes": 1100,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/label-agent.log",
+      "sha256": "d6d33c77271490f91f52503cf013acf45509be63fb34de9248581d2b8184037e",
+      "bytes": 25069,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/label-check.log",
+      "sha256": "df0f62c0369433ecc8a547c1aadbc1e4486804f7a8fb1e34f6490f931a9af679",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/label-prompt.txt",
+      "sha256": "e1f49f9182125d2cfdac4882a256041ad23182b8972a4412ebf457ebf86750c0",
+      "bytes": 1282,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/label-sandbox-preflight.log",
+      "sha256": "c329e17a6307009f8635cc501742dd86471dc30b310c5b7988ae53cb6aeb217f",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/note-agent.log",
+      "sha256": "2e694d16cb09064f978aba056b16e0f77dd58f22e577622c8704952626b3eee5",
+      "bytes": 25860,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/note-check.log",
+      "sha256": "6684bf9b217dc4bf1f8ed81a7625747fa9992d44b0e84a2b8f900a7a3dae5c49",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/note-prompt.txt",
+      "sha256": "c5cb71cee16efa8044249674069d63e12b9695083317b574109ca843e9463fc5",
+      "bytes": 1278,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/note-sandbox-preflight.log",
+      "sha256": "08cc548261b91e5b023e85fccff23d219f5e91e709a41691cbc04266e87af0c7",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-parallel-2/prepare-5.log",
+      "sha256": "a8a55fcf4f0d8cfae10099f843b2302e0a90af7dadd30728304faa6e48bcee70",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--codex-parallel-2.json",
+      "sha256": "a1c0df39630a041f357066776a6d256754e33ab6a5f7321496720c1e3125ed6e",
+      "bytes": 27630,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/result.json",
+      "sha256": "ddfe0c6e4d05e2e59b1c6534b6905f087248accebca3db39c36b95e2d594be54",
+      "bytes": 14970,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/acceptance.log",
+      "sha256": "d4e0bef6f60604e5cbae05058813bed40580027306c294e189ea40d5d99c8821",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/integrated-0.log",
+      "sha256": "b0d49ece6adcd00549097e1bde2a8c08936ff8b89f628c685c894e3e2a6506b6",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/integrated-1.log",
+      "sha256": "f9b5033b80a182238bf49a39bdb22643690184fcec0f44ad1e3a34d7adc53397",
+      "bytes": 1100,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/label-agent.log",
+      "sha256": "47b755d1820baf3413aba6f08f5b1159205b07c1737b2c04d225e2f6958d421f",
+      "bytes": 46074,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/label-check.log",
+      "sha256": "098d0f56c601cd5183d8079876391760c21015ad45f1423802dae47fa46dd11d",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/label-prompt.txt",
+      "sha256": "a0a329c27059de4270753302c4492ed755208600e713218161dc03be5b212ebf",
+      "bytes": 1280,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/label-sandbox-preflight.log",
+      "sha256": "531e025eebf07d6baf80ec2bdb70d4a7b68c01eb4473bf3cc60dca9e96be539c",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/note-agent.log",
+      "sha256": "555e8508ada60a62b7d4f7e530e82ee3eeb5d0edce3ffcb26c0a276d0537f409",
+      "bytes": 36894,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/note-check.log",
+      "sha256": "8a1cee3c52b17e50a024244c1772a6f9263a8aaee1fc80296e60c76fa96b8ae0",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/note-prompt.txt",
+      "sha256": "33ebaa10bfe9729d96769fd668f23a9a2f6fd809cb968cdf357825f860e4e5b1",
+      "bytes": 1276,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/note-sandbox-preflight.log",
+      "sha256": "7439cb31dc88532354a29ea2318bc9f7a52e556241ebacff2982fdfd8fddd46d",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "codex-serial-2/prepare-5.log",
+      "sha256": "ba63cdf77d6e2d7b82997bf1964a6344b28e45f3e248143984facd94edabb057",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--codex-serial-2.json",
+      "sha256": "dcf1fc8a91df8b931be587a7c32923fd8941573cb99d5e6ba23bf0dcc46c8237",
+      "bytes": 27554,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/result.json",
+      "sha256": "986d53a63d09d29306e6dcf59f31c719465bd57dc0914abf908dc1d90c1ffecd",
+      "bytes": 14685,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/integrated-0.log",
+      "sha256": "3be34650a5361ce9edfb8a40eb0adda8314fb1783660e1603237994569d04946",
+      "bytes": 366,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/label-agent.log",
+      "sha256": "fcf41d7c7b8c3380a9de73bde021c2318438f8dbeb73ed16de29f579ecec8f08",
+      "bytes": 3591,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/label-check.log",
+      "sha256": "513e3fb85d2af1b7ce46c50cf6ef37fe3efe7cfdd8042ee1f2fe8b0f93ecee30",
+      "bytes": 56,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/label-prompt.txt",
+      "sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+      "bytes": 1043,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/note-agent.log",
+      "sha256": "fa44c980bef7e5dd01664a5acc572eff2057eed79047d01dcf14682499b26c58",
+      "bytes": 3331,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/note-check.log",
+      "sha256": "d6ee7b6cd042a25f9ac3aec34966e6117794751abdbf10eea8ad457f4e697f2a",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/note-prompt.txt",
+      "sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+      "bytes": 1040,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-serial-2/prepare-5.log",
+      "sha256": "f1fb2b701a96e4071da7a8951b612cf6a2f33078a15658abc0f7f1cfbe39620a",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--claude-serial-2.json",
+      "sha256": "66dbef891a3fe7322d8a375964cab2751bd8d62e287586dda1cd1d8847aece9d",
+      "bytes": 20032,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/result.json",
+      "sha256": "919ed5d6af21d69c1de8533465f31cee2294965a71c81567f119e1c2072ea848",
+      "bytes": 13987,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/label-agent.log",
+      "sha256": "3d3f225690051590ae93cbb7ca74bef74d915552676527ff7253ac8acaaa26ce",
+      "bytes": 3750,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/label-prompt.txt",
+      "sha256": "feba7879c6ac1608d4afeb2ab0dce8c9877ada27ce16f1cb0902f96ca3cab107",
+      "bytes": 1043,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/note-agent.log",
+      "sha256": "fbd1c7af78633189c6092080bec591e5b28c3462c23436834bad20fd8520978f",
+      "bytes": 3631,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/note-check.log",
+      "sha256": "6f3b89afcbd338fecaeeb48a053f29c1eb6291727267c6117dca055561299241",
+      "bytes": 55,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/note-prompt.txt",
+      "sha256": "9a902d197f50827dcecdebc78d8c4804d081c1ab05afebee20ae3688dfd92d22",
+      "bytes": 1040,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-0.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-1.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-2.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-3.log",
+      "sha256": "bc2fe7d3beba8099e8f3fe349ef01ae6ced09756e4fbe4e37524c97b2b891bcb",
+      "bytes": 793,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-4.log",
+      "sha256": "1d00b8769fb04d19cfbdd05335049963b6204a38fa46c4580008c8860d1216e8",
+      "bytes": 95,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "claude-parallel-2/prepare-5.log",
+      "sha256": "000c91020b6889ce0888557d1a5c84f624ea2d745a911fdf00ddc12e0649fe7e",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/paired--claude-parallel-2.json",
+      "sha256": "a74cc54985665a40e3753e49237467062401dad6560709a694413a634d7e14ad",
+      "bytes": 19175,
+      "publication": "digest_only_source_retained_privately"
+    }
+  ],
+  "clock_semantics": {
+    "preparation_seconds": "Measured clone/init/bootstrap/generation/check/worktree/preflight phase.",
+    "workers_wall_seconds": "Measured combined worker phase, serial or concurrent; includes post-agent review and focused checks.",
+    "worker_wall_seconds": "Measured individual worker total including prompt setup, agent call, review and focused check.",
+    "agent_seconds": "Measured client invocation duration; does not include preparation or coordinator grading.",
+    "coordinator_check_seconds": "Each recorded trusted fast/integration/acceptance command duration, kept separate.",
+    "coordinator_residual_seconds": "Derived total minus preparation minus worker phase; includes copying, coordinator checks and overhead, not a directly measured integration phase.",
+    "total_wall_seconds": "Measured scenario duration including preparation and all completed phases, including failures."
+  },
+  "interpretation": [
+    "Only final result manifests enter completed counts; active logs are not hashed as final evidence.",
+    "Two repetitions per client/mode; retain failures and do not select only successful or fastest scenarios.",
+    "Fixture commits can differ by timestamp; compare fixture_tree for prepared source equality.",
+    "Prompt hashes retain per-worktree scratch/cache guidance; equal task family does not imply identical raw prompt text.",
+    "No comparative statistic or speedup is claimed before all scenarios and independent reviews finish."
+  ],
+  "fixture_tree_comparison": {
+    "observed_values": [
+      "af7c752d23fe45039d19e07232daf936ab55f899"
+    ],
+    "scenarios_with_fixture_tree": 8,
+    "all_observed_equal": true,
+    "complete_planned_comparison": true
+  },
+  "within_client_identities": {
+    "codex": {
+      "client_version": [
+        "codex-cli 0.166.0"
+      ],
+      "model_requested": [
+        "gpt-6-astra"
+      ],
+      "executor": [
+        "codex :workspace profile / Windows MXC / localhost and owned temp"
+      ],
+      "go_version": [
+        "go version go1.27.3 windows/amd64"
+      ],
+      "runner_sha256": [
+        "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+      ],
+      "scenario_sha256": [
+        "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a"
+      ],
+      "verifier_sha256": [
+        "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+      ]
+    },
+    "claude": {
+      "client_version": [
+        "2.1.319 (Claude Code)"
+      ],
+      "model_requested": [
+        "claude-opus-5-5"
+      ],
+      "executor": [
+        "claude acceptEdits / named shell permissions"
+      ],
+      "go_version": [
+        "go version go1.27.3 windows/amd64"
+      ],
+      "runner_sha256": [
+        "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a"
+      ],
+      "scenario_sha256": [
+        "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a"
+      ],
+      "verifier_sha256": [
+        "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf"
+      ]
+    }
+  },
+  "counts": {
+    "planned_scenarios": 8,
+    "completed_scenarios": 8,
+    "active_directories": 0,
+    "not_started_scenarios": 0,
+    "scenario_statuses": {
+      "passed": 5,
+      "verification_failed": 2,
+      "workers_failed": 1
+    },
+    "workers_recorded": 16,
+    "worker_statuses": {
+      "passed": 15,
+      "permission_denied": 1
+    },
+    "review_outcomes": {
+      "accepted": 5,
+      "failed_attempt": 3
+    },
+    "evidence_artifacts": 136
+  },
+  "state": "all_planned_records_present",
+  "snapshot_finished_utc": "2026-11-07T16:04:40.356592+00:00",
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "status": "passed",
+  "individual_snapshot_utc": "2026-11-07T16:04:40.488986+00:00",
+  "completed_individual_records_checked": 32,
+  "individual_run_and_review_artifact_hashes_rechecked": 294,
+  "source_aggregate_reconciliations": 6,
+  "supporting_plan_hashes_rechecked": 4,
+  "historical_inventory_hash_unchanged": true,
+  "probe_safe_metadata_hash_rechecked": true,
+  "completed_paired_records_checked": 8,
+  "paired_artifact_hashes_rechecked": 136,
+  "privacy_artifacts_checked": 15,
+  "all_completed_individual_attempts_reviewed": true,
+  "all_completed_paired_scenarios_reviewed": true,
+  "source_curation_privacy_artifacts_checked": 9,
+  "separate_capability_probe_safe_metadata_hashes_checked": 2,
+  "publication_scope": "Completed observed records; independent narrative review is separate from tool and grading evidence.",
+  "publication_statuses_counts_timings_and_evidence_hashes_preserved": true,
+  "privacy_normalized_environment_records": 45,
+  "privacy_protected_lists_checked_excluding_environment": 15,
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "privacy_omitted_monetary_fields": 53,
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

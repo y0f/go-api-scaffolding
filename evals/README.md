@@ -1,5 +1,8 @@
 # Agent feature evaluations
 
+[Recorded results from 7 November 2026](results/2026-11-07/README.md) include
+every attempt, the fixes they informed, and the limits of the measurements.
+
 Six tasks check setup, resource generation, a persisted field, authorization,
 a seeded defect, and a second resource. The runner uses fresh clones initialized
 with the full preset. Initialization and tool preparation are reported separately

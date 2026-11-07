@@ -1,0 +1,4661 @@
+{
+  "schema_version": 1,
+  "publication_status": "completed_records",
+  "snapshot_started_utc": "2026-11-07T16:04:40.417215+00:00",
+  "snapshot_finished_utc": "2026-11-07T16:04:40.488986+00:00",
+  "cohort_boundaries": "Never pool baseline, adapter followup, corrected product/prompt/verifier followup, historical trials, or capability probe.",
+  "cohort_group": "baseline",
+  "cohorts": [
+    {
+      "id": "baseline-codex",
+      "cohort_group": "baseline",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 12,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "codex-cli 0.166.0"
+        ],
+        "model_requested": [
+          "gpt-6-astra"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "coordinator-context.json",
+        "planned_tasks": 6,
+        "attempts_per_task": 2,
+        "planned_attempts": 12
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 12
+      },
+      "observed_records_per_task": {
+        "authorization": 2,
+        "bootstrap": 2,
+        "field": 2,
+        "repair": 2,
+        "resource": 2,
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 12
+    },
+    {
+      "id": "baseline-claude",
+      "cohort_group": "baseline",
+      "state": "all_planned_records_present",
+      "completed_attempts_observed": 12,
+      "in_progress_directories_observed": [],
+      "aggregate_reconciliation": "exact_match",
+      "coordinator_interventions": [],
+      "recorded_identities": {
+        "source_commit": [
+          "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+        ],
+        "runner_sha256": [
+          "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33"
+        ],
+        "verifier_sha256": [
+          "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb"
+        ],
+        "client_version": [
+          "2.1.319 (Claude Code)"
+        ],
+        "model_requested": [
+          "claude-opus-5-5"
+        ]
+      },
+      "launch_plan": {
+        "provenance": "Separate coordinator observation and declared launch plan; not inferred from result manifests",
+        "artifact": "coordinator-context.json",
+        "planned_tasks": 6,
+        "attempts_per_task": 2,
+        "planned_attempts": 12
+      },
+      "planned_source": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "observed_status_counts": {
+        "passed": 8,
+        "permission_denied": 4
+      },
+      "observed_records_per_task": {
+        "authorization": 2,
+        "bootstrap": 2,
+        "field": 2,
+        "repair": 2,
+        "resource": 2,
+        "second_resource": 2
+      },
+      "aggregate_entries_observed": 12
+    }
+  ],
+  "attempts": [
+    {
+      "task": "authorization",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "66be74d51c89b6ab8fbf4b4106f77f6c6a8e6dc20fed425ee5cf4a649295c5e3",
+      "fixture_commit": "0938c2406656920aa3b37121dfd449494d03ad6c",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-authorization-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 20.188
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.969
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 20.515
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 320.156
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 12.687
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.234
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.954
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 9,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 1056487,
+          "cached_input_tokens": 996480,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 10332,
+          "reasoning_output_tokens": 2284
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual contract/service/repository/composition changes, new tests, observed checks and external acceptance review",
+        "findings": [],
+        "notes": [
+          "Protected count route uses typed delegate and actual CountWidgets SQL; service requires widgets:read before persistence, roles/write scope receive no read grant. Existing CRUD routes retained.",
+          "Repository Count added; existing fake extended in a NEW test file with panic on unexpected use, preserving all protected tests. Unit tests assert zero denied persistence calls, context propagation, int64 values and repository errors.",
+          "New RSA-backed production-router and real-DB tests cover missing/invalid/expired tokens, denied scope/role, current count beyond pagination limits, static/dynamic route coexistence and served OpenAPI.",
+          "Observed focused unit/integration and fast checks exit0. Trusted coordinator fast/full integration/independent compiled-API acceptance pass."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "4c7cc520cdbecb494d4aa0cabbb61cdb0d32d7d8050ac9479f2a01fdc097e8e6",
+          "output_sha256": "d5edae15d5cc5247e9666a1df79706a0613a0d21709bf295512a64bb71424b31"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "e0e891d5a282623ac64d049e01697ce14f7bf922f243ebd76b6d5710b9759e30",
+          "output_sha256": "05f55888802194ba048fe389c3e86dc9a41a6fb3dcae20b76d368a35d56fae07"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "fd5bf001b949038af87deba02bf4f08e5917da7a95a643f0a3c4a366aefa351b",
+          "output_sha256": "207454c854534bf02c48583c1fbb69a094ed76ecf9e8be091a04a21621549565"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "8b10efb0063f1c68392aaa778817da4c199acaae31424c04893fee08449614c0",
+          "output_sha256": "a51e88add8a535ba8018df9955a28266f77c53c4a4290575a9a43dc800ea4565"
+        },
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "aa3c6760ade154db7b3a659d2df104e41c3d8e38344d51fa8ad49d8d448496e9",
+          "output_sha256": "1f7551af76b19b727b2262cab264f6b05fbec63d8892f3f816555c82b66d0315"
+        }
+      ]
+    },
+    {
+      "task": "authorization",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "fffbcf573ce147fd5b9e2f3fb01053e7dde3301570529c6af275efb6dbb68af5",
+      "fixture_commit": "33166544b6299da3f0c17ca013366b728e317f0c",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-authorization-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 18.187
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.657
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.5
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 342.109
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.562
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.36
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.0
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 9,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 904330,
+          "cached_input_tokens": 854528,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 9907,
+          "reasoning_output_tokens": 1760
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual scope policy, contract/composition/repository, new tests, observed checks and external acceptance review",
+        "findings": [],
+        "notes": [
+          "Production count path matches reviewed authorization1 behavior: service checks exact widgets:read before real CountWidgets query, typed composition handles static path, existing public reads and scoped writes retained.",
+          "Only added test files extend the existing fake with Count; original tests remain unchanged. Tests verify denied zero DB calls/context/int64/errors and production RSA token validation.",
+          "Live DB test counts25 rows beyond default page20 across statuses, proves read scope cannot write, and verifies create/update/delete count changes; served OpenAPI parsed and validated.",
+          "Observed focused unit/integration and fast checks all exit0; external fast/full integration/compiled API acceptance pass."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "f401aa97888cc95960777be79f375a3c22e0c5838c1f4de5f9b04592a0ae5dc9",
+          "output_sha256": "961445e4f42d5968d9457d4282dc32bd130d17ddb7f49203825724803984e4c3"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "07d3cba55a9caed52e89eca943b2c9b580b4fb1c5b53609e8b1fa087c84eb4ae",
+          "output_sha256": "6c5fe97e7aee00145a8bd3177aabeac64b79f7cb8f7daa3a36fd68a70e7622ee"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "2868afc2bf773a9e558401a1ee71581a8a49d7c46a4eb5d5e92846def4fd655d",
+          "output_sha256": "fec009e303c114b4a7b2efb4c0c63ecbf50dd99051e28f67ab47e0542a210891"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "78ff9ffa7cd0dcf8465ef2ff3342b0e157db2b114727c9fcdc7c935dc63113fd",
+          "output_sha256": "f35053dee5eb154d4d09eb12ba96ecc289650fe71c77c29c306fb1144a1a1c45"
+        }
+      ]
+    },
+    {
+      "task": "bootstrap",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "f0342307d6273ff5e5cc3bba2922e5cd56efd6fc003f26e3e2dd630391f94225",
+      "fixture_commit": "f7a284c8ece31e9416703b605ea3983e475dae8f",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-bootstrap-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.906
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.938
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.563
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 234.953
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 18.281
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 0,
+      "changed_paths_count": 0,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check only",
+        "observed_phases": [
+          "check.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 590870,
+          "cached_input_tokens": 568320,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 2702,
+          "reasoning_output_tokens": 968
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "bootstrap integrity and clean worktree",
+        "findings": [],
+        "notes": [],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "ce4d61cbd5cc8f1fd23e45c867bf51182e40317f7bbebfffb8f85aceabd7711f",
+          "output_sha256": "92ec72be1633f7260016b6205e5a4b7f03a4d1e4c41ed76a1d6b7c6263196e4e"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "7d805642d4f2c84d75bfd2dd82466407c89032bcda36af44096db2346929a898",
+          "output_sha256": "2cd455c884f30f80bced94254902f1293161ec2375199b918fde6cde505057f2"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "directory_probe",
+          "exit_code": 1,
+          "command_sha256": "9b53605a31d4f6453d2ee4ee605207c9c7d9297236f315957c7dc36a4a3d6b9c",
+          "output_sha256": "7effe6725d5c1685797fef57a4d2495d6fb9d14fd06154d03e7fd57d6f16cabc"
+        },
+        {
+          "kind": "additional_tool_dependency_download",
+          "exit_code": 1,
+          "command_sha256": "884d5d403c603ba3b5f5ef817f2ebe7e1a482db6aa641b1f9bdd9fb2ffc318e0",
+          "output_sha256": "72552d8633d5be9a00872d0f7f96aad2b93c892e9542395a049b664a5707f9b3"
+        }
+      ]
+    },
+    {
+      "task": "bootstrap",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "7717a26165ab76bcb8e77f2216668a1aa65652a522b810e45ec8b7582a4195cc",
+      "fixture_commit": "fcb9bbdca0ba56f7524342398383fdb292d53405",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-bootstrap-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 62.703
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.235
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 55.343
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 256.625
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.453
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 0,
+      "changed_paths_count": 0,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check only",
+        "observed_phases": [
+          "check.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 685367,
+          "cached_input_tokens": 641664,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 3106,
+          "reasoning_output_tokens": 1229
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "bootstrap integrity and clean worktree",
+        "findings": [],
+        "notes": [],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "f1b42bbc8c50dbf416a6accddaccc42e10eecbf7bbdae6699d77f196fb25d208",
+          "output_sha256": "4b69cbe12492d0bff7e561249d2dac929f0edab7d01a02f682ce6f2ac417a4c5"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "e1ea0b234c65571e3da40a41f0b9a4f3721827636637968b75360224bbba4932",
+          "output_sha256": "0d6ffe1ff0fdeecf0a0bedcc46d921e438e2ccae4bd9ce1a5d37d2016ecf1c5e"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "directory_probe",
+          "exit_code": 1,
+          "command_sha256": "78d233fce85a047b626818885397cdad11568d45fb31b83042d9069fbcf3b998",
+          "output_sha256": "2da4ce67fed47da68f8b7ce6757e0ca33d049706e767bbc0fa5e8685db5af3fb"
+        },
+        {
+          "kind": "optional_docker_probe",
+          "exit_code": 1,
+          "command_sha256": "1ddd0829521cbbf1dd0776507367b353dcb3d40ad1e77c103e0c6e4ab9a2dd75",
+          "output_sha256": "5032aa0d15c2696e897ff9e73086b91b6775e19ab808cd21b72b619c7c04abec"
+        }
+      ]
+    },
+    {
+      "task": "field",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "bb10e0a0afaf530096915cc82a71b77ebff6d5ed227a54278ae59def2e3bf6c6",
+      "fixture_commit": "533582d2857100f5dcd9b90f88e79f7b86ccfc96",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-field-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.157
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.0
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.0
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 322.844
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 10.641
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.407
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.328
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 15,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 739942,
+          "cached_input_tokens": 680320,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 10823,
+          "reasoning_output_tokens": 2598
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted_with_contract_finding",
+        "scope": "manual source, additive migration, new tests, observed command transcript and frozen external acceptance review",
+        "findings": [
+          "Shared contract risk: optional priority has a nonnullable integer schema and default3 under the same validator default-injection setup that accepted priority:null in codex-field-2. This attempt has not been independently null-probed; applicability is inferred from the shared configuration and field mapping."
+        ],
+        "notes": [
+          "Optional pointer priority preserves omitted=3 versus explicit zero; service validates after authorization for create, update and idempotent create; persisted response mapping includes priority throughout.",
+          "Only new migration 00007 adds nonnull default and SQL bounds; tests prove legacy-row backfill/rollback preserving all old columns and database constraints.",
+          "New HTTP tests cover PUT omission reset, all valid values, malformed/out-of-range rejection with unchanged rows/events, read/list persistence and idempotent replay. No protected test modifications.",
+          "Observed focused/unit, final fast and full integration commands exit zero; trusted coordinator fast, integration and independent compiled-API acceptance also passed.",
+          "Original external passed result preserved. Parent is addressing the baseline validator separately and will declare new field follow-ups at corrected source/verifier hashes; this review is not a clean contract acceptance."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "d353b5d620b160a6da9a993772e4896788131042d9bf380a65717221b7ddf671",
+          "output_sha256": "ed8144eb0d711902d551d89ab3f62c18cd12e4288183dd0baaeba2ad6682073a"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "7a14ac53b555fdeeb7e671872ad429cb6100acd0a090248d8ea210f93a3fa9aa",
+          "output_sha256": "0e967a51f3d193df8b1007a67bd102c02632bf33d6a96437c1c97a0c9a09ddb8"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "d94b9cb3d9a95c398927dd6d1c20fe8d993a7224d1d141d8dc800ab935637c06",
+          "output_sha256": "b651554e1473c58ff6dcb01e2082baf360f25eeece825c54b3041ed419c27e8e"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "919556a112f1fc45900a217f7a869fbc1b9f876b99fdef6cbddc5e80f3d07b6a",
+          "output_sha256": "393e07f0b341a385637413d203fb1d8ce82f968dce7437b568da7ae48cc5cf8c"
+        }
+      ]
+    },
+    {
+      "task": "field",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "0a053bf7c4974be6d57b03d17a46fc8f6fd8acb0dc09d029bfa7cbabac09d06c",
+      "fixture_commit": "f82c032a62fad357b2574cd01929aa8831d3986f",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-field-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.063
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.265
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.468
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 424.266
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 13.5
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.219
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.25
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 15,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 1042984,
+          "cached_input_tokens": 984448,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 12664,
+          "reasoning_output_tokens": 3442
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted_with_contract_finding",
+        "scope": "manual production changes, new tests, observed command transcript and frozen external acceptance review",
+        "findings": [
+          "Observed priority:null accepted with POST201/PUT200 and default3 despite nonnullable integer schema; existing validator default injection is a contract mismatch not covered by the frozen acceptance grader."
+        ],
+        "notes": [
+          "Feature implementation correctly handles omitted3, explicit1..5, authorization before validation, persistence/response mapping, additive backfill migration and unchanged old data.",
+          "New HTTP/database tests cover all valid values, PUT omission reset, rejected values preserving rows/events/keys, idempotent response persistence and migration rollback. No protected tests modified.",
+          "Observed first focused integration failed on null rejection; agent removed the null expectation from its own new test, honestly reported the change, then focused/fast/full integration passed. External compiled-API acceptance passed.",
+          "Original external passed result preserved. Parent is addressing the baseline validator separately and will declare new field follow-ups at corrected source/verifier hashes; this review is not a clean contract acceptance."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "0283f6a7e0168876fa2700484442f5397a260c82830a2004c85777f690ed1fed",
+          "output_sha256": "38886bc1e3eb3920833bd6cbd6db7888e62d912b52fcddae96406bd8e4602489"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "79e8109d75b90f193020215d2d47f693b72a5579e2bc3d6f2c7ab42cb8b112ca",
+          "output_sha256": "dbe3e906e5b1258fcdc2f1947eedc0f506b2d42955de24d274afc452517ae53c"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "79e8109d75b90f193020215d2d47f693b72a5579e2bc3d6f2c7ab42cb8b112ca",
+          "output_sha256": "ab028aadaf0e0950775eb40ef9dff6402e3a8ed29f22435f99db52cbf7bc0c93"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "327bb5135c9d05743ebba3b97d997d45b5f0a9ca86e6cc45371abcd7701d8edc",
+          "output_sha256": "14d0e70391a1e1ef7cbdb948295e80bce6fe87367954409ae9639f2550effe9a"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "0b09daede3259548622b9ddf20fe1ed4db1d579de6efe6ec338268d877b42016",
+          "output_sha256": "2f8c6cd5a89bb8099fe0639019e505a624f7b5410441aa3863d8b602ac83852d"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "3f54f167c2e273d804626507d2c9fee1e07fb653fefedfb471cbe045f9384f9b",
+          "output_sha256": "40e6e96d9d9e17399aec29b76028b40903cd15e10375ba870910c667e8e476df"
+        },
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "1aad0a6c78e86bb97f2e32670d58c590685b7fbe2bb1b76be631d7735202c38b",
+          "output_sha256": "190789ded03d0602cbda659b6dec02e134658f3b1ff340c1269d9c4ff8711af7"
+        },
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "a6e6d8a8451106e438b41b65a464ea2847f1b75830c7defeb654076f3af726b5",
+          "output_sha256": "5876816dd44fd1b5b11e0f911e573dc04bcaf2f0671c58aaad9a91c0f2dfec68"
+        }
+      ]
+    },
+    {
+      "task": "repair",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "f237ef604b79fe317c2b79676a61312c859099fa89646b6b25e371ead90eef42",
+      "fixture_commit": "e59c1bb5f68ae77a323c852fbedfbe64889b155f",
+      "fixture_tree": "e545c07560439ce6afc90ed07359c8b9324415d3",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-repair-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.953
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.625
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.188
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 232.594
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 13.937
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.563
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.781
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 3,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 702115,
+          "cached_input_tokens": 660864,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 5479,
+          "reasoning_output_tokens": 1460
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual one-line repair, added regression tests, observed red/green sequence and external acceptance",
+        "findings": [],
+        "notes": [
+          "Only production change removes seeded subject exception from Update permission check; all denied principals return before repository mutation.",
+          "New unit cases cover unrelated scopes, permission-shaped roles, arbitrary and blocked subjects, plus valid admin/editor/write scope. New real-HTTP tests verify401/403, every stored column and timestamp unchanged, and authorized writes still persist.",
+          "Observed new unit and integration regressions both fail against seed (forbidden update reaches repository/HTTP200 and changes stored data); after one-line fix focused integration, fast and full integration exit0. Initial failures are deliberate regression proof, not infrastructure errors.",
+          "Existing protected tests unchanged; trusted coordinator fast/full integration/compiled API acceptance all pass."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 1,
+          "command_sha256": "c932a366f072e10b95d002dace2bd88ad780bba8c82cc9dccb2682597b7f4f4e",
+          "output_sha256": "06ae45d7381cef1a96e350f5fafbf171ab26075a4a93ad8e2abb347d2d651f86"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "665b3d49776fa11b5e7fe056d0ab286994b312a6d7696e230d0e1c618527a3e2",
+          "output_sha256": "4f669e7ed23edd3c69b31b14fd31e95ee7bdf0d85004e31cde332b2198b65281"
+        },
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "0498f557f24e12f377723d9c01e5eb96d98edd79e06ed4a45fcbf91c0929864c",
+          "output_sha256": "cb2212e02dc475fde5cfa044585f64afb0d1b623f4090d1ee6123dc25db9da26"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "07bcc9c34e09f9842b6a9c83a7b287b605a8d527e983daf17d37e42a38254fa6",
+          "output_sha256": "9264b2a4908f71c7295721856631147750cab617fe0c4a9a702a1efe746062e6"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "936451b4c07452e9908b444813df33dcfa952b1338ba530b320f2e052614d2ee",
+          "output_sha256": "d962835ae3d6653d89fa707d39265b3efa830fb8ab9900018378c6a37237e148"
+        }
+      ],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "repair",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "da015568b98dfe72c86a5e29873264cfb8f1c8db51f0f6ab67c5828609b5d452",
+      "fixture_commit": "717f9ced258a6711d9a0689546eb7982c82750b6",
+      "fixture_tree": "e545c07560439ce6afc90ed07359c8b9324415d3",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-repair-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 18.75
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.219
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.297
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 264.64
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.266
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.156
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.14
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 3,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 796046,
+          "cached_input_tokens": 750208,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 6068,
+          "reasoning_output_tokens": 1819
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual one-line seed repair, new tests, observed regression sequence and external grading",
+        "findings": [],
+        "notes": [
+          "Only production change removes seeded subject exception; added unit and HTTP tests assert denied principals do not write, every stored field remains equal, and no widget.updated outbox event is emitted.",
+          "Observed seeded unit/HTTP failures, including one initial NEW-test typo querying outbox_events; agent corrected it to outbox_messages, reran the regression to observe the real seed failure, then applied the fix. Final focused/fast/full integration0.",
+          "Protected tests unchanged and external fast/full integration/independent API acceptance passed."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 1,
+          "command_sha256": "2c7b5dc802c2a9a59a542554b22006fe0914298bb3113035cf8f5b72b9f4e931",
+          "output_sha256": "1e6dcdb73c10fc023ab7dd138595e1d8e4533a7e1d943576a065e8b8181f7974"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "c4cda0653801cca107fd4d9c9b76e53132da56b49592274b65d6aa06e085e505",
+          "output_sha256": "f98abebf6e7845721930ae3f16add27dd659d19064ba736487e2abe8ed50945f"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "c4cda0653801cca107fd4d9c9b76e53132da56b49592274b65d6aa06e085e505",
+          "output_sha256": "3047ca808f6921551599fb413a6d6bf718c50efb0cb098bfa5dce99be850373b"
+        },
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "4ce7a433ffb0a4655a68d4e56c617753699e7add974c097e947012d7b8ab5513",
+          "output_sha256": "8fae014586f31b9e072dbc0a382f75f82757fcb8d02ddbba34c0b97276951b21"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "7c96ff1de182a6ddacf6181421ad64423afab9cf875e598ad5add2348ed110b4",
+          "output_sha256": "9602171c2b4b086c0e3dfc8ce520e6ce99cae76a062e83b6c9d4465e84f611b0"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "dd00d8d9497b68dac4baa5989199d2e03582f8a36dcbf1355d75e0e7c6df8e62",
+          "output_sha256": "99038e3a536c1427b5201121f508cab27c57e53c6da7475edabce3f9ee0f5cba"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "5fa8b1a6de6fe8f4c4df1456e700b3b02ce32a7ed54d2dba36c5574909713aeb",
+          "output_sha256": "1ce9d3908181b76ac9d47437dbeda918953b051e95a9e0e679cfbe94c3531a09"
+        },
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "bd5087e1b5d0fb58ffe0f9e8ae574bb561396f6b8d53c79b1a5969c5919f7cc4",
+          "output_sha256": "dacb9231defcaad0f688fbbd41faf18a70d04e2ecd8fe3bb59d71746f621e9a9"
+        }
+      ]
+    },
+    {
+      "task": "resource",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "41fa2b19f4ebe72a5fe996143f876a60128b2db1f35024507a0c1ee436eac6c6",
+      "fixture_commit": "58c4c46cdff3a01f12b4e4d8e65b8c25509bd0c3",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-resource-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 21.766
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.094
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 24.813
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 471.359
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.484
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.313
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.765
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 6,
+      "changed_paths_count": 11,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 1463755,
+          "cached_input_tokens": 1389312,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 13022,
+          "reasoning_output_tokens": 3301
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual feature diff and observed/external grading evidence",
+        "findings": [],
+        "notes": [
+          "Generated module, SQL, migration and typed wiring match the already reviewed correct Note implementation; OpenAPI adds explicit scope/403 descriptions.",
+          "Additional tests use production router with nil persistence to prove unauthorized and invalid requests are rejected before database access, parse served OpenAPI structurally, and cover CRUD pagination tie-breaking, outbox events and authorization on idempotent replay.",
+          "Codex transcript contains observed exit-0 unit/fast/integration commands; trusted external fast, integration and independent HTTP grader also passed.",
+          "Optional development-database migration was blocked by absent FORGE_DB_URL; isolated integration tests using FORGE_TEST_DATABASE_URL passed."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "b023b9960e6123257990977f6176d9ed5fdc90fab473b6edd2e69ee56cdbc767",
+          "output_sha256": "5c37f38fbec0786331afe23cc3a314dbbd4f4b10319a1d8904bbeb71d213c7ce"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "b93a2e56eff6566dc5953b1997a03d1dd1fbbb2a2e504ede032ba7f79d5a4272",
+          "output_sha256": "b0337081bea47e121f274243717b6bbff2aa32c159af8136418c9cdf8e884f02"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "6a2c75d545028e2434b261212c42f0eb3965617cf2f6a08c2cf5309e36d1d961",
+          "output_sha256": "cf728d1efa6b04ea5387635851db0d3b241dd7abb7066bbb98bb682a407087df"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "9ecf36a7e727011b4518f887aa7a9e581330a9e842b0512eb6483b830a66cb48",
+          "output_sha256": "5f3e9f7926566814fd185048edb611f2fc4179b9ce304c5188565238d340ddc5"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "87ac86f4d7868579da8d7f135ec221653d82ead55133fc94f0e9d122664bc54e",
+          "output_sha256": "649e95b6e8111d0f59ee8dac7528ddf3ae78b3e545887e212c030ea83a8d5553"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 1,
+          "command_sha256": "a197d5d3da42b750bb283e937042689d709ebafbbe02217b6362d38a286e510c",
+          "output_sha256": "c66f27c56b1aec682b138702972faed78f0b94e9b4eac9f26cd2e9212d419023"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "5e00a44db7ad97bdeb70f3b6b7c48890beafcf7faed897fd0cfc60d64a7ea5c6",
+          "output_sha256": "0cc1af0f2661b71d518273a82e873314a32efe10186a6e8673e05ebcdc3eba33"
+        },
+        {
+          "kind": "optional_development_database_migration",
+          "exit_code": 1,
+          "command_sha256": "c67fd927e9374191e45962ef404fb01a51047e984d87f066fbeb41634f73dc44",
+          "output_sha256": "754cb2d6cf9974ae5bb219a49c5f32e382db72c04d7895a84581e712dcbea443"
+        }
+      ]
+    },
+    {
+      "task": "resource",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "9f47b4b76e60397a2fd7c6de027f698dd3332283ce5ab9b85cb671c7583ec6f5",
+      "fixture_commit": "92bbaad9133e69cc4ed3bcfbdc762f850ab090c8",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-resource-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.359
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.766
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.016
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 394.406
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.093
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.438
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.828
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 5,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 1165867,
+          "cached_input_tokens": 1109760,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 11936,
+          "reasoning_output_tokens": 2124
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual feature diff plus observed and external grading evidence",
+        "findings": [],
+        "notes": [
+          "Core generated Note module, SQL, additive migration and typed composition match the already reviewed working implementation; served contract retains scoped writes and public reads.",
+          "New production-router integration tests cover CRUD, defaults and pagination bounds, denial without writes/events/keys, replay authorization, malformed/trailing input and structurally validated OpenAPI.",
+          "Observed session had two failures in newly authored tests (compile type mismatch and a validation expectation) before correction. Final fast and full integration commands passed; existing protected tests were untouched.",
+          "Optional task migrate failed because FORGE_DB_URL is unset; dedicated isolated integration passed. External fast/integration/independent HTTP acceptance passed."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "631f56fbcaaad508d629208fd548afd73bd84ee37f6682796f8ba736da2b7c1a",
+          "output_sha256": "3c802b9ed1995410d5fb62b5e1967868671bd6a3ec5eb76fc6a3f585f8c41b60"
+        },
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "d30ec43ad26ce792570a59fe971e93ad5ff1263ee35b48e30c0ca6a5217633d2",
+          "output_sha256": "7608b51420cc344f6affedd04ae6ed5138ac5852e74b500d19940f93888a253d"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 1,
+          "command_sha256": "6e01d560f5be9f1077af2e6c7392396d0cfa9f1eebae76c07a31c90e7da227dc",
+          "output_sha256": "281ec014046d1d2885388f9d6e1caa64feb2c5df14580207c765a0dc8652195f"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "26ff114f3844e9bd53c5375771dca51e5399bbf7d6eafe9fb0e8538cc33e9b9a",
+          "output_sha256": "056eedf29a32cc3184fc6257e1eb223c6f95f368fdc51ee35a6083b7a1312382"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "afcea2578d2a8ad9576177162db099408563f5ef4760f0a736ec523703d90f74",
+          "output_sha256": "832b30ef38d843b711e1c4c4d160415d738407ca261ae23ff00ed595e29f88e2"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "optional_development_database_migration",
+          "exit_code": 1,
+          "command_sha256": "d1e0a935df4b9578a0ecd664b9bf066782f480bdf4c1df5034a8b0592c228ea0",
+          "output_sha256": "7f31a40cc57d787e0664ce04f37c2c09a7b4a2ecf0c8ffc00380909e8cb3ad35"
+        }
+      ]
+    },
+    {
+      "task": "second_resource",
+      "attempt": 1,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "ca402fb5e56c0f1aa302d2636c4068f13856310a74567caf2ba33c94055b1e76",
+      "fixture_commit": "19d15894709ef0fd198a4784fd4b2a288a2cdc60",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-second_resource-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 43.282
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.953
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.687
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.016
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.61
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 376.954
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 11.203
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.516
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.047
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 899635,
+          "cached_input_tokens": 844288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 10795,
+          "reasoning_output_tokens": 2557
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual generated Label slice, new composed-router tests, observed checks and external acceptance",
+        "findings": [],
+        "notes": [
+          "Label production sources match seeded Note after resource substitution; additive00008 migration, contract/sqlc additions and typed delegates correct. Existing Note policy and tests retained.",
+          "New RSA-token production-router tests exercise both resources concurrently in one API/database: publicCRUD, exactpagination/bounds/Unicode length, invalid/denied writes preserving rows, separate scopes, exactly3outbox lifecycle events and idempotency replay/cross-resource keyconflicts.",
+          "Observed focused/unit/integration and fast/full integration commands all exit0; external fast/full integration/compiled API acceptance pass."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "72d46ddc85c4d9898b5263ca19776c569bba730969cf6bde7f816cd6bd447000",
+          "output_sha256": "ce89479b0edc16a72ed10b1abbb46495859915a18dd2870479414f1003bf9057"
+        },
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "72d46ddc85c4d9898b5263ca19776c569bba730969cf6bde7f816cd6bd447000",
+          "output_sha256": "d9e1892f19a5a397f0e080cde5a4eac9c2092b29ce7cd0b33526de41760b9351"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "6463cdac5c473517ea1553b53b7bffca5f6546803d1969fa798704cb922913f1",
+          "output_sha256": "2f4531113f3553b453169447708b3c909b1e2bf32603ddb90b0c9c9cef75673a"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "8d25b9532af09a6e4e2e342f44a07c031e6f83651c75e2e9cc3115fb16d16e43",
+          "output_sha256": "8166e2589591d61a22b698b4ae8cb4f487959efaa04fa077f50dd6a73e8756ee"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "d52658f48f5ccdf96d7a98075cdd15d004dfce68beb2a44e072bf04d844725b1",
+          "output_sha256": "da3eb1f47269d31db860ecc9c0bee0037259e36f200e934ffc6e4de8673645be"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "b2a1dd84ce98137932d56ba59a2e9449e6c3fa552d68a776334a5fb8c6260c88",
+          "output_sha256": "4e7ceef2dfcaea0b47601bdf7d119003ab2955c2e362482775961242fd90f8ab"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "53ba1f44a39e068225f4c5486f3fa3f3feea9c0b4a420d16ef2c4efa044319b3",
+          "output_sha256": "f98b6a285911ddf9b47a96def740a3da79bd484b1eab9d3e1f0e7dd3419c9c8a"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "4eb62943edb7150cbdf1dd55fb7aaa7a700290bb6ffefc19c80c17f85da75fcb",
+          "output_sha256": "8a1fddc1a8aff9fcce6dc33bf7ec8fb958543b37c6b4d6e5600cb090d1ccec78"
+        },
+        {
+          "kind": "source_read",
+          "exit_code": 1,
+          "command_sha256": "368665aeb569204b3a5176b88799310da27515db8bda78749d532a9a47107d5d",
+          "output_sha256": "3c6705430f91f767ad06c7432fb8f1f44c6d5ca77ac65c0ec738e3e33b6e8544"
+        }
+      ]
+    },
+    {
+      "task": "second_resource",
+      "attempt": 2,
+      "agent": "codex",
+      "model_requested": "gpt-6-astra",
+      "client_version": "codex-cli 0.166.0",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "46dc0e58956fda41beb2ac284394603c80fdda0c84f16a05e61a91ce444dc1a3",
+      "fixture_commit": "2774daaec10658e5ddbac517a5717709b56dc2f2",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-codex/codex-second_resource-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "codex :workspace profile / Windows MXC / localhost and owned temp",
+        "network_allowlist": [
+          "localhost",
+          "127.0.0.1"
+        ],
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 2
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 19.234
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.828
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.641
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.343
+        },
+        {
+          "log": "sandbox-preflight.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.032
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 404.265
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 9.968
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.5
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.469
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 1295148,
+          "cached_input_tokens": 1236736,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 11256,
+          "reasoning_output_tokens": 2392
+        },
+        "permission_denials_count": null,
+        "model_names_provider_reported": [],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "Source diff and additional tests inspected; required session checks observed; external grading and integrity evidence reviewed without changing the raw workspace.",
+        "findings": [],
+        "notes": [
+          "Label production files match seeded Note with resource-name substitution; contract, SQL configuration, migration 00008 and typed API composition match the independently reviewed first attempt. Existing Note policy and protected files are unchanged.",
+          "Added tests exercise both resources on one real database and production router with RSA tokens: CRUD, Unicode name limits, pagination bounds, separate scopes, denied/invalid writes preserve rows and events, and replay rechecks write permission.",
+          "Four observed required session check commands passed: focused module unit tests, shared API integration tests, fast checks, and full integration. External fast checks, full integration and independent compiled-API acceptance also passed.",
+          "An exploratory file search referenced a nonexistent path. An optional application migration command failed because FORGE_DB_URL was unset; migrations succeeded against isolated integration databases using the supplied test database. These failed commands remain in the raw transcript.",
+          "Race, containers, vulnerability scan and full CI were explicitly unrun in the agent session. No claim of full CI success."
+        ],
+        "session_evidence_kind": "observed command transcript"
+      },
+      "observed_session_checks": [
+        {
+          "kind": "focused_tests",
+          "exit_code": 0,
+          "command_sha256": "8d5812263a410ea264364741383c607994144fb32d210e8f65cce27e94f69856",
+          "output_sha256": "c5275f4207369923bcfc4e683123a4a60450bdc606efc70cfec715f95a221f06"
+        },
+        {
+          "kind": "focused_integration_tests",
+          "exit_code": 0,
+          "command_sha256": "89de06676d0129db920389054c72e5b10a7d049761a6956c9586cba31da9d52a",
+          "output_sha256": "b1b4bd2bea13c7b3c2f0f52109310f61b16e7f63464491ce140badb5cbaf0317"
+        },
+        {
+          "kind": "fast_check",
+          "exit_code": 0,
+          "command_sha256": "04adcd1b493beb59fe107eb057e681d948626d29d79c243e2825ed0ec8211f66",
+          "output_sha256": "a770294bb6c34996bcad756fc33721223fa6dc09dd798226e1cea9f82df9c9c6"
+        },
+        {
+          "kind": "integration_suite",
+          "exit_code": 0,
+          "command_sha256": "04d322d63740b35e914a15ec7c84a9e4fec2ebcd6f31ea6512535f428cd4bf2d",
+          "output_sha256": "65f7a6f5014b92d44016072c397a273930ef0b1936cb758065602b6da40b5f7d"
+        }
+      ],
+      "other_nonzero_commands": [
+        {
+          "kind": "source_search",
+          "exit_code": 1,
+          "command_sha256": "c1c86f391f4cbcb03e44882554a027037517234697ffbe2e0889e2a116a3a463",
+          "output_sha256": "2ad173517251db150367304250fc2a57e41f1c62bc6920017a940591fdaeabe0"
+        },
+        {
+          "kind": "optional_development_database_migration",
+          "exit_code": 1,
+          "command_sha256": "6030e177469a85a2667fb417745ea3506a06f8f7a081d141f8f43f8cd7420d90",
+          "output_sha256": "bb309e5ab52644f6f43fed4c27143643fdebcc437f55765c478a20884baec5d6"
+        }
+      ]
+    },
+    {
+      "task": "authorization",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "e9b042ff49ac5a41740e7927f70c16b6f051ec83923e1e93ec349da551e16805",
+      "fixture_commit": "2dc86fa18e2da14f28c4dad60df9c1def4187fe5",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-authorization-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 16.0
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.781
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 205.969
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 13.984
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.75
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 9.109
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 11,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 52,
+          "cache_creation_input_tokens": 70759,
+          "cache_read_input_tokens": 1813812,
+          "output_tokens": 15685
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual protected-count diff and external grading evidence",
+        "findings": [],
+        "notes": [
+          "Count service checks exact widgets:read permission before accessing its Counter repository seam; existing roles gain no new read grant. PostgreSQL implementation reuses the real CountWidgets query.",
+          "Protected static route is in served OpenAPI and typed application composition; response is a nonnegative integer count. Existing widget operations remain unchanged.",
+          "Optional Counter interface preserves existing Repository implementations and fails closed for unsupported authorized calls. New unit tests assert denied callers never reach counting, and integration tests cover 401/403, current counts and preserved routes.",
+          "DevIssuer gains an additive scope-mint helper used by new integration tests; legacy Mint delegates with no scopes and verification policy is unchanged.",
+          "External fast/integration/compiled-API HTTP acceptance passed; Claude agent checks are self-reported only."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "authorization",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "e9b042ff49ac5a41740e7927f70c16b6f051ec83923e1e93ec349da551e16805",
+      "fixture_commit": "cb9cca4e9efebef320c8bce9861f8380ee363541",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-authorization-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 22.875
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.25
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 229.453
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 64,
+          "cache_creation_input_tokens": 73618,
+          "cache_read_input_tokens": 2201466,
+          "output_tokens": 17782
+        },
+        "permission_denials_count": 1,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "adapter permission failure diagnosis, no external feature grading",
+        "findings": [],
+        "notes": [
+          "Grep was denied when reading kin-openapi routing-library source outside workspace in the warmed Go module cache. Unlike resource2, this was not a compound command.",
+          "Current Claude adapter has no additional-directory grant for that dependency source; Codex receives cache roots. This result indicates an adapter/tool-policy limitation, not established feature implementation failure.",
+          "Claude final self-report says fast check and full integration passed; no external coordinator grading ran after the permission denial. Frozen cohort and raw records remain unchanged."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "bootstrap",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "9dea7fb294c1fe482e71683dacc05256c927855cdf7c9198379ae9e4698e2a05",
+      "fixture_commit": "f7a284c8ece31e9416703b605ea3983e475dae8f",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-bootstrap-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 18.11
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.046
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 63.734
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 28.454
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 0,
+      "changed_paths_count": 0,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check only",
+        "observed_phases": [
+          "check.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 12,
+          "cache_creation_input_tokens": 28185,
+          "cache_read_input_tokens": 231595,
+          "output_tokens": 1703
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "bootstrap integrity and clean worktree",
+        "findings": [],
+        "notes": [],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "bootstrap",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "9dea7fb294c1fe482e71683dacc05256c927855cdf7c9198379ae9e4698e2a05",
+      "fixture_commit": "ee86d95b3fe3cf9a8b085feb224c298eb58eec77",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-bootstrap-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 17.765
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.141
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 70.687
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.625
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 0,
+      "changed_paths_count": 0,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check only",
+        "observed_phases": [
+          "check.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 18,
+          "cache_creation_input_tokens": 33459,
+          "cache_read_input_tokens": 368086,
+          "output_tokens": 1999
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "bootstrap integrity and clean worktree",
+        "findings": [],
+        "notes": [],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "field",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "5ccf45d8aef24854e30084c8d13ee4cec11deac63a00068e4e7890795a9e274a",
+      "fixture_commit": "1de06d8911952f91154c1d73a0aefb8ab2f89d15",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-field-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 24.406
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.328
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 255.5
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.453
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.375
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.953
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 14,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 50,
+          "cache_creation_input_tokens": 80559,
+          "cache_read_input_tokens": 1855190,
+          "output_tokens": 19764
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted_with_contract_finding",
+        "scope": "manual persisted-field diff and external grading evidence",
+        "findings": [
+          "Shared contract risk: optional priority has a nonnullable integer schema and default3 under the same validator default-injection setup that accepted priority:null in codex-field-2. This attempt has not been independently null-probed; applicability is inferred from the shared configuration and field mapping."
+        ],
+        "notes": [
+          "New additive migration adds NOT NULL integer priority DEFAULT 3 with CHECK 1..5; it preserves all existing widget columns.",
+          "Optional API pointer distinguishes omitted input from explicit zero; both create and replace default nil to 3, and shared response mapping includes persisted values in get/list/create/update.",
+          "Service authorizes first and rejects invalid priority before repository access, including idempotent create. SQL create/update both persist priority.",
+          "Added unit, live HTTP/database, bounds/no-change and down/up backfill tests retain existing tests. External fast, integration and independent frozen-baseline HTTP grader all passed.",
+          "Agent-side successes are final self-report only for this Claude output format.",
+          "Original external passed result preserved. Parent is addressing the baseline validator separately and will declare new field follow-ups at corrected source/verifier hashes; this review is not a clean contract acceptance."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "field",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "5ccf45d8aef24854e30084c8d13ee4cec11deac63a00068e4e7890795a9e274a",
+      "fixture_commit": "180ee4759bcdee70db67eedeface094892f124ff",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-field-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.359
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.36
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 249.0
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.969
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.39
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.328
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 14,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 64,
+          "cache_creation_input_tokens": 80440,
+          "cache_read_input_tokens": 2418680,
+          "output_tokens": 21771
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted_with_contract_finding",
+        "scope": "manual persisted-field diff and external grading evidence",
+        "findings": [
+          "Shared contract risk: optional priority has a nonnullable integer schema and default3 under the same validator default-injection setup that accepted priority:null in codex-field-2. This attempt has not been independently null-probed; applicability is inferred from the shared configuration and field mapping."
+        ],
+        "notes": [
+          "Shared WidgetPriority schema consistently constrains optional input and required response to 1..5, default 3.",
+          "Optional domain pointer and store conversion correctly apply POST/PUT omission default; service authorization precedes priority validation and writes.",
+          "Additive default/check-constraint migration preserves existing row data; both create/update SQL persist priority and shared mapper includes it in lists.",
+          "New service, HTTP, database constraint, rejected-write preservation and upgrade tests are meaningful; external frozen-baseline HTTP acceptance passed. Claude check outcomes are final self-report only.",
+          "Original external passed result preserved. Parent is addressing the baseline validator separately and will declare new field follow-ups at corrected source/verifier hashes; this review is not a clean contract acceptance."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "repair",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "142f9e2e85fb34facb935063fa69d3ad7a14ebd06e3e61fceb0dab787db13d4c",
+      "fixture_commit": "89e988077d260b649f76f25ae788523859bf3c9b",
+      "fixture_tree": "e545c07560439ce6afc90ed07359c8b9324415d3",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-repair-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 14.765
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.547
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 119.422
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 3,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 36,
+          "cache_creation_input_tokens": 41740,
+          "cache_read_input_tokens": 893069,
+          "output_tokens": 6552
+        },
+        "permission_denials_count": 1,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "provider permission outcome and final self-report review; not externally graded",
+        "findings": [
+          "Denied git stash attempt; permission-denial-as-failure retained."
+        ],
+        "notes": [
+          "Final JSON says stash was attempted to demonstrate regression, then manually reintroduced seeded condition and observed failing tests before restoring fix.",
+          "Reports fast check and focused integration passed, with full integration explicitly not run. These are agent self-reports; no command transcript or external feature grading.",
+          "No harness or workspace repair/intervention during attempt."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "repair",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "142f9e2e85fb34facb935063fa69d3ad7a14ebd06e3e61fceb0dab787db13d4c",
+      "fixture_commit": "1a250773a0d2ea667d11694474a65f0ec6967641",
+      "fixture_tree": "e545c07560439ce6afc90ed07359c8b9324415d3",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-repair-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 22.344
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.625
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 123.641
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.031
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.422
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.703
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 2,
+      "changed_paths_count": 3,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 38,
+          "cache_creation_input_tokens": 45341,
+          "cache_read_input_tokens": 1000441,
+          "output_tokens": 6186
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual one-line repair, new regression tests, provider outcome and external acceptance review",
+        "findings": [],
+        "notes": [
+          "Only production change removes seeded subject exception so authorization failure returns before repository Update.",
+          "New unit tests cover arbitrary denied subjects/roles/wrong scope and allowed editor/write scope; HTTP test checks403, all mutable columns and updated_at unchanged, plus allowed update. No existing tests changed.",
+          "External fast check, full integration and independent compiled-API seeded-regression acceptance passed. Agent reports fast/full integration and temporary bug reintroduction proving tests; those agent-side claims are self-reported only."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "resource",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "8d4336719d441a3385ba659270e7f5193dd32b4235650b51f006d87462014f2f",
+      "fixture_commit": "6ba5dd80069dd31c98e2d437f004342ca89acb92",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-resource-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 29.156
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.375
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 216.719
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.75
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.86
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.953
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 3,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 54,
+          "cache_creation_input_tokens": 66864,
+          "cache_read_input_tokens": 1630245,
+          "output_tokens": 14172
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual feature diff and external grading evidence",
+        "findings": [],
+        "notes": [
+          "Notes use the supported typed composition, served OpenAPI operations, ordered SQL pagination and a new additive migration.",
+          "Service requires exact notes:write before persistence, including idempotent replay. Existing auth roles and widget routes are unchanged.",
+          "Added router integration tests cover public reads, scoped writes, anonymous and wrong-scope denial, validation, pagination, missing records and idempotency; no verification machinery was weakened.",
+          "External fast check, integration and independent compiled-API HTTP acceptance succeeded. Agent-side check success is Claude final self-report only."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "resource",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "8d4336719d441a3385ba659270e7f5193dd32b4235650b51f006d87462014f2f",
+      "fixture_commit": "3421321850518639da4896fc842c800b726a9f30",
+      "fixture_tree": "5b283db5faf7fda619bb40e3ce28908ec0c69842",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-resource-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 34.984
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.906
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 206.922
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 52,
+          "cache_creation_input_tokens": 67985,
+          "cache_read_input_tokens": 1632605,
+          "output_tokens": 14743
+        },
+        "permission_denials_count": 1,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "permission failure diagnosis, no external feature grading",
+        "findings": [],
+        "notes": [
+          "Claude requested a compound PowerShell git status plus Get-ChildItem command, contrary to separate-command guidance and named allow rules. Permission denial is recorded and the attempt remains unsuccessful.",
+          "Agent self-reports fast and focused integration passes, but these are not independently observed in the final-only JSON and external grader did not run.",
+          "Optional application migration command was blocked by absent FORGE_DB_URL; the dedicated FORGE_TEST_DATABASE_URL was available for isolated tests."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "second_resource",
+      "attempt": 1,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "813f627eddb4b2d374afe01a941eafc2da0e0dbb19756ae16e49b47d04854550",
+      "fixture_commit": "08f1bda4f7c3ef1f99e239aaceb8e6041c76d961",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-second_resource-1",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "permission_denied",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 15.797
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 5.735
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.453
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 3.89
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 173.953
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 50,
+          "cache_creation_input_tokens": 68730,
+          "cache_read_input_tokens": 1611161,
+          "output_tokens": 14058
+        },
+        "permission_denials_count": 1,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "failed_attempt",
+        "scope": "provider permission outcome and final self-report review; no external feature grading or code acceptance",
+        "findings": [
+          "Adapter omitted read-only git ls-files with -C naming the exact owned workspace; permission-denial-as-failure retained."
+        ],
+        "notes": [
+          "Final JSON reports listing denial then PowerShell fallback, generated Label implementation, and fast/full integration success. These are agent self-reports; no command transcript or external feature grade.",
+          "The prompt prohibited cd/compound shell commands but did not prohibit git -C. This denial is an adapter omission, not established feature failure.",
+          "No harness or workspace intervention during attempt; original result remains unchanged."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    },
+    {
+      "task": "second_resource",
+      "attempt": 2,
+      "agent": "claude",
+      "model_requested": "claude-opus-5-5",
+      "client_version": "2.1.319 (Claude Code)",
+      "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+      "runner_sha256": "b9217a231a42fa39e0cafa00812cfbb15bb6d53578b83420f8a7ab43bf01fd33",
+      "verifier_sha256": "010cba0fdb8ccd358d7a565fd016b34899ff20031aabc000132c1103698f73fb",
+      "prompt_sha256": "813f627eddb4b2d374afe01a941eafc2da0e0dbb19756ae16e49b47d04854550",
+      "fixture_commit": "12775b29e51a4ecfe59d576bc12c9b514c131e6c",
+      "fixture_tree": "cafe3fb6764c41d6d2d769f4ed90d0b584f33303",
+      "environment": "Windows 11",
+      "go_version": "go version go1.27.3 windows/amd64",
+      "executor": "claude acceptEdits / named shell permissions",
+      "cache": "shared host Go caches",
+      "fixture": "initialized full preset",
+      "verification_scope": "trusted coordinator after agent exit",
+      "human_interventions": 0,
+      "id": "baseline-claude/claude-second_resource-2",
+      "cohort_group": "baseline",
+      "record_completeness": "completed_result_manifest",
+      "harness_status_recorded": "passed",
+      "agent_session_checks_recorded": {
+        "status": "unreviewed"
+      },
+      "prompt_hash_semantics": "UTF-8 text with LF newlines; saved-file bytes are hashed separately. Codex prompts contain per-attempt scratch guidance, so prompt hashes may differ across repetitions.",
+      "permission_policy": {
+        "executor": "claude acceptEdits / named shell permissions",
+        "network_allowlist": null,
+        "private_write_paths_and_profile_identifier": "withheld",
+        "read_only_cache_grant_recorded": false,
+        "read_only_cache_roots_count": 0,
+        "read_only_cache_purpose": null,
+        "writable_cache_roots_count": 0
+      },
+      "phase_results": [
+        {
+          "log": "initialize.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 29.265
+        },
+        {
+          "log": "prepare.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 7.078
+        },
+        {
+          "log": "seed-0.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 1.735
+        },
+        {
+          "log": "seed-1.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.719
+        },
+        {
+          "log": "agent.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 204.453
+        },
+        {
+          "log": "check.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 8.5
+        },
+        {
+          "log": "integration.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 4.985
+        },
+        {
+          "log": "acceptance.log",
+          "exit_code": 0,
+          "timeout": false,
+          "seconds": 6.922
+        }
+      ],
+      "integrity_changes_count": 0,
+      "new_test_files_count": 4,
+      "changed_paths_count": 10,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "host fast check, integration, and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "check.log",
+          "integration.log",
+          "acceptance.log"
+        ]
+      },
+      "provider_usage_reported": {
+        "usage_fields": {
+          "input_tokens": 44,
+          "cache_creation_input_tokens": 80897,
+          "cache_read_input_tokens": 1599405,
+          "output_tokens": 15281
+        },
+        "permission_denials_count": 0,
+        "model_names_provider_reported": [
+          "claude-opus-5-5"
+        ],
+        "interpretation": "Provider definitions retained; no inferred billing or cross-provider token normalization."
+      },
+      "post_run_review": {
+        "reviewer_kind": "independent coding agent; read-only inspection, not a human review claim",
+        "outcome": "accepted",
+        "scope": "manual generated Label slice, composition and new production-router tests plus external grading review",
+        "findings": [],
+        "notes": [
+          "All Label production files match the retained seeded Note implementation after resource-name substitution; only new migration00008, contract/sqlc registration and typed composition added. Existing Note policy/code/tests preserved.",
+          "New RSA-signed-token integration tests serve both resources through production router, verify isolation/public reads/CRUD/pagination/input rejection, separate write scopes and denied writes preserving data, plus idempotent replay authorization.",
+          "Frozen external fast/full integration/compiled API acceptance all pass; agent-side check success remains final JSON self-report only."
+        ],
+        "session_evidence_kind": "agent final self-report only"
+      },
+      "observed_session_checks": [],
+      "other_nonzero_commands": []
+    }
+  ],
+  "evidence_manifest": [
+    {
+      "artifact": "baseline-codex/codex-authorization-1/result.json",
+      "sha256": "750dde51a559220fbadbecc8dde9a0d428ca63ae619910ff0913f87b18cbf613",
+      "bytes": 8210,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/acceptance.log",
+      "sha256": "10daa2c873b2b57c9a48ec4b17f93a9bad689a4a0c212eb2db9596c9dfc84ee7",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/agent.log",
+      "sha256": "f06281193e1029efed8872d4858f425d3919fd30b96ae70cb7b4886463283343",
+      "bytes": 223287,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/check.log",
+      "sha256": "5f84915a526149265986de375b4bb1023fd5553b59076a18e32b206f994b4c9a",
+      "bytes": 1302,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/integration.log",
+      "sha256": "fd6e0fb2f5616020ef537cf8a463693fbb94140ae5424255d16c2272ba8f3196",
+      "bytes": 980,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/prompt.txt",
+      "sha256": "f2631fb779a412f8be620211ce86e5bec03f46ce88acfca8c4b01f3b14c45511",
+      "bytes": 1402,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-1/sandbox-preflight.log",
+      "sha256": "13b860fe3825d16dd04c6e9d99aea21bd755cbb12df0f2361018ba2f8e8d46bb",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-authorization-1.json",
+      "sha256": "4208126fcfb827775173ded7bb11464813cbbd0835679d87a67421cd1e0812a7",
+      "bytes": 15036,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/result.json",
+      "sha256": "0da40723d41ea4a8e04dcf5fcdd253c171deb9ed06a3493f095a2768ff6d1283",
+      "bytes": 8203,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/acceptance.log",
+      "sha256": "91d818b7d808cee6cfdae9170ee36034d4cf05f85a873135e3d2cc05276e6fc1",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/agent.log",
+      "sha256": "cb82b369454031fef5b295368dafe960d5f65ff0d89bf499e54abc7371ca98a8",
+      "bytes": 189747,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/check.log",
+      "sha256": "9256a747bea765b521493f521f8faa2060c25c856d32fb9705291502199ee980",
+      "bytes": 1302,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/integration.log",
+      "sha256": "ad73794bff03a48a4f454480d7d5d9efc59a83b5d7a6eed255b705209a0f6ab1",
+      "bytes": 980,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/prompt.txt",
+      "sha256": "11cd1f1d51b9c1be0de0782ac13adf61131ddb0b030a73d156f4bc64b9b00a84",
+      "bytes": 1402,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-authorization-2/sandbox-preflight.log",
+      "sha256": "2651560d4b29145e72c509f72aade601895f3503c1e0cd3e0b5fe3c40d816067",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-authorization-2.json",
+      "sha256": "841ccf752ff4cd439b250a82e0de7ce5a58b4c1018d0a68ceaeaec8e76ecd3bc",
+      "bytes": 14108,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/result.json",
+      "sha256": "f7a85482acbaff7c70dc27530a3895c14162186c8c0d5476283777ee5c2dd2ba",
+      "bytes": 7108,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/agent.log",
+      "sha256": "14456915210d287c4ac401d7c167e6d77a4aea3fe894a67ae5dbab958ed326dd",
+      "bytes": 56029,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/check.log",
+      "sha256": "1827b5d5a8a67ac3fb35c3d78db3ca9ed575f1558b3542e7c097191b0c15d0e2",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/prompt.txt",
+      "sha256": "0d8ecadb519694ef2596ab87b03d8bdeb3385e72c000dfef2e212211cc341757",
+      "bytes": 1180,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-1/sandbox-preflight.log",
+      "sha256": "18ca9315e3c503b85620f8c64458a8d32e6a7f209a147dc3ad63dbe677234963",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-bootstrap-1.json",
+      "sha256": "99226473e32aa35acd52b52078c6fa98df441165afdb10ff21304c7f92618e65",
+      "bytes": 12613,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/result.json",
+      "sha256": "dd338bddbb078ad8753c0aa40c5b6a2cbb47c63955fc81509b1cb3fe56026e5d",
+      "bytes": 7110,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/agent.log",
+      "sha256": "fbf73126d83b3188f825bb1bc192f16d463353b68eeae661aa34470d257a1b7b",
+      "bytes": 57494,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/check.log",
+      "sha256": "2c6fb8b850fbd9c5f4aae4f09536fb2e014beb558dd973256f2d0564a1fdc432",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/prompt.txt",
+      "sha256": "68c868031852954248042d029a23e5847e543f4a37cb7b2b4258dc2bc0889630",
+      "bytes": 1180,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-bootstrap-2/sandbox-preflight.log",
+      "sha256": "0ccb93f63ad6e243dc0bc985c1ebeb3f37ac14f87ccb3c09375d50ab14abf3f9",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-bootstrap-2.json",
+      "sha256": "bf90799f8049a860d013a0a61e7f94725a2ee97a6d43eed9cdcc1563bb36a528",
+      "bytes": 11834,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/result.json",
+      "sha256": "bc955cf5fc050fa1c2b0175a8df02ebaf485859a7007ef20925366ccac1f2922",
+      "bytes": 8548,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/acceptance.log",
+      "sha256": "7eaef154088b0c87bb3796cb63834ae12f32400fb6a26046753b98a338d21bdb",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/agent.log",
+      "sha256": "5f2174d10908f6339f9c50857ebdf175800c8ac34fb54169020699a9d45c829c",
+      "bytes": 189304,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/check.log",
+      "sha256": "491c2cded360d9be0980b81d5c252fbb41851ea07b49e9afa0856065c3201e73",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/integration.log",
+      "sha256": "6d64b8089aeea441cf9b708ad93f18663ac02d6b2e34d24157234802679076f4",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/prompt.txt",
+      "sha256": "c28ec53d5ccb6a962b63c6a79a7d8ebc55566aa1b7396a36a7defb6e8f791e05",
+      "bytes": 1473,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-1/sandbox-preflight.log",
+      "sha256": "5f8ea3d791eb957c8693b0fb0e733641c5414c77fc202f6a0eda72bb601ba2d3",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-field-1.json",
+      "sha256": "2bcedaba10b70bb9cbd4c1bf34718a87044f138834ff679a81818bde0aaf6ed2",
+      "bytes": 13749,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/result.json",
+      "sha256": "cea033f2de62fe628ef7866691c2530cbbe95670f5d7c2ec25ad53afb5874f33",
+      "bytes": 8550,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/acceptance.log",
+      "sha256": "7049fef1338b88f0da906404b50f3d01b94ec1e9dd4227e641da4d93de9dc38b",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/agent.log",
+      "sha256": "6d62cd3cdc38827749588488b2cb36f6f371e8670880149fc1c693a5a12410e2",
+      "bytes": 199567,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/check.log",
+      "sha256": "4171f667fe8cc0ae7eb9034726d3d708726cc53616a6c3e6ce150a77797089cc",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/integration.log",
+      "sha256": "ae9d8d44a4f545f0d64c6a719d5134aefa4a8ce08826a6197409ac1566e4d604",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/prompt.txt",
+      "sha256": "032990227ce0b97ea97ea7a6f278617a60f655b9d27f46fa1845070e3cf89419",
+      "bytes": 1473,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-field-2/sandbox-preflight.log",
+      "sha256": "fdfb22e74b70ddd4a32ca8e30c5aa5ca840d9f8c5c114283e1d5209bad680f99",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-field-2.json",
+      "sha256": "c409ca81c7c9254b2e3e1ee2fd78463e20e10b51eb245c52b24c6bdc75141d0a",
+      "bytes": 19288,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/result.json",
+      "sha256": "e0ea613b50099c1b13e38f6226aa8ca2793885c28f4a333b18906ac28d82cb00",
+      "bytes": 7985,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/acceptance.log",
+      "sha256": "5a5bfbe1df59b1d4d7773d0ca1feefb2c8d4d56509fe5546ec031633a66e41de",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/agent.log",
+      "sha256": "8ef975e380444ad5d5612933dc1e2141860fe2784dcc32b7b83791c25306f9be",
+      "bytes": 119070,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/check.log",
+      "sha256": "84739ed9c2e915aa063a1e22f133e961850e0e1d7d0e87cd7a4380e0953b2c56",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/integration.log",
+      "sha256": "ea743702732f50f43eff8020d86986d4b78e4418597aabe9a3757591e1f6a4f6",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/prompt.txt",
+      "sha256": "2c481363daa80d16c8847f29bca9b4ad613f36493bbb173c4c15717cd1b22474",
+      "bytes": 1293,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-1/sandbox-preflight.log",
+      "sha256": "3fc674fec0d90393680ce459b225e69c1ba68a37bf4778984e12ad07ad13fda6",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-repair-1.json",
+      "sha256": "10a8c5a3d7ff4034b5edf58b8d443ed29276ea748d1645bca388573313ae5974",
+      "bytes": 15574,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/result.json",
+      "sha256": "60d9c7d5f9fe54e2955d3bc98a9a7d863c81e3617ba73485c4161336a68a23f1",
+      "bytes": 7982,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/acceptance.log",
+      "sha256": "22bb2e71e44c6c6c53c174379a7df9c862d10e159ffe6a37d00812c6c63da32f",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/agent.log",
+      "sha256": "49c21ee71e0d371de2c1c17421bc50796c917bf74eaefba08663274d0784c1d8",
+      "bytes": 143677,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/check.log",
+      "sha256": "84e9b98778b1dc2b84f9d7acbfc88adf2b70268c2cbb27d7987689c0fc7f8109",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/integration.log",
+      "sha256": "bddbc3110c1b2a94d2c27095f9b46b57d2172ac2fc87c5f0920f812df1611162",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/prompt.txt",
+      "sha256": "de37ef18e3794c7ba5180357482a7d71dd771382587a538d52433e1c04a08cae",
+      "bytes": 1293,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-repair-2/sandbox-preflight.log",
+      "sha256": "14b37c32bd39e9303fa2a283a3501aa7ee9db58333f35449dc0245f2d1abe920",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-repair-2.json",
+      "sha256": "63224d6104a480808225fc5c5ef3b49b75cfd914332fc7e0932098e18da87680",
+      "bytes": 21156,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/result.json",
+      "sha256": "d0e7385ca709aff7d386ba0ca1d04bd8d169d11d007f971ff04c91aa0dd493df",
+      "bytes": 8349,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/acceptance.log",
+      "sha256": "8a0f01cc0ff32f94cf686b4159a923bd8527b4a5b8abd9707c1bd636568a3628",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/agent.log",
+      "sha256": "b8ffa3af84fa5fd1143203bcec4436e7c382c047bd2df7026cce830c5e23e6c2",
+      "bytes": 219086,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/check.log",
+      "sha256": "1541c3fd5418ddd1a6123a1aa94d5e2e8e0d406b35257e0f7dd6816ce5644483",
+      "bytes": 1357,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/integration.log",
+      "sha256": "51a0e9e4c478ffabb0df1bdd48afb53d46eb670e22409c486c04c125e2eac1c4",
+      "bytes": 1035,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/prompt.txt",
+      "sha256": "5da23c4cf94c3f81c8a56c050b0ae08d7e8b9ac905fbc4176beca0744800da11",
+      "bytes": 1411,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-1/sandbox-preflight.log",
+      "sha256": "8609c1af7e85aaaecb7092832b0c8a23e02487ee7a9e45774495de548f82a1d7",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-resource-1.json",
+      "sha256": "e3d96545ac80e50324aaaeaa7b3b7f9082bd5367896e1296fc97db0c8c939d5d",
+      "bytes": 20112,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/result.json",
+      "sha256": "633e5649480bd8d54309448259bff5c1aae44f660c7738a88162e379cc1cb6bb",
+      "bytes": 8299,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/acceptance.log",
+      "sha256": "ad6f7258a5e20913a39638c53b64f95df1ddc9323b89259ec9b7a4462c1f0609",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/agent.log",
+      "sha256": "ec8c5ae72b5e775bb0b3824a8b578ab196413fe113fadb7d4e4c49012d3691d7",
+      "bytes": 215286,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/check.log",
+      "sha256": "8a5896a003db8fcfaa617f4809980f15739f7710d88b668043d670a88dd08b74",
+      "bytes": 1366,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/integration.log",
+      "sha256": "206ad845f42c69fcbd23a3a4a9c4d3d3207081b0f13a92aa833f97458fd769ab",
+      "bytes": 1035,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/prompt.txt",
+      "sha256": "f2c4ffc34fa143ae00888bfb5b29ada59450868a6e09975361a31dbd661cd459",
+      "bytes": 1411,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-resource-2/sandbox-preflight.log",
+      "sha256": "7f1034680bf29b6097d18d313bbaa77470a89c6edbcb6cfbd125a5d4d9b387af",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-resource-2.json",
+      "sha256": "a2224d7ddf3e55bf6f77b732a57ab9f346bfd49a915d12e808a2153d707c7623",
+      "bytes": 14882,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/result.json",
+      "sha256": "e702d007ca31dd4936e9e1fb551461b0dd3c028829993e5e27accea81c85621a",
+      "bytes": 8963,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/acceptance.log",
+      "sha256": "d5fb128345a3b6f9383de160e811f0f379075c9c40617d40fe6162cab5ea2f09",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/agent.log",
+      "sha256": "c5c28bee53e211ddcb3db51bcba8486615c5dc8e7fdf6eccf06a1a637b6302e9",
+      "bytes": 196887,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/check.log",
+      "sha256": "ab6c12900b3c8142a2589cf4cace2d3ec22b58a240e476723806dd97c75298f8",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/integration.log",
+      "sha256": "4047891c926153df01f162ca9f17be6fb271f03a156fc53bcdfb429f9c594aff",
+      "bytes": 1091,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/prompt.txt",
+      "sha256": "2584a66cabcd2d09075e767fd60dc81e76d6d9d71568c29a41a67f7dc242402b",
+      "bytes": 1391,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/sandbox-preflight.log",
+      "sha256": "87c3654035532ba8aaec73b35979860697bacc47b193a3af26e76a574dd9dfa9",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-1/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-second_resource-1.json",
+      "sha256": "9752d4395c5b77a9ba25f8924ae3b9ce6fb9a7f3d4221d4cfb6053d37c06a9fe",
+      "bytes": 23119,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/result.json",
+      "sha256": "fe772ea19383114fc91db3b51a1118eee4213ff15f8f2509da666fc750dc27be",
+      "bytes": 8963,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/acceptance.log",
+      "sha256": "39529b420e4f9572aacabe74eb009b42f0ee112c442c4f23ea53d52745374a17",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/agent.log",
+      "sha256": "234e5f45caf886b4d2e81d1a12a07551b7af38fd96677015e76157e3283abdc4",
+      "bytes": 226511,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/check.log",
+      "sha256": "0d1c84338c3862e7778b9909a798f658bf825dd7ba55ae724355055959fa08c4",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/integration.log",
+      "sha256": "b74a391851d1b8390bed8765cd69255e5213f3555fe2d16d51647e1465a98635",
+      "bytes": 1091,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/prompt.txt",
+      "sha256": "3f8401e9371dffc2537da46e402dab338d9723750f8d7aa71fde01a11806489b",
+      "bytes": 1391,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/sandbox-preflight.log",
+      "sha256": "7819b40f610ed4e2f1e2f64f88c51f66b106d402acbeb2317b65d9fe4044cf84",
+      "bytes": 159,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/codex-second_resource-2/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/codex-second_resource-2.json",
+      "sha256": "cf365b6d35bdc3a586cd7b649d7ab231695153f64489b22c9a5006a02ab6edf9",
+      "bytes": 17282,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-codex/results.json",
+      "sha256": "e17015122ebd768dc051dc90cea66adbd8b26fce358b389ec4f3e3e230d1c407",
+      "bytes": 103651,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/result.json",
+      "sha256": "1806967601efb3d28d43164d2b37ea39d604e4021b876a2ede3712252100e5c0",
+      "bytes": 6423,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/acceptance.log",
+      "sha256": "6d2d5da923c3018dff71d06182c2ae37e2bb7071883fd2044d9b27d65e5de4c4",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/agent.log",
+      "sha256": "b55186cd7581f8d67d1f090b5adc5fc555adfefe24211ee52e45d51d04197899",
+      "bytes": 4757,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/check.log",
+      "sha256": "211134212bcc927eaf29f359b9e334eb5120108a812d3b5bfa2ccd0a4479dcf3",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/integration.log",
+      "sha256": "615aa9347e24992460570d116109ce3de41d27b497b5a888447507a6ab00833f",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-1/prompt.txt",
+      "sha256": "2f30aa09491dbdabba0e207b62aca4d4905921137d4e42fbf5375156349b7962",
+      "bytes": 908,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-authorization-1.json",
+      "sha256": "c5593ccf2579c966424ce65ac053987a0eba3dc12b0a1aec651e7f795f3e7d59",
+      "bytes": 6574,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-2/result.json",
+      "sha256": "baf76137506ed7478ba198ac193cf38bce9e75e811b9e0b49373418d17c530f4",
+      "bytes": 5540,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-2/agent.log",
+      "sha256": "bf0ad4760b2f7f8129bb0ea53e5e3ebf25d814a9c1e0034130621423f9c1d120",
+      "bytes": 5721,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-authorization-2/prompt.txt",
+      "sha256": "2f30aa09491dbdabba0e207b62aca4d4905921137d4e42fbf5375156349b7962",
+      "bytes": 908,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-authorization-2.json",
+      "sha256": "020e05b5acc5c197ca3442ed4e5ad25fe412f3b9faa1ced83344ee83e01b0df3",
+      "bytes": 6131,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/result.json",
+      "sha256": "4ae1d829d489d5542df926092230aaa2ab84fba60e167fdd0fb1d40be9e714c8",
+      "bytes": 5198,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/agent.log",
+      "sha256": "20f85d610c11ddf1a0ca754e9d967231a5be99008c21c6d595d6feeb203cc8ba",
+      "bytes": 3662,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/check.log",
+      "sha256": "ffdbd227922dec895aff786a0cc3129a902b491387c9ca78b9cc9de46c07a6a9",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-1/prompt.txt",
+      "sha256": "48ed181643c893b9e57c587d56f09c4b4a685eeb2468ceac341f3b229dc09b32",
+      "bytes": 690,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-bootstrap-1.json",
+      "sha256": "6d31bf17d4df0c0210a376e0781126ca9a43634108d72cbadcf02bcf977feb7c",
+      "bytes": 3969,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/result.json",
+      "sha256": "8d8577e53bd9daad216c562676a9fff0e9e2764a76f301cd23fb9532e69476fb",
+      "bytes": 5201,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/agent.log",
+      "sha256": "d33fdee13ba0a170c947695b86663868b9f77182e86183ece7e3082f053f6271",
+      "bytes": 3621,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/check.log",
+      "sha256": "8a1554a5cff2229553c6d9755398e3ec6329d339b64bcc597988dcfa5bca7e74",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-bootstrap-2/prompt.txt",
+      "sha256": "48ed181643c893b9e57c587d56f09c4b4a685eeb2468ceac341f3b229dc09b32",
+      "bytes": 690,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-bootstrap-2.json",
+      "sha256": "3da77b1099fabec28fe547ca471a05e8a16ce6c4b60fa2aa8fbee03a3ff63a10",
+      "bytes": 3907,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/result.json",
+      "sha256": "e166a50ce752033621b1f6c054322ff039f78abbda31c6d5046d092cb24fc947",
+      "bytes": 6540,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/acceptance.log",
+      "sha256": "1a8931f1c25ba005ccb021372929733eab671ef6abf694f14b878bc6cdd27826",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/agent.log",
+      "sha256": "b0c3b8b20e9a8927ed69334ca8c996737e667241c38ef76d8c865e54f559f4ed",
+      "bytes": 4891,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/check.log",
+      "sha256": "bae972e9b67979c2640a710e681e769082700a923ae5e4cb94a8a116f5d498e9",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/integration.log",
+      "sha256": "9a36cf288c976821290aa79a8967c55e233684f5837af69704b4d685022415ea",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-1/prompt.txt",
+      "sha256": "ab0fc35c5e7b3d27ff9740b0195ed3e05c5d6d3e31a1ff87eca351c29301a092",
+      "bytes": 987,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-field-1.json",
+      "sha256": "353130f6b6d6dd0a6ed6108912e26a8444ea44e0be23ac2b8e31ecbc06d50e54",
+      "bytes": 7116,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/result.json",
+      "sha256": "f51a30b9baa5507b468703548982c92e66f1bebdeaef8aea7966da257b5ffc58",
+      "bytes": 6517,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/acceptance.log",
+      "sha256": "0f1156dd77fc8982491f8cac80006595740001294291462e1a49424a849f39d1",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/agent.log",
+      "sha256": "e03f111bd38c6cfc48043e04083d243b233caa9219816191dddd0d0eec0cb627",
+      "bytes": 4340,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/check.log",
+      "sha256": "cb289a4af37541390da028eac2f81c23b1dbc426287c9be97d2e12d9c91d8f6f",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/integration.log",
+      "sha256": "8ae7904529bf7f994fd484636e913ab99afdb4a677a11853f3f79f8d4dc27441",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-field-2/prompt.txt",
+      "sha256": "ab0fc35c5e7b3d27ff9740b0195ed3e05c5d6d3e31a1ff87eca351c29301a092",
+      "bytes": 987,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-field-2.json",
+      "sha256": "26b64346ba351260eab7bd1b0ea5cc18b8d8a9dbc816be0c65a182a1c98745c7",
+      "bytes": 6466,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-1/result.json",
+      "sha256": "368a45573265e124282c34ef548925a437c6e8579ddbd2eb3bf94f0c2e1cc831",
+      "bytes": 5270,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-1/agent.log",
+      "sha256": "3cbd50bed1e4a806723a0007c2c30793c265114dd0cefd9d8fe823ea17da79cd",
+      "bytes": 4393,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-1/prompt.txt",
+      "sha256": "918e7f3985afcb3989bed954229a80515c01a117cff77caaa9ef4f0ca00c67fc",
+      "bytes": 806,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-repair-1.json",
+      "sha256": "d5fc1c5b5cd13001a529e09aae95cba73c57a9d05850ac4b43a132598d615eed",
+      "bytes": 4782,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/result.json",
+      "sha256": "5908e1dcfd8e0dca1373e530715e9f7bfb9a32ee2f6dbf5b0fa18cdd338bc9ed",
+      "bytes": 6072,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/acceptance.log",
+      "sha256": "96dc30155c0d8826889d6880f0385d1177efada2fdd2d9fd2094b8da8bcd3ce0",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/agent.log",
+      "sha256": "e0e90d323a205b018c9ef2535dd3e98ff0e8acd1d75e3ee5f8ab095c856358fd",
+      "bytes": 3680,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/check.log",
+      "sha256": "4233392953fa783fdf6f13a14624d2acab41e71c7a76ad0b277b32a1163cf949",
+      "bytes": 1311,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/integration.log",
+      "sha256": "0c8f36ac970fb3d56ea3cd94bcf7e6d45334f05e1b539d5d9cfec4798babe889",
+      "bytes": 989,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-repair-2/prompt.txt",
+      "sha256": "918e7f3985afcb3989bed954229a80515c01a117cff77caaa9ef4f0ca00c67fc",
+      "bytes": 806,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-repair-2.json",
+      "sha256": "fd4fc51ff2717381ec6d30a4dd7b4fe09bcb51647b90c0f6d2c79e35596e4181",
+      "bytes": 5203,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/result.json",
+      "sha256": "039e617996796d8f4880ea4017a055e5cc7cde3d584d5d830744656ae1044ffb",
+      "bytes": 6285,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/acceptance.log",
+      "sha256": "7db7e8730947eda30dfa1aa4022b572642fbd78d4ac81993f4bc23b45d849790",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/agent.log",
+      "sha256": "06bcd1b7132fad207b4aa5b53107aaef7545a95eee38d8b7d7fa7e100134a65e",
+      "bytes": 4792,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/check.log",
+      "sha256": "96be05294704caa6cba080692c2362a6d68d0ff338d2092cd2c9e069221a48cd",
+      "bytes": 1366,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/integration.log",
+      "sha256": "bf50d2f3eb595b5620b21b0370545998d190feee1b1a85d19d5fc360bd788f94",
+      "bytes": 1035,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-1/prompt.txt",
+      "sha256": "67db658f35d78812a6708dc7255d75ad46165fefa79178a688c24a7730b82126",
+      "bytes": 922,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-resource-1.json",
+      "sha256": "6cae707f65236b46f3fa0f97fa9c9b1c2b6ce05126a9a23faedd1bf71a36d900",
+      "bytes": 6333,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-2/result.json",
+      "sha256": "5d972085bfaa583f31185c244213665e66f6a830706b1c1f678bedc8c7286c35",
+      "bytes": 5538,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-2/agent.log",
+      "sha256": "a8e275da63fbfeec821cb98fb255054465502aba40846fc01b723a330b876009",
+      "bytes": 5432,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-resource-2/prompt.txt",
+      "sha256": "67db658f35d78812a6708dc7255d75ad46165fefa79178a688c24a7730b82126",
+      "bytes": 922,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-resource-2.json",
+      "sha256": "5cd122e3ff92c896bfd345fef736b9cbab3e58f6ae4fb098cecc4ae1d1916d43",
+      "bytes": 5748,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/result.json",
+      "sha256": "3e7595344e2a0b4554f2af9fff01026c6246d29f8c222490c26395f01d7f8b62",
+      "bytes": 6191,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/agent.log",
+      "sha256": "430f616a06062dd8d598fb7a3273230697e352967989814836f9e2f4ce09b0ed",
+      "bytes": 5036,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/prompt.txt",
+      "sha256": "edbea08700f2a206867d8819eb7fa17bdb22ca623282ab5087ab0fe072c3db0d",
+      "bytes": 895,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-1/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-second_resource-1.json",
+      "sha256": "509c33a679abc9300c1f7801d53faf1e4d984c6f8cfb9a67d13374abbc08b72e",
+      "bytes": 6086,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/result.json",
+      "sha256": "1bd16cddc30ce0aab00b6e7087c977230f737120a17aca9b5e3b937273f2b00f",
+      "bytes": 7005,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/acceptance.log",
+      "sha256": "914e96dca65ec4de77ab72b9efe2ee50b3f138af193796ee73940da593818e94",
+      "bytes": 53,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/agent.log",
+      "sha256": "589c5dec1b6dc2f5316bc8e6ee3a59cc6777a250f849eab9889d1015e0102147",
+      "bytes": 4804,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/check.log",
+      "sha256": "a49ca8b1739bf6a83c9b82144b35017615cf2b6010084cf778e33f9dcc7798d5",
+      "bytes": 1422,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/initialize.log",
+      "sha256": "7ffe3d3e61b7c62f3315330f30de0ff0a139f3570f4ccdc64fcfe88d7a403294",
+      "bytes": 522,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/integration.log",
+      "sha256": "5844f41775736cb234a634aa99f8b83b9e309e0d339afa25c437abfadef9681d",
+      "bytes": 1091,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/prepare.log",
+      "sha256": "fca1eb72ce3aea838675bd82e8ee122948cb4fb8e3e4aae8e18e9dab2aed5d58",
+      "bytes": 114,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/prompt.txt",
+      "sha256": "edbea08700f2a206867d8819eb7fa17bdb22ca623282ab5087ab0fe072c3db0d",
+      "bytes": 895,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/seed-0.log",
+      "sha256": "7367a1669c9acb7de20f703fc77971d2f488f976ce70f49e03548074eaa68074",
+      "bytes": 781,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/claude-second_resource-2/seed-1.log",
+      "sha256": "6feeefa91e7ac2ccb864ce17079941c66a029d08d57d475d095156edcfc94b72",
+      "bytes": 138,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "independent-reviews/claude-second_resource-2.json",
+      "sha256": "5232c59ee34b2635d8dcf88911d680b5e7b878ba65f258045549f180cf955e25",
+      "bytes": 6959,
+      "publication": "digest_only_source_retained_privately"
+    },
+    {
+      "artifact": "baseline-claude/results.json",
+      "sha256": "ac1d8bfe746ff79cadfb701c3d2ed3c9e63efee512600acfcd3908ae9789fcc3",
+      "bytes": 76533,
+      "publication": "digest_only_source_retained_privately"
+    }
+  ],
+  "declared_plan": {
+    "provenance": "Root coordinator message with directly observed host facts and explicit batch launch arguments; separate from result manifests",
+    "source_commit": "46800b1904f964f80efcfeab2c82b5bfc05f9b92",
+    "tasks": [
+      "bootstrap",
+      "resource",
+      "field",
+      "authorization",
+      "repair",
+      "second_resource"
+    ],
+    "attempts_per_task_per_client": 2,
+    "planned_attempts_per_client": 12,
+    "started_utc": "2026-11-07T14:00:38Z",
+    "agent_timeout_seconds": 900,
+    "verification_timeout_seconds": 600
+  },
+  "counts": {
+    "planned_attempts": 24,
+    "completed_attempts": 24,
+    "statuses": {
+      "passed": 20,
+      "permission_denied": 4
+    },
+    "review_outcomes": {
+      "accepted": 16,
+      "accepted_with_contract_finding": 4,
+      "failed_attempt": 4
+    },
+    "evidence_artifacts": 218
+  },
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  },
+  "public_usage_reporting": {
+    "monetary_estimates": "Provider-reported monetary fields are intentionally omitted from publication, including null placeholders.",
+    "token_counts": "Provider-reported token counts are retained without converting them to prices or personal spending.",
+    "other_evidence": "Statuses, counts, timings, versions and original evidence digests are unchanged; private originals remain intact."
+  }
+}

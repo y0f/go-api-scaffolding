@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "source_and_harness_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+  "fixture_tree": "af7c752d23fe45039d19e07232daf936ab55f899",
+  "repetitions_per_client_mode": 2,
+  "cohort_counts": [
+    {
+      "client": "codex",
+      "mode": "serial",
+      "planned": 2,
+      "completed_records": 2,
+      "statuses": {
+        "passed": 2
+      }
+    },
+    {
+      "client": "codex",
+      "mode": "parallel",
+      "planned": 2,
+      "completed_records": 2,
+      "statuses": {
+        "passed": 2
+      }
+    },
+    {
+      "client": "claude",
+      "mode": "serial",
+      "planned": 2,
+      "completed_records": 2,
+      "statuses": {
+        "verification_failed": 2
+      }
+    },
+    {
+      "client": "claude",
+      "mode": "parallel",
+      "planned": 2,
+      "completed_records": 2,
+      "statuses": {
+        "passed": 1,
+        "workers_failed": 1
+      }
+    }
+  ],
+  "scenario_table": [
+    {
+      "id": "codex-serial-1",
+      "planned_order": 1,
+      "agent": "codex",
+      "mode": "serial",
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "preparation_seconds": 76.36,
+      "workers_wall_seconds": 239.953,
+      "total_wall_seconds": 342.563,
+      "coordinator_residual_seconds": 26.25,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "duration_interpretation": "successful_verified_completion",
+      "agent_invocation_seconds": {
+        "note": 107.766,
+        "label": 115.203
+      }
+    },
+    {
+      "id": "codex-parallel-1",
+      "planned_order": 2,
+      "agent": "codex",
+      "mode": "parallel",
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "preparation_seconds": 83.218,
+      "workers_wall_seconds": 133.969,
+      "total_wall_seconds": 240.171,
+      "coordinator_residual_seconds": 22.984,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "duration_interpretation": "successful_verified_completion",
+      "agent_invocation_seconds": {
+        "note": 119.375,
+        "label": 125.594
+      }
+    },
+    {
+      "id": "claude-parallel-1",
+      "planned_order": 3,
+      "agent": "claude",
+      "mode": "parallel",
+      "repetition": 1,
+      "harness_status_recorded": "passed",
+      "preparation_seconds": 36.578,
+      "workers_wall_seconds": 52.562,
+      "total_wall_seconds": 112.359,
+      "coordinator_residual_seconds": 23.219,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "duration_interpretation": "successful_verified_completion",
+      "agent_invocation_seconds": {
+        "note": 44.375,
+        "label": 44.875
+      }
+    },
+    {
+      "id": "claude-serial-1",
+      "planned_order": 4,
+      "agent": "claude",
+      "mode": "serial",
+      "repetition": 1,
+      "harness_status_recorded": "verification_failed",
+      "preparation_seconds": 37.953,
+      "workers_wall_seconds": 97.719,
+      "total_wall_seconds": 144.484,
+      "coordinator_residual_seconds": 8.812,
+      "independent_grading": {
+        "result": "failed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log"
+        ]
+      },
+      "duration_interpretation": "failed_attempt_with_incomplete_verification",
+      "agent_invocation_seconds": {
+        "note": 43.719,
+        "label": 39.36
+      }
+    },
+    {
+      "id": "codex-parallel-2",
+      "planned_order": 5,
+      "agent": "codex",
+      "mode": "parallel",
+      "repetition": 2,
+      "harness_status_recorded": "passed",
+      "preparation_seconds": 107.5,
+      "workers_wall_seconds": 124.969,
+      "total_wall_seconds": 258.829,
+      "coordinator_residual_seconds": 26.36,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "duration_interpretation": "successful_verified_completion",
+      "agent_invocation_seconds": {
+        "note": 115.109,
+        "label": 102.891
+      }
+    },
+    {
+      "id": "codex-serial-2",
+      "planned_order": 6,
+      "agent": "codex",
+      "mode": "serial",
+      "repetition": 2,
+      "harness_status_recorded": "passed",
+      "preparation_seconds": 76.094,
+      "workers_wall_seconds": 244.828,
+      "total_wall_seconds": 348.188,
+      "coordinator_residual_seconds": 27.266,
+      "independent_grading": {
+        "result": "passed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log",
+          "integrated-1.log",
+          "acceptance.log"
+        ]
+      },
+      "duration_interpretation": "successful_verified_completion",
+      "agent_invocation_seconds": {
+        "note": 122.219,
+        "label": 103.281
+      }
+    },
+    {
+      "id": "claude-serial-2",
+      "planned_order": 7,
+      "agent": "claude",
+      "mode": "serial",
+      "repetition": 2,
+      "harness_status_recorded": "verification_failed",
+      "preparation_seconds": 39.984,
+      "workers_wall_seconds": 98.704,
+      "total_wall_seconds": 147.781,
+      "coordinator_residual_seconds": 9.093,
+      "independent_grading": {
+        "result": "failed",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": [
+          "integrated-0.log"
+        ]
+      },
+      "duration_interpretation": "failed_attempt_with_incomplete_verification",
+      "agent_invocation_seconds": {
+        "note": 40.625,
+        "label": 39.594
+      }
+    },
+    {
+      "id": "claude-parallel-2",
+      "planned_order": 8,
+      "agent": "claude",
+      "mode": "parallel",
+      "repetition": 2,
+      "harness_status_recorded": "workers_failed",
+      "preparation_seconds": 41.828,
+      "workers_wall_seconds": 57.531,
+      "total_wall_seconds": 99.359,
+      "coordinator_residual_seconds": -0.0,
+      "independent_grading": {
+        "result": "not_run",
+        "scope": "trusted integrated fast check, integration suite and independent compiled-API HTTP acceptance",
+        "observed_phases": []
+      },
+      "duration_interpretation": "failed_attempt_with_incomplete_verification",
+      "agent_invocation_seconds": {
+        "note": 48.171,
+        "label": 44.875
+      }
+    }
+  ],
+  "limits": [
+    "Only two repetitions per client/mode; descriptive evidence, not a general speedup or provider ranking.",
+    "Failed scenario durations end at the failed phase; they are not successful completion times.",
+    "Worker-phase time includes post-agent checking and review; it is not pure model latency.",
+    "Individual cohorts, capability probes and historical trials are excluded from these paired denominators."
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "kind": "separate one-invocation adapter capability probe; excluded from feature metrics",
+  "status": "passed",
+  "adapter_commit": "9619269331e4c2c2343fc1b82a81b44e32f54563",
+  "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+  "client_version": "2.1.319 (Claude Code)",
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "invocations": 1,
+  "retries": 0,
+  "timeout_seconds": 120,
+  "elapsed_seconds": 12.765,
+  "permission_mode": "acceptEdits",
+  "permission_prompts": "none",
+  "output_format": "verbose stream-json",
+  "prompt_sha256": "3485fefa37fe2b9eb0227075176bda656f763af1a5923f294f1948bb9fb0247c",
+  "private_plan_sha256": "9da0e2c99c546f749bef9cd5ed2690fead6f00ae4da0404c77add7d9b1fda86b",
+  "raw_stream_sha256": "38a703686feb9cdf6b81756509c9452e4f5b5bfc6087989e3edb33cb9e578de6",
+  "dependency_relative": "github.com/getkin/kin-openapi@v0.152.0/routers/gorillamux/router.go",
+  "dependency_sha256": "aa4237d3e5c317e475cc015da721d6bdb924c44cf267b272559fc7758330bc17",
+  "permission_denials_count": 0,
+  "settings_unchanged": true,
+  "fixture_unchanged": true,
+  "limits": [
+    "Only Read and the exact quoted-workspace Bash Git command were runtime-probed; other spellings/tools were not exercised.",
+    "This is capability evidence, not a feature score or performance comparison."
+  ],
+  "observed_tool_results": [
+    {
+      "tool": "Read",
+      "requested_input_matched": true,
+      "tool_result_is_error": false,
+      "expected_output_matched": true,
+      "result_content_sha256": "52c771a8cd9f3a0fee1c82f1b82924265c87586acbf19a612baa47175549663f",
+      "raw_result_event_sha256": "bb5cbe2c616713e6705598c93d3a6d31911138b9425a26092afb7e78837436d3",
+      "arguments": {
+        "file_path": "<GOMODCACHE>/github.com/getkin/kin-openapi@v0.152.0/routers/gorillamux/router.go",
+        "offset": 1,
+        "limit": 8
+      }
+    },
+    {
+      "tool": "Bash",
+      "requested_input_matched": true,
+      "tool_result_is_error": false,
+      "expected_output_matched": true,
+      "result_content_sha256": "d355c1da3e0cbaf0ab9c658ecbd02e8d92fde1ef563d1699fa1f4e1a07b4faa7",
+      "raw_result_event_sha256": "a32471cda65e01fd1bc0d6654df07b1f1c181f2a57891604de82fe03a6a3a571",
+      "arguments": {
+        "command": "git -C \"<OWNED_WORKSPACE>\" ls-files"
+      }
+    }
+  ],
+  "source_safe_metadata": {
+    "artifact": "probe.safe.json",
+    "sha256": "5eae107633af7fd668f37396819e7a84eda9bd52ff6abcfdcb4e575110eb9296",
+    "bytes": 2435
+  },
+  "excluded_from_feature_metrics": true,
+  "excluded_from_feature_and_paired_metrics": true
+}

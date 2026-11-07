@@ -1,0 +1,42 @@
+{
+  "status": "recorded_coordinator_observations",
+  "provenance": "Root coordinator message with directly observed host facts and explicit batch launch arguments; separate from result manifests",
+  "host": {
+    "operating_system": "Windows 11",
+    "hardware_details": "Intentionally omitted from public metadata."
+  },
+  "docker": {
+    "engine_version": "29.1.3"
+  },
+  "launch": {
+    "started_utc": "2026-11-07T14:00:38Z",
+    "batches_concurrent": true,
+    "clients": [
+      "codex",
+      "claude"
+    ],
+    "tasks_per_client": 6,
+    "attempts_per_task": 2,
+    "planned_attempts_per_client": 12,
+    "agent_timeout_seconds": 900,
+    "verification_timeout_seconds": 600,
+    "source_revision": "46800b1904f964f80efcfeab2c82b5bfc05f9b92"
+  },
+  "limitations": [
+    "No timing-based provider comparison",
+    "Client default configuration was not reset; do not infer unrecorded model settings",
+    "Record named sandbox overrides separately from provider defaults",
+    "Planned counts are coordinator evidence, not completed-result counts"
+  ],
+  "public_environment_reporting": {
+    "environment_field": "Coordinator-confirmed OS family; normalized for publication, not a verbatim raw platform string.",
+    "omitted": [
+      "OS build identifiers",
+      "CPU model and topology",
+      "host memory",
+      "Docker CPU and memory allocation"
+    ],
+    "retained": "Go, client, model and Docker versions needed to interpret the runs; statuses, counts, phase clocks and original evidence digests.",
+    "private_evidence": "Original run manifests, workspaces and logs remain private and unchanged."
+  }
+}

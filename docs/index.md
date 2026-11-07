@@ -22,6 +22,6 @@ Start with [setup](agents.md), then follow the guide for your change.
 <!-- forge:begin init -->
 [Fit and alternatives](choosing.md) describes the scope of this starter.
 [Agent evaluations](https://github.com/y0f/gophling/tree/main/evals)
-explain how feature tasks are checked.
+include recorded feature trials, verification methods, and their limits.
 [Recorded workflow](demo.md) shows a resource generated and checked in a real project.
 <!-- forge:end init -->

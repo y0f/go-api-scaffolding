@@ -1,0 +1,43 @@
+{
+  "declared_before_execution": true,
+  "provenance": "Root coordinator declared fixed order, revision and deadlines before starting scenarios",
+  "source_and_harness_commit": "d38d2e39f4369e64fab5a58b4c4f1d527e9f1909",
+  "runner_sha256": "dd6a8b8395a3341ccbf8ad7844cfeb4f0d7b7040b762e35fe4afa294527eea6a",
+  "scenario_sha256": "24b70e740759abd39d089c996ea9b54b1b36931dd0f4d870b34a4438bd32065a",
+  "verifier_sha256": "6c5d090b5b1fb643b55e72f814096349fdce39d4036354571c69b84434f45cbf",
+  "scenario_order": [
+    "codex-serial-1",
+    "codex-parallel-1",
+    "claude-parallel-1",
+    "claude-serial-1",
+    "codex-parallel-2",
+    "codex-serial-2",
+    "claude-serial-2",
+    "claude-parallel-2"
+  ],
+  "execution": "Scenarios run sequentially in this order; two workers run serially or concurrently within each scenario",
+  "clients": [
+    "codex",
+    "claude"
+  ],
+  "modes": [
+    "serial",
+    "parallel"
+  ],
+  "repetitions_per_client_mode": 2,
+  "resources": [
+    "note",
+    "label"
+  ],
+  "planned_scenarios": 8,
+  "planned_worker_calls": 16,
+  "agent_timeout_seconds": 600,
+  "verification_timeout_seconds": 600,
+  "reporting": [
+    "Retain failed workers and scenarios without replacement",
+    "Separate preparation, worker phase, individual agent calls, coordinator checks and total clocks",
+    "Check fixture tree equality, source/harness/client/model/permissions before any within-client comparison",
+    "Two repetitions per client/mode; descriptive only, no statistical or cross-provider speed claim",
+    "No heavy checks or harness/workspace changes during timing"
+  ]
+}
