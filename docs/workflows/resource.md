@@ -12,6 +12,10 @@ Add `-dry-run` to inspect the planned files before writing them.
 Generated SQL identifiers must fit PostgreSQL's 63-byte limit, including the
 `_list_idx` suffix; shorten names rejected by preflight. SQL names are quoted,
 so resource names such as `Reference` can use reserved words as table names.
+Preflight also checks literal public table/index declarations in migration Up
+sections, including drops and renames. It does not parse arbitrary SQL or infer
+all database objects; generation and real-Postgres integration tests are still
+required.
 
 Concurrent generation in one checkout is locked. After an interrupted command,
 inspect `.forge-resource.lock` and confirm its process has stopped before

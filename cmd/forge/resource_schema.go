@@ -12,8 +12,9 @@ import (
 
 var gooseDown = regexp.MustCompile(`(?m)^\s*--\s*\+goose\s+Down\s*$`)
 
-// Check migration sources as well as generated Go: a coordinator may add more
-// than one resource before regenerating SQL bindings.
+// Check literal public table/index DDL in migration sources as well as generated
+// Go: a coordinator may add resources before regenerating bindings. This is a
+// bounded preflight, not a SQL parser; generation and database tests remain required.
 func validateResourceTable(name string) error {
 	entries, err := os.ReadDir("migrations")
 	if err != nil {
@@ -32,7 +33,7 @@ func validateResourceTable(name string) error {
 		}
 		return strings.Compare(a.Name(), b.Name())
 	})
-	tables := map[string]bool{}
+	relations := map[string]migrationRelation{}
 	for _, entry := range entries {
 		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".sql") {
 			continue
@@ -48,47 +49,86 @@ func validateResourceTable(name string) error {
 			if end == -1 {
 				end = len(tokens)
 			}
-			applyTableStatement(tables, tokens[:end])
+			applyRelationStatement(relations, tokens[:end])
 			tokens = tokens[min(end+1, len(tokens)):]
 		}
 	}
-	if tables[name] {
-		return fmt.Errorf("table %s already exists in migration sources; choose a different resource name", name)
+	for _, identifier := range []string{name, name + "_list_idx"} {
+		if relation, exists := relations[identifier]; exists {
+			return fmt.Errorf("%s %s already exists in migration sources and conflicts with the generated resource; choose a different resource name", relation.kind, identifier)
+		}
 	}
 	return nil
 }
 
-func applyTableStatement(tables map[string]bool, tokens []string) {
+type migrationRelation struct {
+	kind  string
+	owner string // Indexes disappear with their owning table, even after renames.
+}
+
+func applyRelationStatement(relations map[string]migrationRelation, tokens []string) {
 	if len(tokens) < 3 {
 		return
 	}
 	action, at := tokens[0], 1
-	if action == "create" && tokens[at] == "unlogged" {
+	if action == "create" && (tokens[at] == "unlogged" || tokens[at] == "unique") {
 		at++
 	}
-	if tokens[at] != "table" {
+	kind := tokens[at]
+	if kind != "table" && kind != "index" {
 		return
 	}
 	at++
-	for at < len(tokens) && (tokens[at] == "if" || tokens[at] == "not" || tokens[at] == "exists" || tokens[at] == "only") {
+	for at < len(tokens) && (tokens[at] == "if" || tokens[at] == "not" || tokens[at] == "exists" || tokens[at] == "only" || tokens[at] == "concurrently") {
 		at++
 	}
 	for at < len(tokens) {
-		name, public := tokens[at], true
-		at++
-		if at+1 < len(tokens) && tokens[at] == "." {
-			public, name, at = name == "public", tokens[at+1], at+2
+		name, public, next := migrationRelationName(tokens, at)
+		at = next
+		relation := migrationRelation{kind: kind}
+		if action == "create" && kind == "index" {
+			if at >= len(tokens) || tokens[at] != "on" {
+				return // An unnamed index has a server-chosen name.
+			}
+			at++
+			if at < len(tokens) && tokens[at] == "only" {
+				at++
+			}
+			owner, ownerPublic, afterOwner := migrationRelationName(tokens, at)
+			// An index belongs to its table's schema, including when its own
+			// name has no schema qualification.
+			public, relation.owner, at = public && ownerPublic, owner, afterOwner
 		}
 		if public {
 			switch action {
 			case "create":
-				tables[name] = true
+				if _, exists := relations[name]; !exists {
+					relations[name] = relation
+				}
 			case "drop":
-				delete(tables, name)
+				delete(relations, name)
+				if kind == "table" {
+					for index, existing := range relations {
+						if existing.kind == "index" && existing.owner == name {
+							delete(relations, index)
+						}
+					}
+				}
 			case "alter":
 				if at+2 < len(tokens) && tokens[at] == "rename" && tokens[at+1] == "to" {
-					delete(tables, name)
-					tables[tokens[at+2]] = true
+					if existing, exists := relations[name]; exists {
+						renamed := tokens[at+2]
+						delete(relations, name)
+						relations[renamed] = existing
+						if kind == "table" {
+							for index, owned := range relations {
+								if owned.kind == "index" && owned.owner == name {
+									owned.owner = renamed
+									relations[index] = owned
+								}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -97,6 +137,17 @@ func applyTableStatement(tables map[string]bool, tokens []string) {
 		}
 		at++
 	}
+}
+
+func migrationRelationName(tokens []string, at int) (name string, public bool, next int) {
+	if at >= len(tokens) {
+		return "", false, at
+	}
+	name, public, next = tokens[at], true, at+1
+	if next+1 < len(tokens) && tokens[next] == "." {
+		public, name, next = name == "public", tokens[next+1], next+2
+	}
+	return name, public, next
 }
 
 // Only DDL identifiers matter here. Skip SQL comments and string/function

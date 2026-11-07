@@ -2,6 +2,7 @@ package main
 
 import (
 	"go/build"
+	"maps"
 	"os"
 	"path/filepath"
 	"strings"
@@ -51,6 +52,64 @@ func TestResourceRejectsPendingTableCollisionsBeforeWriting(t *testing.T) {
 			}
 			if _, err := os.Stat("internal"); !os.IsNotExist(err) {
 				t.Fatalf("source written before table collision rejection: %v", err)
+			}
+		})
+	}
+}
+
+func TestResourceRejectsPublicRelationCollisionsBeforeWriting(t *testing.T) {
+	for _, tc := range []struct{ name, sql string }{
+		{"table_at_list_index", "CREATE TABLE orders_list_idx (id uuid);"},
+		{"index_at_table", "CREATE TABLE retained (id uuid); CREATE INDEX orders ON retained (id);"},
+		{"index_at_list_index", "CREATE TABLE retained (id uuid); CREATE INDEX orders_list_idx ON retained (id);"},
+		{"quoted_unique_index", `CREATE TABLE public."retained" (id uuid); CREATE UNIQUE INDEX "orders" ON public."retained" (id);`},
+		{"renamed_index", "CREATE TABLE retained (id uuid); CREATE INDEX original ON retained (id); ALTER INDEX original RENAME TO orders;"},
+		{"renamed_table", "CREATE TABLE original (id uuid); ALTER TABLE original RENAME TO orders_list_idx;"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			resourceFixture(t)
+			if err := os.WriteFile("migrations/00001_existing.sql", []byte(tc.sql), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			for _, dryRun := range []bool{true, false} {
+				before := resourceFixtureFiles(t)
+				if err := addResource(newResource("Order"), dryRun); err == nil || !strings.Contains(err.Error(), "already exists in migration sources") {
+					t.Fatalf("public relation collision accepted (dry-run=%v): %v", dryRun, err)
+				}
+				if !maps.Equal(before, resourceFixtureFiles(t)) {
+					t.Fatal("collision rejection modified project sources")
+				}
+			}
+		})
+	}
+}
+
+func TestResourceRelationCheckFollowsDropsRenamesAndSchema(t *testing.T) {
+	for _, tc := range []struct{ name, create, cleanup string }{
+		{"drop_index", "CREATE TABLE retained (id uuid); CREATE INDEX orders ON retained (id);", "DROP INDEX CONCURRENTLY IF EXISTS public.orders;"},
+		{"rename_index", "CREATE TABLE retained (id uuid); CREATE INDEX orders ON retained (id);", "ALTER INDEX public.orders RENAME TO retained_idx;"},
+		{"drop_owner", "CREATE TABLE retained (id uuid); CREATE INDEX orders ON retained (id);", "DROP TABLE retained;"},
+		{"rename_and_drop_owner", "CREATE TABLE retained (id uuid); CREATE INDEX orders ON retained (id);", "ALTER TABLE retained RENAME TO renamed; DROP TABLE renamed;"},
+		{"quoted_drop_owner", `CREATE TABLE public."retained" (id uuid); CREATE INDEX "orders" ON public."retained" (id);`, `ALTER TABLE public."retained" RENAME TO "renamed"; DROP TABLE public."renamed";`},
+		{"nonpublic_index", "CREATE TABLE audit.retained (id uuid); CREATE INDEX orders ON audit.retained (id);", ""},
+		{"primary_key_name_is_automatic", "CREATE TABLE orders_pkey (id uuid);", ""},
+		{"ignore_embedded_index", "CREATE TABLE retained (id uuid); /* CREATE INDEX orders ON retained(id); */ SELECT 'CREATE INDEX orders ON retained(id)'; CREATE FUNCTION ignored() RETURNS void AS $$ BEGIN; CREATE INDEX orders ON retained(id); END; $$ LANGUAGE plpgsql;", ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			resourceFixture(t)
+			// Numeric ordering matters: 2 sorts after 10 lexically. Down sections
+			// must not undo the effective Up schema used by preflight.
+			files := map[string]string{
+				"2_create.sql":   tc.create + "\n-- +goose Down\nDROP TABLE retained;\n",
+				"10_cleanup.sql": tc.cleanup,
+			}
+			for name, content := range files {
+				if err := os.WriteFile(filepath.Join("migrations", name), []byte(content), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := addResource(newResource("Order"), true); err != nil {
+				t.Fatalf("available public relation rejected: %v", err)
 			}
 		})
 	}
