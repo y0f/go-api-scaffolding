@@ -24,6 +24,8 @@ go run ./cmd/dev bootstrap
 The installer asks for a module path and the optional components to keep.
 For automation, pass `-yes -module github.com/you/myapp`. Use `-ref <tag-or-SHA>`
 to select the scaffold revision; `.forge.json` records its source.
+For repeatable setup, pin the launcher version (`cmd/forge@<release>`) and use a
+full commit SHA for `-ref` when selecting older or custom source.
 
 If in-place initialization is interrupted while publishing files, recover from
 the project root before making manual changes:
@@ -157,5 +159,19 @@ enabling them there requires a
 supported GitHub Enterprise Cloud plan. See GitHub's
 [attestation guide](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
 and [verification options](https://cli.github.com/manual/gh_attestation_verify).
+
+When the release is marked **Immutable**, verify GitHub's release attestation
+and the downloaded asset as well:
+
+```sh
+gh release verify TAG --repo OWNER/REPOSITORY
+gh release verify-asset TAG ARCHIVE --repo OWNER/REPOSITORY
+```
+
+This applies to uploaded release assets, not GitHub's automatically generated
+source ZIP/tarballs. Immutability must be enabled for each repository and applies
+to future releases; it does not protect older releases or custom branch refs.
+See [release operations](.github/RELEASING.md) and GitHub's
+[release verification guide](https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/verify-release-integrity).
 
 MIT. See [LICENSE](LICENSE).

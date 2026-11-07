@@ -7,9 +7,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     permissions:
       contents: write
       id-token: write
@@ -21,7 +28,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      - name: Select draft publication or immutable verification
+        id: plan
+        run: python .github/scripts/release.py plan
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        if: steps.plan.outputs.mode == 'publish'
         with:
           go-version: "1.27.x"
           cache-dependency-path: go.sum
@@ -29,9 +40,11 @@ jobs:
         with:
           cosign-release: v3.1.4
       - uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
+        if: steps.plan.outputs.mode == 'publish'
         with:
           syft-version: v1.57.0
       - uses: goreleaser/goreleaser-action@a4f02ab5355a589de60d917a659ce617ed19b3de # v7.3.0
+        if: steps.plan.outputs.mode == 'publish'
         with:
           version: v2.20.0
           args: release --clean
@@ -40,8 +53,12 @@ jobs:
       # Private repositories need Enterprise Cloud for GitHub attestations;
       # keep initialized projects on other plans able to publish releases.
       - name: Attest public release artifacts
-        if: github.server_url == 'https://github.com' && github.event.repository.visibility == 'public'
+        if: steps.plan.outputs.mode == 'publish' && github.server_url == 'https://github.com' && github.event.repository.visibility == 'public'
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-checksums: dist/checksums.txt
           create-storage-record: false
+      - name: Verify uploaded assets and complete the release
+        env:
+          RELEASE_MODE: ${{ steps.plan.outputs.mode }}
+        run: python .github/scripts/release.py "$RELEASE_MODE"

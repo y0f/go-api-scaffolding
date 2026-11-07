@@ -257,6 +257,7 @@ jobs:
         with:
           egress-policy: audit
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: python -m unittest discover -s .github/scripts -p 'test_*.py'
       # release.yml only runs on a tag, so a broken .goreleaser.yaml would first
       # surface during a release. Validate it here with the same action and
       # pinned version the release itself uses.

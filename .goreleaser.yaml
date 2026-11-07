@@ -1,6 +1,14 @@
 version: 2
 project_name: gophling
 
+release:
+  # The workflow verifies uploaded assets before publishing this draft.
+  draft: true
+  use_existing_draft: true
+  replace_existing_artifacts: true
+  preflight:
+    fail_on_error: true
+
 before:
   hooks:
     - go mod tidy
