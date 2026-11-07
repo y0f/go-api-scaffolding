@@ -1,6 +1,8 @@
 # gophling
 
 <!-- forge:begin init -->
+<img src="docs/assets/gophling.png" alt="gophling mascot" width="128" height="128" align="right">
+
 Go REST API scaffold for efficient agent orchestration, with PostgreSQL,
 OpenAPI, sqlc, and reproducible checks. Each resource is an ordinary Go package.
 
@@ -119,15 +121,41 @@ enables development mode and its temporary signing key.
 <!-- forge:begin init -->
 - [Fit and alternatives](docs/choosing.md)
 - [Agent evaluation method](evals/README.md)
+- [Recorded resource workflow](docs/demo.md)
 <!-- forge:end init -->
 - [Contributing](.github/CONTRIBUTING.md)
 
 ## Verify a release
 
+Replace `TAG` with the downloaded release tag (for example, `v1.3.0`).
+
 ```sh
 cosign verify-blob --bundle checksums.txt.bundle \
-  --certificate-identity-regexp 'https://github.com/y0f/gophling' \
+  --certificate-identity 'https://github.com/y0f/gophling/.github/workflows/release.yml@refs/tags/TAG' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
 ```
+
+Then compare the SHA-256 hash of your downloaded archive with its entry in the
+verified `checksums.txt` before extracting it.
+
+For public GitHub.com releases, also verify the archive's build provenance.
+Replace `ARCHIVE` with the downloaded filename, `TAG` with its release tag,
+and `OWNER/REPOSITORY` with the repository that published it.
+<!-- forge:begin init -->
+For gophling releases, the repository is `y0f/gophling`.
+<!-- forge:end init -->
+
+```sh
+gh attestation verify ARCHIVE --repo OWNER/REPOSITORY \
+  --signer-workflow OWNER/REPOSITORY/.github/workflows/release.yml \
+  --source-ref refs/tags/TAG
+```
+
+This verifies the artifact's association with the release workflow and source
+tag. The workflow skips GitHub attestations for private repositories;
+enabling them there requires a
+supported GitHub Enterprise Cloud plan. See GitHub's
+[attestation guide](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations/use-artifact-attestations)
+and [verification options](https://cli.github.com/manual/gh_attestation_verify).
 
 MIT. See [LICENSE](LICENSE).

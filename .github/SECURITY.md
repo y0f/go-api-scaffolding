@@ -11,7 +11,10 @@ version. You can expect an acknowledgement within a few days.
 
 - `govulncheck` runs in CI and fails on reachable vulnerabilities.
 - GitHub Actions are pinned to commit SHAs, and Dependabot keeps them current.
-- Released binaries are signed with cosign keyless signing and ship an SBOM.
+- Release checksums are signed with cosign keyless signing; archives ship an SBOM.
+- Public GitHub.com releases also publish build provenance attestations. These
+  identify the workflow and source revision, not whether AI helped write the
+  code or whether the code is correct. See [release verification](../README.md#verify-a-release).
 - Bearer tokens are verified against JWKS (OIDC) or a configured public key;
   the development fallback key is never used outside the development environment.
 - Logs pass through a redaction handler that scrubs known sensitive keys.

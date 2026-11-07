@@ -11,10 +11,16 @@ instruction-loading paths, not claims that every client passed the evaluations.
 | Client | Repository guidance |
 | --- | --- |
 | Codex | Reads `AGENTS.md`; see [instruction discovery](https://learn.chatgpt.com/docs/agent-configuration/agents-md) |
-| Claude Code | `CLAUDE.md` imports `AGENTS.md`; see [project memory](https://code.claude.com/docs/en/memory) |
+| Claude Code | Native `AGENTS.md` support; this repository keeps a `CLAUDE.md` import for compatibility ([loading rules](https://code.claude.com/docs/en/memory#agentsmd)) |
 | Gemini CLI | `GEMINI.md` imports `@./AGENTS.md`; use `/memory show` to inspect [loaded context](https://geminicli.com/docs/cli/gemini-md/) |
 | Copilot | `AGENTS.md` for supported agents; `.github/copilot-instructions.md` for other [supported surfaces](https://docs.github.com/en/copilot/reference/custom-instructions-support) |
 | Cursor | Uses root `AGENTS.md` as [project instructions](https://cursor.com/docs/rules#agentsmd) |
+
+Claude Code 2.1.277+ can read `AGENTS.md` directly when project or ancestor
+Claude instruction files do not take precedence. The explicit `@AGENTS.md`
+import supports older clients and sessions without native loading, is
+deduplicated, and avoids symlinks on Windows. Use `/context all` to confirm
+loaded memory files.
 
 For another client, load `AGENTS.md` through its repository-instruction feature.
 Confirm the file was read before delegating work. Provider settings still control
@@ -42,6 +48,11 @@ and ask it to summarize the instructions to confirm they loaded.
 | `task test:integration` | Docker or `FORGE_TEST_DATABASE_URL` |
 | `task test:race` | A C compiler |
 | `go run ./cmd/dev ci` | Docker, C compiler, network for vulnerability data |
+
+The fast check creates temporary Git repositories, replaces files, and starts
+loopback HTTP servers. A sandbox must permit those operations. If it blocks
+them, report the failed checks and run verification through the coordinator or
+CI; keep the tests intact.
 
 ## Hosted environments
 

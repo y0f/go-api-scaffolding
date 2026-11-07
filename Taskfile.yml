@@ -91,7 +91,7 @@ tasks:
 
   # forge:begin init
   test:generator:
-    desc: Exercise initialized projects and two generated resources (requires Postgres)
+    desc: Exercise initialized projects and multiple generated resources (requires Postgres)
     deps: [setup]
     cmds:
       - go test -tags generator -count=1 ./cmd/forge

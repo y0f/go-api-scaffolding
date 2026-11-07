@@ -1,7 +1,7 @@
 # Run and diagnose checks
 
 ```sh
-go test ./internal/modules/...
+go test ./...
 go run ./cmd/dev check
 ./bin/task test:integration
 ```
@@ -25,6 +25,9 @@ Keep a regression test for the observed failure. Do not disable checks or edit
 generated code to make a test pass. Investigate blocked I/O and missing cleanup
 before extending timeouts.
 
-`go run ./cmd/dev ci` is the full local gate. CI also exercises its Go/OS matrix,
-initialized presets, and release configuration. Workflow files define the
-checks required on a pull request.
+`go run ./cmd/dev ci` is the full local gate. CI also exercises its Go/OS matrix
+and release configuration.
+<!-- forge:begin init -->
+Scaffold CI additionally tests initialized presets and generated resources.
+<!-- forge:end init -->
+Workflow files define the checks run on a pull request.

@@ -1,0 +1,220 @@
+{
+  "status": "passed",
+  "python": "3.12.10",
+  "os": "Windows",
+  "architecture": "AMD64",
+  "agent": null,
+  "cache": "Shared host Go caches; initialization and bootstrap excluded from playback",
+  "redactions": "Local source, output and home paths; credential-shaped environment values and URLs",
+  "recorder_sha256": "fc0ebe6fa390c5ab11d1bcd6c63912d427016f1dc0882b9a779d4ec5ffa603ab",
+  "source_commit": "b80dc3e8ca1aa22ac9a629b30b673809fa730ea8",
+  "git": "git version 2.52.0.windows.1",
+  "go": "go version go1.27.3 windows/amd64",
+  "tools_go_mod_sha256": "40c3b27948ad4e9cc3ef378c183041f1411569cbae402d62124256380c42098a",
+  "fixture_commit": "358d195c59bfc6c12001678fa1682cd163ac3efe",
+  "duration_seconds": 18.516,
+  "steps": [
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "b80dc3e^{commit}"
+      ],
+      "seconds": 0.078,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "--version"
+      ],
+      "seconds": 0.062,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "clone",
+        "--quiet",
+        "--no-hardlinks",
+        "<source>",
+        "<demo>\\workspace"
+      ],
+      "seconds": 0.594,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "b80dc3e8ca1aa22ac9a629b30b673809fa730ea8"
+      ],
+      "seconds": 0.078,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "go",
+        "run",
+        "./cmd/forge",
+        "init",
+        "-yes",
+        "-module",
+        "example.com/demo/app"
+      ],
+      "seconds": 18.484,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "go",
+        "run",
+        "./cmd/dev",
+        "bootstrap"
+      ],
+      "seconds": 6.75,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "go",
+        "version"
+      ],
+      "seconds": 0.125,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "remote",
+        "remove",
+        "origin"
+      ],
+      "seconds": 0.063,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "add",
+        "--all"
+      ],
+      "seconds": 0.172,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "-c",
+        "user.name=Scaffold demonstration fixture",
+        "-c",
+        "user.email=demo@example.invalid",
+        "-c",
+        "commit.gpgsign=false",
+        "-c",
+        "core.hooksPath=",
+        "commit",
+        "--quiet",
+        "--no-verify",
+        "-m",
+        "test: prepare local demonstration fixture"
+      ],
+      "seconds": 0.156,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "seconds": 0.078,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": false
+    },
+    {
+      "command": [
+        "go",
+        "run",
+        "./cmd/forge",
+        "add",
+        "resource",
+        "Note"
+      ],
+      "seconds": 1.563,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": true
+    },
+    {
+      "command": [
+        "go",
+        "run",
+        "./cmd/dev",
+        "generate"
+      ],
+      "seconds": 2.656,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": true
+    },
+    {
+      "command": [
+        "go",
+        "run",
+        "./cmd/dev",
+        "check"
+      ],
+      "seconds": 14.156,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": true
+    },
+    {
+      "command": [
+        "git",
+        "add",
+        "-N",
+        "."
+      ],
+      "seconds": 0.078,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": true
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--stat"
+      ],
+      "seconds": 0.063,
+      "exit_code": 0,
+      "timeout": false,
+      "recorded": true
+    }
+  ]
+}

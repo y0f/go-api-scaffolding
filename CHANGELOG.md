@@ -8,6 +8,8 @@
   `go run github.com/y0f/gophling/cmd/forge@v1.3.0 new myapp`.
   Existing initialized projects do not upgrade automatically; review the
   relevant changes before applying them to your application.
+  Replace launcher commands using `github.com/y0f/go-api-scaffolding` with the
+  new module path. Releases through v1.2.0 retain the former module path.
 - `forge new` selects the launcher's release by default and records the exact
   scaffold revision in `.forge.json`. `-ref` selects another tag or commit.
   Initialization verifies a staged copy before publishing. If publication is
@@ -15,6 +17,8 @@
 - Generated resources now extend OpenAPI, SQL, migrations, tests, and explicit
   application wiring together. Run `go run ./cmd/dev generate` and apply the
   migration before serving a new resource.
+- Initialization retains original license notices and adds the new module
+  owner's notice.
 - The minimum Go version is 1.26.10; development tools use Go 1.27.3. Bootstrap
   downloads the preferred toolchain when needed. `go run ./cmd/dev check` runs
   the fast checks without Docker; `ci` adds integration, race, vulnerability,
@@ -26,6 +30,11 @@
 - Shared agent instructions, worktree guidance, evaluation runners, and a
   recorded resource workflow document the development process. Compatibility
   guidance and measured client results are reported separately.
+- Pull requests now require a yes/no AI-assistance declaration, tool and scope
+  details when applicable, and actual validation evidence. Copilot setup is
+  checked by CI and repository review instructions cover critical API behavior.
+- Public GitHub.com releases add build provenance attestations alongside signed
+  checksums and SBOMs.
 
 ## v1.2.0
 

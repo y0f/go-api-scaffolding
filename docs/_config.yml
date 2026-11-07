@@ -4,6 +4,7 @@ url: https://y0f.github.io
 baseurl: /gophling
 repository: y0f/gophling
 lang: en
+logo: /assets/gophling.png
 markdown: kramdown
 plugins:
   - jekyll-relative-links
@@ -16,5 +17,3 @@ defaults:
       path: ""
     values:
       layout: default
-exclude:
-  - assets/logo.webp

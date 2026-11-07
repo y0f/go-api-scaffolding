@@ -1,8 +1,12 @@
+<!-- forge:begin init -->
 # Go API scaffold for parallel agents
 
 Build a Go REST API with PostgreSQL, OpenAPI, and sqlc. Resource packages give
 workers clear ownership; a coordinator integrates shared contracts and migrations.
 The same commands check work locally and in CI.
+<!-- forge:end init -->
+
+## Development guide
 
 Start with [setup](agents.md), then follow the guide for your change.
 
@@ -18,5 +22,6 @@ Start with [setup](agents.md), then follow the guide for your change.
 <!-- forge:begin init -->
 [Fit and alternatives](choosing.md) describes the scope of this starter.
 [Agent evaluations](https://github.com/y0f/gophling/tree/main/evals)
-explains how feature tasks are checked.
+explain how feature tasks are checked.
+[Recorded workflow](demo.md) shows a resource generated and checked in a real project.
 <!-- forge:end init -->

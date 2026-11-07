@@ -16,7 +16,7 @@ a:focus-visible { outline: 3px solid #00a5b7; outline-offset: 4px; }
 header { border-bottom: 1px solid var(--border); background: #fff; }
 nav, main, footer { max-width: 980px; margin: auto; padding: 1.5rem 2rem; }
 nav { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-.brand { color: var(--ink); font-size: 1.1rem; font-weight: 750; text-decoration: none; }
+.brand { display: inline-flex; align-items: center; gap: .5rem; color: var(--ink); font-size: 1.1rem; font-weight: 750; text-decoration: none; }
 .links { display: flex; gap: 1.5rem; font-size: .9rem; }
 main { min-height: 65vh; padding-top: 3rem; padding-bottom: 4rem; }
 h1, h2, h3 { line-height: 1.25; letter-spacing: -.025em; }

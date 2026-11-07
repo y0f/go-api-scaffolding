@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% seo %}
+    <link rel="icon" type="image/png" href="{{ '/assets/gophling.png' | relative_url }}">
     <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
   </head>
   <body>
     <a class="skip" href="#content">Skip to content</a>
     <header>
       <nav aria-label="Main navigation">
-        <a class="brand" href="{{ '/' | relative_url }}">gophling</a>
+        <a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/assets/gophling.png' | relative_url }}" alt="" width="40" height="40">gophling</a>
         <div class="links">
           <a href="{{ '/agents.html' | relative_url }}">Setup</a>
           <a href="{{ '/architecture.html' | relative_url }}">Architecture</a>

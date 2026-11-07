@@ -22,12 +22,54 @@ go run ./cmd/dev ci
 ```
 
 This includes the fast check, vulnerability scan, race and integration tests,
-generated-project tests, and container checks. CI also runs its platform and
-Go-version matrices, initialized presets, and release-config validation.
+and container checks. CI also runs its platform and Go-version matrices and
+release-config validation.
+<!-- forge:begin init -->
+The scaffold also tests initialized presets and generated resources.
+<!-- forge:end init -->
 See [testing](../docs/workflows/testing.md) for prerequisites and focused checks.
 
 If you change SQL or the OpenAPI spec, run `task generate` and commit the
 output. CI fails if `internal/gen` is out of date with its sources.
+
+## AI-assisted contributions
+
+Every pull request must answer **yes or no** to AI assistance in the PR
+template. This includes AI help with design, code, tests, documentation, or
+review. If yes, name the tools used and describe which parts they helped with;
+include model names when known. Update the declaration if that changes during
+review. This is this repository's contribution policy.
+
+The contributor remains responsible for the whole change. Review the complete
+diff, verify behavior and security assumptions, and check the origin and license
+of incorporated code. Record the commands actually run and their results,
+including failed or skipped checks and the reason. Do not report suggested
+commands as completed tests. AI review is additional feedback; it does not
+certify correctness or transfer the contributor's review responsibility.
+
+Do not include private prompts, conversation transcripts, credentials, or other
+sensitive data in the declaration. Tool names and a brief scope description are
+enough. Do not add AI tools or models as commit authors or `Co-authored-by`
+trailers; disclose assistance in the PR. Ordinary deterministic generators,
+formatters, and linters do not count as AI assistance.
+
+See GitHub's [responsible-use guidance for agents](https://docs.github.com/en/copilot/responsible-use/agents)
+for the limits of generated code and automated review.
+
+## GitHub Copilot setup and review
+
+[Copilot instructions](copilot-instructions.md) contain the review checks for
+this repository. Keep them specific and short, following GitHub's
+[custom review guidance](https://docs.github.com/en/copilot/tutorials/customize-code-review).
+CI and maintainer review enforce requirements; instructions alone do not.
+
+The [setup workflow](workflows/copilot-setup-steps.yml) installs pinned Go tools,
+downloads module dependencies, and reports available prerequisites. CI calls
+the same workflow to validate it. It needs no application or model secrets.
+GitHub uses this file for agent sessions that run on Actions; cloud sandboxes
+need their own environment configuration. Inspect setup logs: a failed step
+can leave an agent running with an incomplete environment. See GitHub's
+[environment setup documentation](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/customize-the-agent-environment).
 
 ## Conventions
 
