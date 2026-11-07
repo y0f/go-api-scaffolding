@@ -27,6 +27,11 @@ func newApplicationAPI(pool *pgxpool.Pool,
 	idemStore *idempotency.Store,
 	//forge:end idempotency
 ) *applicationAPI {
+	// Keep the factory usable before the first resource is added.
+	_ = pool
+	//forge:begin idempotency
+	_ = idemStore
+	//forge:end idempotency
 	app := &applicationAPI{}
 	//forge:begin example
 	app.widget = widget.NewHandler(widget.NewService(widget.NewRepository(pool)))
