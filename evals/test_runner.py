@@ -139,6 +139,45 @@ class EvaluationTests(unittest.TestCase):
             self.assertIn("explicit-model", command)
             self.assertFalse(any("bypass" in argument for argument in command))
 
+    def test_claude_allows_named_native_powershell_commands(self):
+        command = runner.agent_command("claude", "claude", "model", Path("workspace"))
+        for rule in ("PowerShell(go *)", "PowerShell(./bin/task.exe *)", r"PowerShell(.\bin\task.exe *)",
+                     "PowerShell(git status *)", "PowerShell(git diff *)"):
+            self.assertIn(rule, command)
+        self.assertNotIn("PowerShell", command)
+        self.assertNotIn("PowerShell(*)", command)
+        self.assertIn("--permission-prompts", command)
+        self.assertIn("none", command)
+
+    def test_codex_windows_override_preserves_workspace_sandbox(self):
+        command = runner.agent_command("codex", "codex", "model", Path("workspace"), windows_sandbox="mxc")
+        self.assertEqual(command[:3], ["codex", "-c", "windows.sandbox=mxc"])
+        self.assertEqual(command[command.index("--sandbox") + 1], "workspace-write")
+        standard = runner.agent_command("codex", "codex", "model", Path("workspace"))
+        self.assertFalse(any(argument.startswith("windows.sandbox=") for argument in standard))
+
+    def test_native_sandbox_preflight_is_bounded_and_does_not_call_a_model(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            workspace = Path(temporary)
+            log = workspace / "preflight.log"
+            args = SimpleNamespace(agent="codex", executable="codex", codex_windows_sandbox="mxc", verify_timeout=600)
+
+            def probe(command, cwd, output, timeout):
+                self.assertIn("sandbox", command)
+                self.assertNotIn("exec", command)
+                self.assertNotIn("--model", command)
+                self.assertIn("windows.sandbox=mxc", command)
+                self.assertIn(":workspace", command)
+                self.assertEqual(timeout, 30)
+                output.write_text("FORGE_EVAL_SANDBOX_READY\n", encoding="utf-8")
+                return {"exit_code": 0, "timeout": False}
+
+            with mock.patch.object(runner.os, "name", "nt"), mock.patch.object(runner, "run", side_effect=probe):
+                self.assertTrue(runner.executor_preflight(args, workspace, log)["ready"])
+            with mock.patch.object(runner.os, "name", "posix"), mock.patch.object(runner, "run") as launch:
+                self.assertIsNone(runner.executor_preflight(args, workspace, log))
+                launch.assert_not_called()
+
     def test_bootstrap_snapshot_detects_added_application_code(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -238,6 +277,8 @@ func (s *Service) Delete() {
         self.assertIn("Do not edit or remove existing tests", prompt)
         bootstrap = runner.task_prompt({"id": "bootstrap", "prompt": "Set up the checkout."})
         self.assertNotIn("Add new tests", bootstrap)
+        self.assertIn("Run each shell command separately", bootstrap)
+        self.assertIn("Do not prepend cd", bootstrap)
 
 
 if __name__ == "__main__":

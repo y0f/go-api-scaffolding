@@ -3,7 +3,6 @@
 package evalverify
 
 import (
-	"bytes"
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
@@ -24,10 +23,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
-	"github.com/y0f/gophling/internal/auth"
 	"github.com/y0f/gophling/internal/testutil"
 	"github.com/y0f/gophling/migrations"
 )
@@ -164,10 +163,10 @@ func startApplication(t *testing.T) *application {
 
 func (app *application) token(t *testing.T, scopes string) string {
 	t.Helper()
-	claims := auth.Claims{RegisteredClaims: jwt.RegisteredClaims{
-		Subject: "evaluation-user", Issuer: "eval", Audience: jwt.ClaimStrings{"eval"},
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-	}, Scope: scopes}
+	claims := jwt.MapClaims{
+		"sub": "evaluation-user", "iss": "eval", "aud": []string{"eval"},
+		"exp": time.Now().Add(time.Hour).Unix(), "scope": scopes,
+	}
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(app.key)
 	if err != nil {
 		t.Fatal(err)
@@ -223,7 +222,11 @@ func (app *application) contractContains(t *testing.T, path string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if response.StatusCode != 200 || !bytes.Contains(data, []byte(path+":")) {
+	contract, err := openapi3.NewLoader().LoadFromData(data)
+	if err != nil {
+		t.Fatalf("served OpenAPI is invalid: %v", err)
+	}
+	if response.StatusCode != 200 || contract.Paths == nil || contract.Paths.Value(path) == nil {
 		t.Fatalf("served OpenAPI missing %s", path)
 	}
 }
@@ -309,6 +312,28 @@ func checkNameValidation(t *testing.T, app *application, resource string) {
 	app.request(t, "DELETE", itemPath, writer, "", 204)
 }
 
+func checkPriorities(t *testing.T, app *application, expected map[string]float64) {
+	t.Helper()
+	page := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
+	items, ok := page["items"].([]any)
+	if !ok || len(items) != len(expected) {
+		t.Fatalf("list must contain the preserved and newly created widgets: %v", page)
+	}
+	seen := make(map[string]bool, len(items))
+	for _, entry := range items {
+		item, ok := entry.(map[string]any)
+		if !ok {
+			t.Fatalf("list item = %v", entry)
+		}
+		id, ok := item["id"].(string)
+		want, exists := expected[id]
+		if !ok || !exists || seen[id] || item["priority"] != want {
+			t.Fatalf("list priority for %v = %v, want %v", item["id"], item["priority"], expected)
+		}
+		seen[id] = true
+	}
+}
+
 func TestAcceptance(t *testing.T) {
 	app := startApplication(t)
 	writer := app.token(t, "widgets:write")
@@ -341,6 +366,7 @@ func TestAcceptance(t *testing.T) {
 		if read["priority"] != float64(5) {
 			t.Fatalf("persisted priority = %v", read["priority"])
 		}
+		checkPriorities(t, app, map[string]float64{app.legacy: 3, first["id"].(string): 3, id: 5})
 		updated := app.request(t, "PUT", "/v1/widgets/"+id, writer, `{"name":"custom","priority":1}`, 200)
 		if updated["priority"] != float64(1) {
 			t.Fatalf("update response priority = %v", updated["priority"])
@@ -361,17 +387,7 @@ func TestAcceptance(t *testing.T) {
 		if updated["priority"] != float64(3) {
 			t.Fatalf("omitted update priority = %v", updated["priority"])
 		}
-		page := app.request(t, "GET", "/v1/widgets?limit=100", "", "", 200)
-		items, ok := page["items"].([]any)
-		if !ok || len(items) != 3 {
-			t.Fatalf("list must contain the preserved and newly created widgets: %v", page)
-		}
-		for _, entry := range items {
-			item, ok := entry.(map[string]any)
-			if !ok || item["priority"] != float64(3) {
-				t.Fatalf("list priority = %v", entry)
-			}
-		}
+		checkPriorities(t, app, map[string]float64{app.legacy: 3, first["id"].(string): 3, id: 3})
 	case "authorization":
 		app.contractContains(t, "/v1/widgets/count")
 		app.request(t, "GET", "/v1/widgets/count", "", "", 401)

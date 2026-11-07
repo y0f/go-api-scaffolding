@@ -23,6 +23,9 @@ CHECK_FILES = {"Taskfile.yml", ".golangci.yml", "go.mod", "go.sum", "go.work", "
 CHECK_PREFIXES = (".github/", ".claude/", ".codex/", ".cursor/", ".gemini/", "tools/", "evals/",
                   "cmd/dev/", "internal/testutil/", "internal/evalverify/")
 CAPTURE_TIMEOUT = 60
+SHELL_GUIDANCE = ("Run each shell command separately from the current workspace root. "
+                  "Do not prepend cd, wrap commands in another shell, or use pipelines/redirection. "
+                  "Use the native PowerShell tool on Windows when available. ")
 
 
 def capture(argv, cwd, timeout=CAPTURE_TIMEOUT, trim=True):
@@ -154,17 +157,58 @@ def application_snapshot(root):
     return result
 
 
-def agent_command(agent, executable, model, workspace, writable_caches=()):
+def agent_command(agent, executable, model, workspace, writable_caches=(), windows_sandbox=None):
     if agent == "codex":
-        command = [executable, "exec", "--model", model, "--sandbox", "workspace-write",
-                   "--json", "--ephemeral", "--cd", str(workspace)]
+        command = [executable]
+        if windows_sandbox:
+            command.extend(["-c", "windows.sandbox=" + windows_sandbox])
+        command.extend(["exec", "--model", model, "--sandbox", "workspace-write",
+                        "--json", "--ephemeral", "--cd", str(workspace)])
         for directory in writable_caches:
             command.extend(["--add-dir", str(directory)])
         return command + ["-"]
+    commands = ("go *", "./bin/task *", "./bin/task.exe *", "git status *", "git diff *")
+    permissions = [f"{shell}({command})" for shell in ("Bash", "PowerShell") for command in commands]
+    permissions.append(r"PowerShell(.\bin\task.exe *)")
     return [executable, "--print", "--model", model, "--permission-mode", "acceptEdits",
             "--permission-prompts", "none", "--output-format", "json", "--no-session-persistence",
-            "--allowedTools", "Bash(go *)", "Bash(./bin/task *)", "Bash(./bin/task.exe *)",
-            "Bash(git status *)", "Bash(git diff *)"]
+            "--allowedTools", *permissions]
+
+
+def executor_name(args):
+    if args.agent == "codex":
+        if os.name == "nt":
+            implementation = getattr(args, "codex_windows_sandbox", None) or "host-config"
+            return "codex workspace-write / Windows " + implementation
+        return "codex workspace-write"
+    return "claude acceptEdits / named shell permissions"
+
+
+def executor_preflight(args, workspace, log):
+    """Check native Windows sandbox startup before spending a model call."""
+    if args.agent != "codex" or os.name != "nt":
+        return None
+    command = [args.executable]
+    implementation = getattr(args, "codex_windows_sandbox", None)
+    if implementation:
+        command.extend(["-c", "windows.sandbox=" + implementation])
+    marker = "FORGE_EVAL_SANDBOX_READY"
+    command.extend(["sandbox", "--include-managed-config", "--permission-profile", ":workspace",
+                    "-C", str(workspace), "--", "powershell.exe", "-NoProfile", "-Command", "Write-Output '" + marker + "'"])
+    result = run(command, workspace, log, min(args.verify_timeout, 30))
+    result["ready"] = (not result["timeout"] and result["exit_code"] == 0 and
+                       marker in log.read_text(encoding="utf-8", errors="replace").splitlines())
+    return result
+
+
+def add_executor_option(parser):
+    parser.add_argument("--codex-windows-sandbox", choices=("mxc", "elevated", "unelevated"),
+                        help="Override only this evaluation's native Windows sandbox implementation; keep workspace-write")
+
+
+def validate_executor_option(parser, args):
+    if args.codex_windows_sandbox and (args.agent != "codex" or os.name != "nt"):
+        parser.error("--codex-windows-sandbox requires Codex on native Windows")
 
 
 def reported_usage(log):
@@ -223,7 +267,7 @@ def task_prompt(task):
     return task["prompt"] + "\nUse AGENTS.md. " + tests + ("Do not edit or remove existing tests, migrations, "
             "dependency files, check configuration, pinned tool binaries, or agent instructions. "
             "Do not add verification tooling or configuration. Do not commit or push. "
-            "Run go run ./cmd/dev check and the relevant integration tests. Report any unrun checks.")
+            "Run go run ./cmd/dev check and the relevant integration tests. Report any unrun checks. ") + SHELL_GUIDANCE
 
 
 def evaluate(args, task, attempt, sha, verifier, version):
@@ -233,6 +277,7 @@ def evaluate(args, task, attempt, sha, verifier, version):
     record = {"task": task["id"], "attempt": attempt, "agent": args.agent, "model_requested": args.model,
               "client_version": version, "source_commit": sha, "status": "error",
               "human_interventions": 0, "environment": platform.platform(),
+              "executor": executor_name(args),
               "verifier_sha256": hashlib.sha256(verifier.encode()).hexdigest(),
               "runner_sha256": file_digest(HERE / "run.py"),
               "prompt_sha256": hashlib.sha256(task_prompt(task).encode()).hexdigest(),
@@ -283,7 +328,15 @@ def evaluate(args, task, attempt, sha, verifier, version):
         (directory / "prompt.txt").write_text(prompt, encoding="utf-8")
         caches = [Path(value).resolve() for value in capture(["go", "env", "GOCACHE", "GOMODCACHE"], workspace).splitlines()]
         record["writable_caches"] = [str(path) for path in caches] if args.agent == "codex" else []
-        argv = agent_command(args.agent, args.executable, args.model, workspace, caches)
+        preflight = executor_preflight(args, workspace, directory / "sandbox-preflight.log")
+        if preflight is not None:
+            record["steps"].append(preflight)
+            if not preflight["ready"]:
+                record["status"] = "preparation_failed"
+                record["error"] = "native Windows sandbox preflight failed; review sandbox-preflight.log before retrying"
+                return record
+        argv = agent_command(args.agent, args.executable, args.model, workspace, caches,
+                             getattr(args, "codex_windows_sandbox", None))
         agent = run(argv, workspace, directory / "agent.log", args.timeout, prompt=prompt)
         record["steps"].append(agent)
         record["reported_usage"] = reported_usage(directory / "agent.log")
@@ -357,12 +410,14 @@ def main():
     parser.add_argument("--agent", required=True, choices=("claude", "codex"))
     parser.add_argument("--model", required=True, help="Record an explicit model identifier, preferably a dated version")
     parser.add_argument("--executable", help="Path to the selected agent CLI")
+    add_executor_option(parser)
     parser.add_argument("--task", default="all")
     parser.add_argument("--attempts", type=int, default=1)
     parser.add_argument("--timeout", type=int, default=900, help="Agent wall-clock limit in seconds")
     parser.add_argument("--verify-timeout", type=int, default=600)
     parser.add_argument("--output", type=Path, required=True, help="New results directory outside the source tree")
     args = parser.parse_args()
+    validate_executor_option(parser, args)
     args.source, args.output = args.source.resolve(), args.output.resolve()
     if args.output == args.source or args.source in args.output.parents:
         parser.error("output must be outside the source tree")

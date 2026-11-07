@@ -86,11 +86,12 @@ def worker(args, resource, workspace, fixture, caches):
               "Do not edit existing tests or any other paths, contracts, migrations, generated bindings, or instructions. "
               "Another worker owns the other broken module; do not repair it or run the whole suite. "
               f"Read AGENTS.md and run go test ./internal/modules/{resource}. Do not commit or push. "
-              "Report the files changed and check outcomes.")
+              "Report the files changed and check outcomes. ") + runner.SHELL_GUIDANCE
     (args.output / f"{resource}-prompt.txt").write_text(prompt, encoding="utf-8")
     record = {"resource": resource, "status": "error", "human_interventions": 0,
               "prompt_sha256": hashlib.sha256(prompt.encode()).hexdigest()}
-    command = runner.agent_command(args.agent, args.executable, args.model, workspace, caches)
+    command = runner.agent_command(args.agent, args.executable, args.model, workspace, caches,
+                                   getattr(args, "codex_windows_sandbox", None))
     agent = runner.run(command, workspace, args.output / f"{resource}-agent.log", args.timeout, prompt=prompt)
     record["agent"] = agent
     record["reported_usage"] = runner.reported_usage(args.output / f"{resource}-agent.log")
@@ -121,6 +122,7 @@ def scenario(args):
     record = {"scenario": "parallel_validation_repair", "mode": "serial" if args.serial else "parallel",
               "agent": args.agent, "model_requested": args.model, "human_interventions": 0,
               "environment": platform.platform(),
+              "executor": runner.executor_name(args),
               "runner_sha256": runner.file_digest(runner.HERE / "run.py"),
               "scenario_sha256": runner.file_digest(Path(__file__)),
               "cache": "shared host Go caches; per-worktree tool binaries", "status": "error", "steps": []}
@@ -161,6 +163,13 @@ def scenario(args):
                            fixture, args.verify_timeout)
             shutil.copytree(fixture / "bin", path / "bin")
             workspaces[name] = path
+        preflight = runner.executor_preflight(args, workspaces["coordinator"], args.output / "sandbox-preflight.log")
+        if preflight is not None:
+            record["steps"].append(preflight)
+            if not preflight["ready"]:
+                record["status"] = "preparation_failed"
+                record["error"] = "native Windows sandbox preflight failed; review sandbox-preflight.log before retrying"
+                return record
         record["preparation_seconds"] = round(time.monotonic() - started, 3)
         phase_start = time.monotonic()
         jobs = [(name, lambda name=name: worker(args, name, workspaces[name], record["fixture_commit"], caches)) for name in RESOURCES]
@@ -206,11 +215,13 @@ def main():
     parser.add_argument("--agent", choices=("claude", "codex"), required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--executable")
+    runner.add_executor_option(parser)
     parser.add_argument("--serial", action="store_true", help="Run the same two worker tasks sequentially")
     parser.add_argument("--timeout", type=int, default=600)
     parser.add_argument("--verify-timeout", type=int, default=600)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    runner.validate_executor_option(parser, args)
     args.source, args.output = args.source.resolve(), args.output.resolve()
     if args.output == args.source or args.source in args.output.parents:
         parser.error("output must be outside the source tree")

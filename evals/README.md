@@ -40,11 +40,21 @@ diff from initialization and seeded changes. The agent must not commit, and
 neither the runner nor the agent pushes anything.
 
 Agent sessions retain normal permission checks. Claude permits edits and the
-documented Go/Task commands; Codex uses its workspace sandbox with write access
+documented Go/Task and read-only Git commands through Bash or native PowerShell;
+prompts request individual commands without `cd` or pipelines. Codex uses its workspace sandbox with write access
 to Go's build and module cache directories. Dependencies are warmed during
 preparation. Permission denials or unavailable dependencies are unsuccessful
 attempts, not successful skips or evidence of model competence.
 Use an isolated host or container and its normal permissions for automated runs.
+
+On native Windows, a bounded non-model probe checks Codex sandbox startup before
+each attempt. To select [MXC](https://learn.chatgpt.com/docs/windows/windows-sandbox)
+for the evaluation, add `--codex-windows-sandbox mxc` to either runner. This keeps
+`workspace-write`, honors managed requirements, and leaves the saved user config
+unchanged. If the probe fails, resolve the host sandbox setup before retrying;
+the failure is recorded as preparation, with no agent call. Linux behavior is
+unchanged. Keep interrupted or permission-blocked attempts in reports when
+repairing an adapter, and identify the repair before reporting fresh attempts.
 
 ## What counts as success
 
