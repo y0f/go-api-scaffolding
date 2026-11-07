@@ -269,6 +269,7 @@ func fullChecks() error {
 	}
 	for _, command := range [][]string{
 		{toolPath("govulncheck"), "./..."},
+		{toolPath("govulncheck"), "-C", "tools", "tool"},
 		{"go", "test", "-race", "-shuffle=on", "./..."},
 		{"go", "test", "-tags", "integration", "-race", "-count=1", "./..."},
 		//forge:begin example
