@@ -127,11 +127,15 @@ enables development mode and its temporary signing key.
 
 ## Verify a release
 
-Replace `TAG` with the downloaded release tag (for example, `v1.3.0`).
+Replace `TAG` with the downloaded release tag (for example, `v1.3.0`) and
+`OWNER/REPOSITORY` with the GitHub repository that published it.
+<!-- forge:begin init -->
+For gophling releases, the repository is `y0f/gophling`.
+<!-- forge:end init -->
 
 ```sh
 cosign verify-blob --bundle checksums.txt.bundle \
-  --certificate-identity 'https://github.com/y0f/gophling/.github/workflows/release.yml@refs/tags/TAG' \
+  --certificate-identity 'https://github.com/OWNER/REPOSITORY/.github/workflows/release.yml@refs/tags/TAG' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com checksums.txt
 ```
 
@@ -139,11 +143,7 @@ Then compare the SHA-256 hash of your downloaded archive with its entry in the
 verified `checksums.txt` before extracting it.
 
 For public GitHub.com releases, also verify the archive's build provenance.
-Replace `ARCHIVE` with the downloaded filename, `TAG` with its release tag,
-and `OWNER/REPOSITORY` with the repository that published it.
-<!-- forge:begin init -->
-For gophling releases, the repository is `y0f/gophling`.
-<!-- forge:end init -->
+Replace `ARCHIVE` with the downloaded filename.
 
 ```sh
 gh attestation verify ARCHIVE --repo OWNER/REPOSITORY \
