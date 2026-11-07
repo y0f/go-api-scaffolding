@@ -54,6 +54,11 @@ func (h *Handler) EnableIdempotency(store *idempotency.Store) {
 // stored response if there is one, otherwise create and store the response in
 // the same transaction.
 func (h *Handler) createIdempotent(w http.ResponseWriter, r *http.Request, actor auth.Principal, in Input, body []byte, key string) {
+	// A retry must satisfy today's policy, even when its response is cached.
+	if err := h.service.authorizeWrite(actor); err != nil {
+		h.writeError(w, r, err)
+		return
+	}
 	if len(key) > maxIdempotencyKeyLen {
 		problem.Status(w, r, http.StatusBadRequest, "Idempotency-Key exceeds 255 characters")
 		return
@@ -125,8 +130,8 @@ func widgetIDFromBody(body []byte) string {
 }
 
 func (s *Service) CreateIdempotent(ctx context.Context, actor auth.Principal, in Input, claim IdempotencyClaim) (db.Widget, error) {
-	if !actor.HasPermission(PermissionWrite) {
-		return db.Widget{}, ErrForbidden
+	if err := s.authorizeWrite(actor); err != nil {
+		return db.Widget{}, err
 	}
 	return s.repo.CreateIdempotent(ctx, in, claim)
 }

@@ -23,9 +23,16 @@ func NewService(repo Repository) *Service {
 	return &Service{repo: repo}
 }
 
-func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (db.Widget, error) {
+func (s *Service) authorizeWrite(actor auth.Principal) error {
 	if !actor.HasPermission(PermissionWrite) {
-		return db.Widget{}, ErrForbidden
+		return ErrForbidden
+	}
+	return nil
+}
+
+func (s *Service) Create(ctx context.Context, actor auth.Principal, in Input) (db.Widget, error) {
+	if err := s.authorizeWrite(actor); err != nil {
+		return db.Widget{}, err
 	}
 	return s.repo.Create(ctx, in)
 }
@@ -39,15 +46,15 @@ func (s *Service) List(ctx context.Context, limit, offset int32) ([]db.Widget, i
 }
 
 func (s *Service) Update(ctx context.Context, actor auth.Principal, id uuid.UUID, in Input) (db.Widget, error) {
-	if !actor.HasPermission(PermissionWrite) {
-		return db.Widget{}, ErrForbidden
+	if err := s.authorizeWrite(actor); err != nil {
+		return db.Widget{}, err
 	}
 	return s.repo.Update(ctx, id, in)
 }
 
 func (s *Service) Delete(ctx context.Context, actor auth.Principal, id uuid.UUID) error {
-	if !actor.HasPermission(PermissionWrite) {
-		return ErrForbidden
+	if err := s.authorizeWrite(actor); err != nil {
+		return err
 	}
 	return s.repo.Delete(ctx, id)
 }
