@@ -470,7 +470,7 @@ func (s *Service) Delete() {
     def test_verifier_uses_frozen_migrations_and_current_module(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "evalverify"
-            runner.write_verifier(target, 'import "github.com/y0f/gophling/internal/auth"',
+            runner.write_verifier(target, 'import "github.com/y0f/gophling/v2/internal/auth"',
                                   {"00001_widgets.sql": b"frozen before agent edits"})
             self.assertIn('"example.com/eval/app/internal/auth"', (target / "acceptance_test.go").read_text())
             self.assertEqual((target / "baseline/00001_widgets.sql").read_bytes(), b"frozen before agent edits")

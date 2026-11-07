@@ -28,8 +28,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
-	"github.com/y0f/gophling/internal/testutil"
-	"github.com/y0f/gophling/migrations"
+	"github.com/y0f/gophling/v2/internal/testutil"
+	"github.com/y0f/gophling/v2/migrations"
 )
 
 type application struct {

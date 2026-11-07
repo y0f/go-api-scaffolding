@@ -76,6 +76,50 @@ func TestRewriteTreePreservesRequestedModule(t *testing.T) {
 	}
 }
 
+func TestRewriteTreeMarkdownEOF(t *testing.T) {
+	block := mark("<!--", "begin", "outbox") + " -->\nOptional delivery.\n" + mark("<!--", "end", "outbox") + " -->\n"
+	for _, tc := range []struct {
+		name, file, src, want string
+		drop                  bool
+	}{
+		{"dropped_tail", "guide.md", "Keep this.\n\n" + block, "Keep this.\n", true},
+		{"kept_tail", "guide.md", "Keep this.\n\n" + block + "\n", "Keep this.\n\nOptional delivery.\n", false},
+		{"hard_breaks", "guide.md", "First line.  \nLast line.  \n\n" + block, "First line.  \nLast line.  \n", true},
+		{"crlf", "guide.md", strings.ReplaceAll("Keep this.  \n\n"+block, "\n", "\r\n"), "Keep this.  \r\n", true},
+		{"whitespace_blank_tail", "guide.md", "Keep this.\n \t\n" + block, "Keep this.\n", true},
+		{"no_final_newline", "guide.md", block + "Keep this.  ", "Keep this.  ", true},
+		{"empty", "guide.md", strings.ReplaceAll(block+"\n", "\n", "\r\n"), "", true},
+		{"uppercase_extension", "guide.MD", "Keep this.\n\n" + block, "Keep this.\n", true},
+		{"markdown_extension", "guide.markdown", "Keep this.\n\n" + block, "Keep this.\n", true},
+		{"no_markers", "guide.md", "Keep this.\n\n", "Keep this.\n\n", true},
+		{"non_markdown", "guide.txt", "Keep this.\n\n" + block, "Keep this.\n\n", true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := fixtureRepository(t)
+			t.Chdir(dir)
+			if err := os.WriteFile(tc.file, []byte(tc.src), 0o640); err != nil {
+				t.Fatal(err)
+			}
+			before, err := os.Stat(tc.file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			fixtureGit(t, dir, "add", tc.file)
+			if err := rewriteTree("example.com/app", map[string]bool{"outbox": tc.drop}); err != nil {
+				t.Fatal(err)
+			}
+			got, err := os.ReadFile(tc.file)
+			if err != nil || string(got) != tc.want {
+				t.Fatalf("rewritten Markdown = %q, %v; want %q", got, err, tc.want)
+			}
+			after, err := os.Stat(tc.file)
+			if err != nil || after.Mode() != before.Mode() {
+				t.Fatalf("rewrite changed permissions: before %v, after %v, error %v", before, after, err)
+			}
+		})
+	}
+}
+
 func TestRewriteTreeGoReleaserProjectName(t *testing.T) {
 	for _, tc := range []struct {
 		name, file, projectName, wantName string
@@ -217,7 +261,7 @@ func TestCreateProjectPinsSourceAndStagesFinalTree(t *testing.T) {
 	if origin.Revision != revision || origin.Ref != "v0.1.0" {
 		t.Fatalf("provenance = %#v", origin)
 	}
-	if strings.Contains(string(data), source) || origin.Scaffold != moduleName {
+	if strings.Contains(string(data), source) || origin.Scaffold != scaffoldRepository {
 		t.Fatal("public provenance retained a machine-local clone source")
 	}
 	fixtureGit(t, destination, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--quiet", "-m", "initial")

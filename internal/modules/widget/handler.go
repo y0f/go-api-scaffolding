@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/y0f/gophling/internal/auth"
-	api "github.com/y0f/gophling/internal/gen/api"
-	db "github.com/y0f/gophling/internal/gen/db"
-	"github.com/y0f/gophling/internal/idempotency"
-	"github.com/y0f/gophling/internal/platform/problem"
+	"github.com/y0f/gophling/v2/internal/auth"
+	api "github.com/y0f/gophling/v2/internal/gen/api"
+	db "github.com/y0f/gophling/v2/internal/gen/db"
+	"github.com/y0f/gophling/v2/internal/idempotency"
+	"github.com/y0f/gophling/v2/internal/platform/problem"
 )
 
 // Handler adapts HTTP to the widget service. It implements the generated

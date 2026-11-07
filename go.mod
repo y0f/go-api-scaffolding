@@ -1,4 +1,4 @@
-module github.com/y0f/gophling
+module github.com/y0f/gophling/v2
 
 go 1.26.10
 

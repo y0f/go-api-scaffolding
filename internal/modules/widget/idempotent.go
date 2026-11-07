@@ -11,11 +11,11 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/y0f/gophling/internal/auth"
-	db "github.com/y0f/gophling/internal/gen/db"
-	"github.com/y0f/gophling/internal/idempotency"
-	"github.com/y0f/gophling/internal/platform/database"
-	"github.com/y0f/gophling/internal/platform/problem"
+	"github.com/y0f/gophling/v2/internal/auth"
+	db "github.com/y0f/gophling/v2/internal/gen/db"
+	"github.com/y0f/gophling/v2/internal/idempotency"
+	"github.com/y0f/gophling/v2/internal/platform/database"
+	"github.com/y0f/gophling/v2/internal/platform/problem"
 )
 
 // IdempotencyClaim ties a create to a client-supplied Idempotency-Key. The key

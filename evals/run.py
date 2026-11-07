@@ -131,7 +131,7 @@ def bootstrap_changes(root, expected):
 def write_verifier(target, verifier, baseline_migrations=None):
     target.mkdir(exist_ok=False)
     (target / "acceptance_test.go").write_text(
-        verifier.replace("github.com/y0f/gophling", "example.com/eval/app"), encoding="utf-8", newline="\n")
+        verifier.replace("github.com/y0f/gophling/v2", "example.com/eval/app"), encoding="utf-8", newline="\n")
     if baseline_migrations is not None:
         baseline = target / "baseline"
         baseline.mkdir()

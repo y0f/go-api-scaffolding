@@ -42,4 +42,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/y0f/gophling
+        - github.com/y0f/gophling/v2

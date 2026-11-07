@@ -99,6 +99,7 @@ var derived = []struct {
 var initPaths = []string{
 	"cmd/forge/init.go", "cmd/forge/init_test.go", "cmd/forge/init_project.go", "cmd/forge/init_project_test.go",
 	"cmd/forge/init_recovery.go", "cmd/forge/init_recovery_test.go", "cmd/forge/generator_test.go",
+	"cmd/forge/init_version_test.go",
 	"cmd/forge/templates/journey_test.go.tmpl", "CHANGELOG.md", "evals",
 	"docs/choosing.md", "docs/_config.yml", "docs/_layouts", "docs/assets/site.css",
 	"docs/demo.md", "docs/assets/demo.js", "docs/assets/demo.css", "docs/assets/demo.cast",
@@ -307,7 +308,7 @@ func rewriteTree(module string, dropped map[string]bool) error {
 	if err != nil {
 		return err
 	}
-	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
+	names := projectNames(module)
 	for _, file := range files {
 		if underAny(file, removed) {
 			continue
@@ -323,6 +324,10 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		if err != nil {
 			return fmt.Errorf("%s: %w", file, err)
 		}
+		ext := strings.ToLower(filepath.Ext(file))
+		if (ext == ".md" || ext == ".markdown") && markerRe.Match(src) {
+			out = trimMarkdownEOF(out)
+		}
 		switch file {
 		case ".goreleaser.yaml", ".goreleaser.yml":
 			out = rewriteReleaseConfig(out, module)
@@ -334,7 +339,7 @@ func rewriteTree(module string, dropped map[string]bool) error {
 		}
 		if file == "README.md" && strings.HasPrefix(out, "# ") {
 			_, body, _ := strings.Cut(out, "\n")
-			out = "# " + path.Base(module) + "\n" + body
+			out = "# " + projectName(module) + "\n" + body
 		}
 		if out != string(src) {
 			if err := os.WriteFile(file, []byte(out), 0o600); err != nil {
@@ -353,10 +358,30 @@ func rewriteTree(module string, dropped map[string]bool) error {
 	return renumberMigrations("migrations")
 }
 
+var moduleMajorSuffix = regexp.MustCompile(`^v(?:[2-9]|[1-9][0-9]+)$`)
+
+// The Go import path retains its major suffix; app and tool identities do not.
+func unversionedModule(module string) string {
+	if moduleMajorSuffix.MatchString(path.Base(module)) {
+		return path.Dir(module)
+	}
+	return module
+}
+
+func projectName(module string) string { return path.Base(unversionedModule(module)) }
+
+func projectNames(module string) *strings.Replacer {
+	return strings.NewReplacer(
+		scaffoldToolsModule, unversionedModule(module)+"/tools",
+		moduleName, module,
+		scaffoldName, projectName(module),
+	)
+}
+
 // composeProjectName follows the module identity, so moving a checkout keeps
 // its database while unrelated applications with the same basename stay apart.
 func composeProjectName(module string) string {
-	slug := regexp.MustCompile(`[^a-z0-9_-]+`).ReplaceAllString(strings.ToLower(path.Base(module)), "-")
+	slug := regexp.MustCompile(`[^a-z0-9_-]+`).ReplaceAllString(strings.ToLower(projectName(module)), "-")
 	slug = strings.Trim(slug, "-_")
 	if len(slug) > 24 {
 		slug = strings.TrimRight(slug[:24], "-_")
@@ -372,7 +397,7 @@ func composeProjectName(module string) string {
 // project names and YAML formatting, including comments and quoted values.
 func rewriteComposeConfig(src, module string) string {
 	name := regexp.MustCompile(`^(name:[ \t]*)(?:forge|"forge"|'forge')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
-	names := strings.NewReplacer(moduleName, module, path.Base(moduleName), path.Base(module))
+	names := projectNames(module)
 	var out strings.Builder
 	for _, line := range strings.SplitAfter(src, "\n") {
 		if strings.HasPrefix(line, "name:") {
@@ -390,13 +415,13 @@ func rewriteComposeConfig(src, module string) string {
 // Only the default release name belongs to the scaffold. Preserve custom names
 // and YAML formatting while updating module paths used by linker flags.
 func rewriteReleaseConfig(src, module string) string {
-	defaultName := regexp.QuoteMeta(path.Base(moduleName))
+	defaultName := regexp.QuoteMeta(scaffoldName)
 	name := regexp.MustCompile(`^(project_name:[ \t]*)(?:` + defaultName + `|"` + defaultName + `"|'` + defaultName + `')([ \t]*(?:#[^\r\n]*)?\r?\n?)$`)
 	var out strings.Builder
 	for _, line := range strings.SplitAfter(src, "\n") {
 		if strings.HasPrefix(line, "project_name:") {
 			if match := name.FindStringSubmatch(line); match != nil {
-				line = match[1] + strconv.Quote(path.Base(module)) + match[2]
+				line = match[1] + strconv.Quote(projectName(module)) + match[2]
 			}
 		} else {
 			line = strings.ReplaceAll(line, moduleName, module)
@@ -483,6 +508,16 @@ func strip(src string, dropped map[string]bool) (string, error) {
 		return "", fmt.Errorf("forge:begin %s without matching end", stack[len(stack)-1])
 	}
 	return strings.TrimLeft(collapseBlankLines(out.String()), "\n"), nil
+}
+
+// trimMarkdownEOF removes blank lines left after marker removal without
+// trimming a content line's hard-break spaces or changing its line ending.
+func trimMarkdownEOF(src string) string {
+	lines := strings.SplitAfter(src, "\n")
+	for len(lines) > 0 && strings.Trim(lines[len(lines)-1], " \t\r\n") == "" {
+		lines = lines[:len(lines)-1]
+	}
+	return strings.Join(lines, "")
 }
 
 var copyrightRe = regexp.MustCompile(`(?m)^Copyright \(c\) \d{4} [^\r\n]+`)

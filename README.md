@@ -21,7 +21,7 @@ the pinned Go 1.27.3 toolchain, downloading it if needed. Docker runs the local
 database.
 
 ```sh
-go run github.com/y0f/gophling/cmd/forge@latest new myapp
+go run github.com/y0f/gophling/v2/cmd/forge@latest new myapp
 cd myapp
 go run ./cmd/dev bootstrap
 ```
@@ -31,12 +31,15 @@ For automation, pass `-yes -module github.com/you/myapp`. Use `-ref <tag-or-SHA>
 to select the scaffold revision; `.forge.json` records the resolved revision.
 For repeatable setup, pin the launcher version (`cmd/forge@<release>`) and use a
 full commit SHA for `-ref` when selecting older or custom source.
+The selected source must use the launcher's scaffold module path. For older
+releases, use their documented launcher and original module path. A v2 launcher
+rejects v1 source before setup.
 
 If in-place initialization is interrupted while publishing files, recover from
 the project root before making manual changes:
 
 ```sh
-go run github.com/y0f/gophling/cmd/forge@<release> init -recover
+go run github.com/y0f/gophling/v2/cmd/forge@<release> init -recover
 ```
 
 Use the release that performed initialization. Recovery restores the saved

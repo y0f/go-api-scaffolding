@@ -17,14 +17,14 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/y0f/gophling/internal/auth"
+	"github.com/y0f/gophling/v2/internal/auth"
 	//forge:begin idempotency
-	"github.com/y0f/gophling/internal/idempotency"
+	"github.com/y0f/gophling/v2/internal/idempotency"
 	//forge:end idempotency
-	"github.com/y0f/gophling/internal/modules/widget"
-	"github.com/y0f/gophling/internal/observability"
-	"github.com/y0f/gophling/internal/server"
-	"github.com/y0f/gophling/internal/testutil"
+	"github.com/y0f/gophling/v2/internal/modules/widget"
+	"github.com/y0f/gophling/v2/internal/observability"
+	"github.com/y0f/gophling/v2/internal/server"
+	"github.com/y0f/gophling/v2/internal/testutil"
 )
 
 // newRouterServer serves the widget API through the real router, so requests

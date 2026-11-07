@@ -17,7 +17,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/time/rate"
 
-	"github.com/y0f/gophling/internal/platform/problem"
+	"github.com/y0f/gophling/v2/internal/platform/problem"
 )
 
 // AccessLog emits one structured line per request. Trace and span IDs are added

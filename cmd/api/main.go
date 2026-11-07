@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/y0f/gophling/internal/auth"
-	"github.com/y0f/gophling/internal/config"
-	"github.com/y0f/gophling/internal/idempotency"
-	"github.com/y0f/gophling/internal/maintenance"
-	"github.com/y0f/gophling/internal/observability"
-	"github.com/y0f/gophling/internal/outbox"
-	"github.com/y0f/gophling/internal/platform/database"
-	"github.com/y0f/gophling/internal/server"
+	"github.com/y0f/gophling/v2/internal/auth"
+	"github.com/y0f/gophling/v2/internal/config"
+	"github.com/y0f/gophling/v2/internal/idempotency"
+	"github.com/y0f/gophling/v2/internal/maintenance"
+	"github.com/y0f/gophling/v2/internal/observability"
+	"github.com/y0f/gophling/v2/internal/outbox"
+	"github.com/y0f/gophling/v2/internal/platform/database"
+	"github.com/y0f/gophling/v2/internal/server"
 )
 
 func main() {

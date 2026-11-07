@@ -19,6 +19,13 @@ import (
 // Set by release builds. go run module@version supplies Main.Version instead.
 var scaffoldVersion string
 
+// Repository identity and product naming are independent of Go major versions.
+const (
+	scaffoldRepository  = "github.com/y0f/gophling"
+	scaffoldName        = "gophling"
+	scaffoldToolsModule = "github.com/y0f/gophling/tools"
+)
+
 var pseudoVersionRevision = regexp.MustCompile(`[.-][0-9]{14}-([0-9a-f]{12})(?:\+incompatible)?$`)
 
 type projectOrigin struct {
@@ -43,7 +50,7 @@ func createProject(args []string, initialize func([]string) error) (result error
 		return errors.New("usage: forge new <dir> [-ref tag-or-commit] [-source git-url-or-path] [-yes -module path -drop slices]")
 	}
 	fs := flag.NewFlagSet("forge new", flag.ContinueOnError)
-	source := fs.String("source", "https://"+moduleName, "scaffold repository")
+	source := fs.String("source", "https://"+scaffoldRepository, "scaffold repository")
 	ref := fs.String("ref", launcherRef(), "scaffold tag or commit (defaults to the launcher version when available)")
 	module := fs.String("module", "", "module path for the project")
 	drop := fs.String("drop", "", "comma-separated slices to remove")
@@ -99,7 +106,7 @@ func createProject(args []string, initialize func([]string) error) (result error
 	if err := os.RemoveAll(".git"); err != nil {
 		return err
 	}
-	if err := writeOrigin(projectOrigin{Scaffold: moduleName, Revision: revision, Ref: *ref}); err != nil {
+	if err := writeOrigin(projectOrigin{Scaffold: scaffoldRepository, Revision: revision, Ref: *ref}); err != nil {
 		return err
 	}
 	if err := execStep("git", "init", "--quiet"); err != nil {
@@ -177,6 +184,9 @@ func writeOrigin(origin projectOrigin) error {
 }
 
 func prepareProject(module string, dropped map[string]bool, verify func(string, map[string]bool) error) (result error) {
+	if sourceModule := projectModule(); sourceModule != moduleName {
+		return fmt.Errorf("scaffold module %q does not match launcher module %q; use the launcher from the selected release or select a v2 scaffold ref", sourceModule, moduleName)
+	}
 	if dropped == nil {
 		dropped = map[string]bool{}
 	}
@@ -192,7 +202,7 @@ func prepareProject(module string, dropped map[string]bool, verify func(string, 
 	if err != nil {
 		return err
 	}
-	origin := projectOrigin{Scaffold: moduleName, Module: module}
+	origin := projectOrigin{Scaffold: scaffoldRepository, Module: module}
 	if existing, ok := before[".forge.json"]; ok {
 		if err := json.Unmarshal(existing.Data, &origin); err != nil {
 			return fmt.Errorf("read scaffold provenance: %w", err)

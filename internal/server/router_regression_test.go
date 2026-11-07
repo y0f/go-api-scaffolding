@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/y0f/gophling/internal/auth"
-	"github.com/y0f/gophling/internal/observability"
-	"github.com/y0f/gophling/internal/server"
+	"github.com/y0f/gophling/v2/internal/auth"
+	"github.com/y0f/gophling/v2/internal/observability"
+	"github.com/y0f/gophling/v2/internal/server"
 )
 
 func regressionRouter(t *testing.T, maxBody int64) (http.Handler, string) {

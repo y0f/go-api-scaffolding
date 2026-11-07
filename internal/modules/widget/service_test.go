@@ -7,8 +7,8 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/y0f/gophling/internal/auth"
-	db "github.com/y0f/gophling/internal/gen/db"
+	"github.com/y0f/gophling/v2/internal/auth"
+	db "github.com/y0f/gophling/v2/internal/gen/db"
 )
 
 type fakeRepo struct {

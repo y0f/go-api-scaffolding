@@ -15,9 +15,9 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	db "github.com/y0f/gophling/internal/gen/db"
-	"github.com/y0f/gophling/internal/platform/database"
-	"github.com/y0f/gophling/internal/testutil"
+	db "github.com/y0f/gophling/v2/internal/gen/db"
+	"github.com/y0f/gophling/v2/internal/platform/database"
+	"github.com/y0f/gophling/v2/internal/testutil"
 )
 
 type capturePublisher struct {
