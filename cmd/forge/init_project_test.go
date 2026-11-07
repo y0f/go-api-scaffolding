@@ -261,7 +261,7 @@ func TestCreateProjectPinsSourceAndStagesFinalTree(t *testing.T) {
 	if origin.Revision != revision || origin.Ref != "v0.1.0" {
 		t.Fatalf("provenance = %#v", origin)
 	}
-	if strings.Contains(string(data), source) || origin.Scaffold != moduleName {
+	if strings.Contains(string(data), source) || origin.Scaffold != scaffoldRepository {
 		t.Fatal("public provenance retained a machine-local clone source")
 	}
 	fixtureGit(t, destination, "-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "--quiet", "-m", "initial")

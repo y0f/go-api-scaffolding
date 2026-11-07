@@ -2,6 +2,21 @@
 
 ## v2.0.0
 
+- The scaffold's Go module is now `github.com/y0f/gophling/v2`. Create a project
+  with `go run github.com/y0f/gophling/v2/cmd/forge@v2.0.0 new myapp`.
+  Existing initialized applications keep their own module paths and do not
+  upgrade automatically.
+- The repository remains `github.com/y0f/gophling`. Clone URLs and the scaffold
+  identity in `.forge.json` remain stable; the launcher still selects its own
+  release and records the resolved source revision.
+- A project module such as `example.com/team/api/v2` keeps that full import
+  path, while its README title and default release name use `api` and its
+  independent tools module uses `example.com/team/api/tools`. Compose names
+  include a hash of the full module path to distinguish application modules.
+- The selected scaffold source must use the launcher's exact module path.
+  A v2 launcher rejects v1 source before transformation; use the launcher and
+  original module path from the selected older release. For interrupted
+  initialization, recover with the release that performed it.
 - Remove trailing blank lines left in Markdown by initialization's optional
   sections, so fresh full and minimal projects pass Git's whitespace check.
   Markdown hard breaks and existing file permissions are preserved.

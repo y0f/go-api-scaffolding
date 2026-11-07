@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	spec "github.com/y0f/gophling/api"
-	"github.com/y0f/gophling/internal/auth"
-	"github.com/y0f/gophling/internal/observability"
-	"github.com/y0f/gophling/internal/server"
+	spec "github.com/y0f/gophling/v2/api"
+	"github.com/y0f/gophling/v2/internal/auth"
+	"github.com/y0f/gophling/v2/internal/observability"
+	"github.com/y0f/gophling/v2/internal/server"
 )
 
 // newRouter builds the public handler with no database and no API

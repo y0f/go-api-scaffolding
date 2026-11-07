@@ -46,6 +46,9 @@ func TestGeneratedProjects(t *testing.T) {
 			generatorCommand(t, dir, "git", "add", "--all")
 			generatorCommand(t, dir, "git", "-c", "user.name=Generator Fixture", "-c", "user.email=generator-fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "test: initialize generator fixture")
 			module := "example.com/generator/" + preset.name
+			if preset.name == "full" {
+				module += "/v2"
+			}
 			generatorCommand(t, dir, "go", "run", "./cmd/forge", "init", "-yes", "-module", module, "-drop", preset.drop)
 			generatorCommand(t, dir, "git", "add", "--all")
 			generatorCommand(t, dir, "git", "diff", "--cached", "--check")

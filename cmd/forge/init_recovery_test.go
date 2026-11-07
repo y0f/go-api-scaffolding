@@ -13,6 +13,9 @@ import (
 
 func TestLauncherVersionRefs(t *testing.T) {
 	for version, want := range map[string]string{
+		"v2.0.0":                                            "v2.0.0",
+		"v2.0.0-20261107123456-abcdef012345":                "abcdef012345",
+		"v2.0.1-0.20261107123456-abcdef012345":              "abcdef012345",
 		"v1.3.0":                                            "v1.3.0",
 		"v1.3.0-rc.1":                                       "v1.3.0-rc.1",
 		"v0.0.0-20261107123456-abcdef012345":                "abcdef012345",
@@ -25,9 +28,9 @@ func TestLauncherVersionRefs(t *testing.T) {
 		}
 	}
 	previous := scaffoldVersion
-	scaffoldVersion = "v1.3.0"
+	scaffoldVersion = "v2.0.0"
 	t.Cleanup(func() { scaffoldVersion = previous })
-	if got := launcherRef(); got != "v1.3.0" {
+	if got := launcherRef(); got != "v2.0.0" {
 		t.Fatalf("release tag lost its prefix: %q", got)
 	}
 }
@@ -91,7 +94,7 @@ func TestInitInterruptedProcessHelper(t *testing.T) {
 		t.Fatal(err)
 	}
 	after := map[string]projectFile{
-		"go.mod":         {Data: []byte("module example.com/partial/project\n"), Mode: 0o600},
+		"go.mod":         {Data: []byte("module example.com/partial/project/v2\n"), Mode: 0o600},
 		"introduced.txt": {Data: []byte("initialized output"), Mode: 0o600},
 	}
 	if err := saveProjectRecovery(dir, before, after); err != nil {
